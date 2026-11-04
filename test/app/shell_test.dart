@@ -70,5 +70,6 @@ void main() {
 
     expect(find.text(zh.designSectionColors), findsOneWidget);
     expect(find.text(zh.designSectionGlass), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_back), findsOneWidget);
   });
 }

@@ -133,7 +133,21 @@ class _PageHeader extends StatelessWidget {
       ],
     );
 
-    if (actions.isEmpty) return heading;
+    // A back/leading control sits beside the title on every size.
+    final Widget headingWithLeading = leading == null
+        ? heading
+        : Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(top: 2, right: AppSpacing.md),
+                child: leading,
+              ),
+              Expanded(child: heading),
+            ],
+          );
+
+    if (actions.isEmpty) return headingWithLeading;
 
     final Widget actionRow = Wrap(
       spacing: AppSpacing.sm,
@@ -146,22 +160,9 @@ class _PageHeader extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          heading,
+          headingWithLeading,
           const SizedBox(height: AppSpacing.md),
           actionRow,
-        ],
-      );
-    }
-
-    if (leading != null) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(top: 2, right: AppSpacing.md),
-            child: leading,
-          ),
-          Expanded(child: heading),
         ],
       );
     }
@@ -169,7 +170,7 @@ class _PageHeader extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
-        Expanded(child: heading),
+        Expanded(child: headingWithLeading),
         const SizedBox(width: AppSpacing.lg),
         actionRow,
       ],
