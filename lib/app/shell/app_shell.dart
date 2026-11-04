@@ -3,14 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/app_info.dart';
-import '../../core/settings/appearance.dart';
 import '../../design/components/app_surface.dart';
 import '../../design/components/glass_surface.dart';
 import '../../design/theme/app_tokens.dart';
 import '../../design/tokens/app_metrics.dart';
 import '../../design/tokens/app_typography.dart';
 import '../../l10n/app_localizations.dart';
-import '../providers.dart';
 
 /// Floating chrome around the routed pages: a glass sidebar on desktop and a
 /// glass navigation bar on narrow screens.
@@ -92,7 +90,7 @@ class _Destination {
   final String label;
 }
 
-class _Sidebar extends ConsumerWidget {
+class _Sidebar extends StatelessWidget {
   const _Sidebar({
     required this.destinations,
     required this.currentIndex,
@@ -104,7 +102,7 @@ class _Sidebar extends ConsumerWidget {
   final ValueChanged<int> onSelect;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
 
@@ -137,7 +135,6 @@ class _Sidebar extends ConsumerWidget {
               ),
             const Spacer(),
             Divider(color: colors.hairline, height: 28),
-            const _QuickAppearanceToggles(),
             const SizedBox(height: AppSpacing.sm),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
@@ -297,98 +294,6 @@ class _NavTile extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _QuickAppearanceToggles extends ConsumerWidget {
-  const _QuickAppearanceToggles();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final appearance = ref.watch(appearanceProvider);
-    final controller = ref.read(appearanceProvider.notifier);
-    final colors = context.colors;
-
-    Widget choice(AppThemeMode mode, IconData icon, String tooltip) {
-      final bool selected = appearance.themeMode == mode;
-      return Tooltip(
-        message: tooltip,
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            onTap: () => controller.setThemeMode(mode),
-            borderRadius: BorderRadius.circular(AppRadius.xs),
-            child: AnimatedContainer(
-              duration: AppMotion.fast,
-              width: 26,
-              height: 26,
-              decoration: BoxDecoration(
-                color: selected ? colors.accentSoft : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppRadius.xs),
-              ),
-              child: Icon(
-                icon,
-                size: 15,
-                color: selected ? colors.accent : colors.inkMuted,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Row(
-      children: <Widget>[
-        Container(
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-            border: Border.all(color: colors.hairline),
-            color: colors.ink.withValues(alpha: 0.03),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              choice(
-                AppThemeMode.system,
-                Icons.brightness_auto_outlined,
-                l10n.themeSystem,
-              ),
-              choice(
-                AppThemeMode.light,
-                Icons.light_mode_outlined,
-                l10n.themeLight,
-              ),
-              choice(
-                AppThemeMode.dark,
-                Icons.dark_mode_outlined,
-                l10n.themeDark,
-              ),
-            ],
-          ),
-        ),
-        const Spacer(),
-        Tooltip(
-          message: l10n.quickToggleGlass,
-          child: IconButton(
-            onPressed: controller.cycleGlass,
-            iconSize: 18,
-            visualDensity: VisualDensity.compact,
-            icon: Icon(
-              switch (appearance.glass) {
-                GlassQuality.strong => Icons.blur_on,
-                GlassQuality.soft => Icons.blur_linear,
-                GlassQuality.off => Icons.blur_off,
-              },
-              color: appearance.glass == GlassQuality.off
-                  ? colors.inkMuted
-                  : colors.inkSecondary,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

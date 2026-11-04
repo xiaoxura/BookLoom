@@ -30,29 +30,34 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         ) => AppShell(navigationShell: navigationShell),
         branches: <StatefulShellBranch>[
           StatefulShellBranch(
+            // Tabs are preloaded so the first switch never pays the build cost
+            // of a page that has never been laid out (fonts, layout, painters).
+            preload: true,
             routes: <RouteBase>[
               GoRoute(
                 path: '/library',
                 pageBuilder: (BuildContext context, GoRouterState state) =>
-                    _fadePage(const LibraryPage()),
+                    _tabPage(const LibraryPage()),
               ),
             ],
           ),
           StatefulShellBranch(
+            preload: true,
             routes: <RouteBase>[
               GoRoute(
                 path: '/import',
                 pageBuilder: (BuildContext context, GoRouterState state) =>
-                    _fadePage(const ImportPage()),
+                    _tabPage(const ImportPage()),
               ),
             ],
           ),
           StatefulShellBranch(
+            preload: true,
             routes: <RouteBase>[
               GoRoute(
                 path: '/settings',
                 pageBuilder: (BuildContext context, GoRouterState state) =>
-                    _fadePage(const SettingsPage()),
+                    _tabPage(const SettingsPage()),
               ),
             ],
           ),
@@ -72,7 +77,13 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
   return router;
 });
 
-/// Short cross-fade with a 1% rise: enough to signal navigation, never showy.
+/// Tab switches are instant. A cross-fade here costs a full repaint per frame
+/// (and a re-blur of every glass pane behind the page), which reads as a hitch
+/// on the very first switch. Tabs are not a place for choreography.
+NoTransitionPage<void> _tabPage(Widget page) =>
+    NoTransitionPage<void>(child: AppSurface(child: page));
+
+/// Short cross-fade with a 1% rise for pushed pages (e.g. /design).
 CustomTransitionPage<void> _fadePage(Widget page) {
   return CustomTransitionPage<void>(
     child: AppSurface(child: page),

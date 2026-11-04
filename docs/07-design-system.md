@@ -114,6 +114,10 @@ final glass = context.glass;     // GlassTokens
 
 内容列最宽 1080，页面左右内边距 32（窄屏 20）。列表永远用 `ListView.builder` / `SliverList`，不整页 `SingleChildScrollView` 包长列表。
 
+玻璃面板把「模糊底」和「内容」分成两个绘制层：模糊结果被 `RepaintBoundary` 缓存，选中态动画或墨水涟漪只重绘内容，不会每帧重跑一次背景模糊。
+
+**切换 tab 不做转场动画**：三个分支用 `NoTransitionPage` 直接换页，并开启 `StatefulShellBranch(preload: true)` 预加载。理由：转场每帧都要整页重绘，还会让玻璃浮层重新做一次背景模糊，第一次切换尤其容易读成卡顿；tab 属于「即时」操作，动效只会拖慢它。推入页（如 `/design`）仍保留 240ms 淡入。
+
 ## 8. 组件约定
 
 - 按钮、输入框、分段选择、开关、Chip 全部由 `AppTheme` 统一，页面不得局部覆写。

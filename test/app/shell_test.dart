@@ -17,6 +17,13 @@ void main() {
     expect(find.text(zh.libraryEmptyTitle), findsOneWidget);
     expect(find.text(zh.appTagline), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
+
+    // Branches are preloaded, so the first switch to another tab does not pay
+    // a first-build cost: the settings page already exists offstage.
+    expect(
+      find.text(zh.settingsThemeMode, skipOffstage: false),
+      findsOneWidget,
+    );
   });
 
   testWidgets('sidebar navigation switches to the import page', (

@@ -3,7 +3,6 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 
 import '../../core/settings/appearance.dart';
-
 import '../theme/app_tokens.dart';
 import '../tokens/app_metrics.dart';
 import '../tokens/glass.dart';
@@ -15,6 +14,11 @@ import '../tokens/glass.dart';
 /// - Text is never placed directly on a translucent pane; the tint alpha is
 ///   kept high enough that body text stays above WCAG AA.
 /// - [GlassQuality.off] degrades to opaque paper without any code change here.
+///
+/// The backdrop (blur + tint + highlight) lives in its own [RepaintBoundary]
+/// behind the content. Without that split, any repaint of the pane's content —
+/// a nav pill animating, an ink ripple — would re-run the backdrop blur every
+/// frame, which is exactly the hitch felt when switching tabs.
 class GlassSurface extends StatelessWidget {
   const GlassSurface({
     super.key,
@@ -61,50 +65,60 @@ class GlassSurface extends StatelessWidget {
     final Color fill = tintAlpha == null
         ? glass.fill
         : glass.tint.withValues(alpha: tintAlpha!);
+    final bool blurred = glass.isBlurred && sigma > 0;
 
-    final Widget pane = DecoratedBox(
-      decoration: BoxDecoration(
-        color: fill,
-        borderRadius: shape,
-        border: Border.all(color: glass.border),
-      ),
-      child: Stack(
-        fit: StackFit.passthrough,
+    // Decorative layers, painted once and cached independently of the content.
+    Widget backdrop = ColoredBox(color: fill);
+    if (showHighlight) {
+      backdrop = Stack(
+        fit: StackFit.expand,
         children: <Widget>[
-          if (showHighlight)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: shape,
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: <Color>[
-                        glass.highlight,
-                        glass.highlight.withValues(alpha: 0),
-                      ],
-                      stops: const <double>[0, 0.42],
-                    ),
-                  ),
+          backdrop,
+          IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: <Color>[
+                    glass.highlight,
+                    glass.highlight.withValues(alpha: 0),
+                  ],
+                  stops: const <double>[0, 0.42],
                 ),
               ),
             ),
-          Padding(padding: padding ?? EdgeInsets.zero, child: child),
+          ),
         ],
-      ),
+      );
+    }
+
+    final Widget clipped = ClipRRect(
+      borderRadius: shape,
+      child: blurred
+          ? BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
+              child: backdrop,
+            )
+          : backdrop,
     );
 
-    Widget surface = RepaintBoundary(
-      child: ClipRRect(
-        borderRadius: shape,
-        child: glass.isBlurred && sigma > 0
-            ? BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-                child: pane,
-              )
-            : pane,
-      ),
+    Widget surface = Stack(
+      fit: StackFit.passthrough,
+      children: <Widget>[
+        Positioned.fill(child: RepaintBoundary(child: clipped)),
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: shape,
+                border: Border.all(color: glass.border),
+              ),
+            ),
+          ),
+        ),
+        Padding(padding: padding ?? EdgeInsets.zero, child: child),
+      ],
     );
 
     if (showShadow) {
