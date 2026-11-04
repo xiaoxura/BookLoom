@@ -16,9 +16,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appNameLatin => 'Bookloom';
 
   @override
-  String get appTagline => '把文字织成书';
-
-  @override
   String get navLibrary => '书架';
 
   @override
@@ -45,32 +42,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get libraryTitle => '书架';
 
   @override
-  String get librarySubtitle => '书稿都在本机，随时可以带走';
-
-  @override
   String get libraryEmptyTitle => '书架还是空的';
-
-  @override
-  String get libraryEmptyMessage => '导入第一份 TXT、EPUB 或 DOCX，把散落的文字整理成一本书。';
 
   @override
   String get libraryEmptyAction => '导入书稿';
 
   @override
-  String get libraryEmptyHint => '支持 TXT · EPUB · DOCX';
-
-  @override
   String get importTitle => '导入';
-
-  @override
-  String get importSubtitle => '解析全部在本机完成，文件不会离开设备';
-
-  @override
-  String get importPendingTitle => '导入流程正在搭建';
-
-  @override
-  String get importPendingMessage =>
-      'M1 会先打通 TXT：编码探测、分章评分、目录校对。当前版本先确认界面语言与数据结构。';
 
   @override
   String get importFormatsTitle => '计划支持的格式';
@@ -79,19 +57,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importFormatTxt => 'TXT';
 
   @override
-  String get importFormatTxtDesc => '自动识别 UTF-8 / GBK / Big5，按标题密度分章';
-
-  @override
   String get importFormatEpub => 'EPUB';
 
   @override
-  String get importFormatEpubDesc => '保留 spine 顺序、目录层级与封面';
-
-  @override
   String get importFormatDocx => 'DOCX';
-
-  @override
-  String get importFormatDocxDesc => '还原「标题 1 / 标题 2」的卷章结构';
 
   @override
   String get importStatusPlanned => '计划中';
@@ -101,9 +70,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsTitle => '设置';
-
-  @override
-  String get settingsSubtitle => '外观、数据与关于';
 
   @override
   String get settingsAppearance => '外观';
@@ -124,9 +90,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsGlass => '磨砂玻璃';
 
   @override
-  String get settingsGlassDesc => '只用于侧栏、浮层与对话框；正文始终落在不透明的纸面上。';
-
-  @override
   String get glassStrong => '强';
 
   @override
@@ -140,9 +103,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsDataLocation => '数据目录';
-
-  @override
-  String get settingsDataLocationDesc => '书籍、封面和备份都保存在这里，可以直接拷贝带走。';
 
   @override
   String get settingsCopyPath => '复制路径';
@@ -164,9 +124,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsDesignSystem => '设计系统';
-
-  @override
-  String get settingsDesignSystemDesc => '颜色、字体、间距、玻璃与组件状态';
 
   @override
   String get settingsOpen => '打开';
@@ -269,4 +226,29 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notFoundBack => '返回书架';
+
+  @override
+  String get importFormatTxtDesc => '自动识别 UTF-8 / GBK / Big5，按标题密度分章';
+
+  @override
+  String get importFormatEpubDesc => '保留 spine 顺序、目录层级与封面';
+
+  @override
+  String get importFormatDocxDesc => '还原「标题 1 / 标题 2」的卷章结构';
+
+  @override
+  String get importPendingTitle => '导入流程正在搭建';
+
+  @override
+  String get importPendingMessage =>
+      'M1 会先打通 TXT：编码探测、分章评分、目录校对。当前版本先确认界面语言与数据结构。';
+
+  @override
+  String get settingsGlassDesc => '只用于侧栏、浮层与对话框；正文始终落在不透明的纸面上。';
+
+  @override
+  String get settingsDataLocationDesc => '书籍、封面和备份都保存在这里，可以直接拷贝带走。';
+
+  @override
+  String get settingsDesignSystemDesc => '颜色、字体、间距、玻璃与组件状态';
 }

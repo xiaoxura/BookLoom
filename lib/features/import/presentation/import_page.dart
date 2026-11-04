@@ -6,8 +6,8 @@ import '../../../design/theme/app_tokens.dart';
 import '../../../design/tokens/app_metrics.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// Import entry point. The pipeline arrives in M1; this screen states the plan
-/// and proves the surface language (cards, badges, dividers).
+/// Import entry point. The pipeline arrives in M1; this screen only states
+/// which formats are planned and where each one stands.
 class ImportPage extends ConsumerWidget {
   const ImportPage({super.key});
 
@@ -18,9 +18,6 @@ class ImportPage extends ConsumerWidget {
     final colors = context.colors;
 
     return AppPage(
-      eyebrow: l10n.importStatusNext,
-      title: l10n.importTitle,
-      subtitle: l10n.importSubtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -82,27 +79,24 @@ class ImportPage extends ConsumerWidget {
             child: Column(
               children: <Widget>[
                 _FormatRow(
-                  badge: l10n.importFormatTxt,
+                  icon: Icons.notes_outlined,
                   title: l10n.importFormatTxt,
                   description: l10n.importFormatTxtDesc,
                   status: l10n.importStatusNext,
-                  icon: Icons.notes_outlined,
                 ),
-                Divider(height: 1, color: colors.hairline, indent: 76),
+                Divider(height: 1, color: colors.hairline, indent: 72),
                 _FormatRow(
-                  badge: l10n.importFormatEpub,
+                  icon: Icons.menu_book_outlined,
                   title: l10n.importFormatEpub,
                   description: l10n.importFormatEpubDesc,
                   status: l10n.importStatusPlanned,
-                  icon: Icons.menu_book_outlined,
                 ),
-                Divider(height: 1, color: colors.hairline, indent: 76),
+                Divider(height: 1, color: colors.hairline, indent: 72),
                 _FormatRow(
-                  badge: l10n.importFormatDocx,
+                  icon: Icons.description_outlined,
                   title: l10n.importFormatDocx,
                   description: l10n.importFormatDocxDesc,
                   status: l10n.importStatusPlanned,
-                  icon: Icons.description_outlined,
                 ),
               ],
             ),
@@ -115,18 +109,16 @@ class ImportPage extends ConsumerWidget {
 
 class _FormatRow extends StatelessWidget {
   const _FormatRow({
-    required this.badge,
+    required this.icon,
     required this.title,
     required this.description,
     required this.status,
-    required this.icon,
   });
 
-  final String badge;
+  final IconData icon;
   final String title;
   final String description;
   final String status;
-  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -141,35 +133,21 @@ class _FormatRow extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Container(
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: colors.surfaceSunken,
+              color: colors.accentSoft,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Text(
-              badge,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.inkSecondary,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.6,
-                fontSize: 10.5,
-              ),
-            ),
+            child: Icon(icon, size: 19, color: colors.accent),
           ),
           const SizedBox(width: AppSpacing.lg),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Icon(icon, size: 15, color: colors.inkMuted),
-                    const SizedBox(width: AppSpacing.xs + 2),
-                    Text(title, style: theme.textTheme.titleMedium),
-                  ],
-                ),
+                Text(title, style: theme.textTheme.titleMedium),
                 const SizedBox(height: AppSpacing.xxs + 2),
                 Text(
                   description,

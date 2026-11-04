@@ -8,14 +8,14 @@ class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
     required this.title,
-    required this.message,
+    this.message,
     this.illustration,
     this.actions = const <Widget>[],
     this.hint,
   });
 
   final String title;
-  final String message;
+  final String? message;
   final Widget? illustration;
   final List<Widget> actions;
   final String? hint;
@@ -45,15 +45,17 @@ class EmptyState extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineMedium,
               ),
-              const SizedBox(height: AppSpacing.md - 2),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: colors.inkSecondary,
-                  height: 1.75,
+              if (message != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.md - 2),
+                Text(
+                  message!,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: colors.inkSecondary,
+                    height: 1.75,
+                  ),
                 ),
-              ),
+              ],
               if (actions.isNotEmpty) ...<Widget>[
                 const SizedBox(height: AppSpacing.xl),
                 Wrap(

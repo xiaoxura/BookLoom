@@ -16,9 +16,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appNameLatin => 'Bookloom';
 
   @override
-  String get appTagline => 'Weave text into books.';
-
-  @override
   String get navLibrary => 'Library';
 
   @override
@@ -45,34 +42,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryTitle => 'Library';
 
   @override
-  String get librarySubtitle => 'Everything stays on this device.';
-
-  @override
   String get libraryEmptyTitle => 'Your shelf is empty';
-
-  @override
-  String get libraryEmptyMessage =>
-      'Import a TXT, EPUB or DOCX and turn loose text into a book.';
 
   @override
   String get libraryEmptyAction => 'Import a manuscript';
 
   @override
-  String get libraryEmptyHint => 'TXT · EPUB · DOCX';
-
-  @override
   String get importTitle => 'Import';
-
-  @override
-  String get importSubtitle =>
-      'Parsing happens locally; files never leave the device.';
-
-  @override
-  String get importPendingTitle => 'Import is being built';
-
-  @override
-  String get importPendingMessage =>
-      'M1 starts with TXT: encoding detection, chapter scoring, then manual review. This build only proves the interface language and data model.';
 
   @override
   String get importFormatsTitle => 'Planned formats';
@@ -81,22 +57,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importFormatTxt => 'TXT';
 
   @override
-  String get importFormatTxtDesc =>
-      'Detect UTF-8 / GBK / Big5, split chapters by heading density';
-
-  @override
   String get importFormatEpub => 'EPUB';
 
   @override
-  String get importFormatEpubDesc =>
-      'Keep spine order, navigation hierarchy and cover';
-
-  @override
   String get importFormatDocx => 'DOCX';
-
-  @override
-  String get importFormatDocxDesc =>
-      'Restore volumes and chapters from Heading 1 / Heading 2';
 
   @override
   String get importStatusPlanned => 'Planned';
@@ -106,9 +70,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsTitle => 'Settings';
-
-  @override
-  String get settingsSubtitle => 'Appearance, data and about';
 
   @override
   String get settingsAppearance => 'Appearance';
@@ -129,10 +90,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsGlass => 'Frosted glass';
 
   @override
-  String get settingsGlassDesc =>
-      'Used only for sidebar, overlays and dialogs. Body text always sits on opaque paper.';
-
-  @override
   String get glassStrong => 'Strong';
 
   @override
@@ -146,10 +103,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDataLocation => 'Data folder';
-
-  @override
-  String get settingsDataLocationDesc =>
-      'Books, covers and backups live here. Copy the folder to take everything with you.';
 
   @override
   String get settingsCopyPath => 'Copy path';
@@ -171,10 +124,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDesignSystem => 'Design system';
-
-  @override
-  String get settingsDesignSystemDesc =>
-      'Colors, type, spacing, glass and component states';
 
   @override
   String get settingsOpen => 'Open';
@@ -286,4 +235,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notFoundBack => 'Back to library';
+
+  @override
+  String get importFormatTxtDesc =>
+      'Detect UTF-8 / GBK / Big5, split chapters by heading density';
+
+  @override
+  String get importFormatEpubDesc =>
+      'Keep spine order, navigation hierarchy and cover';
+
+  @override
+  String get importFormatDocxDesc =>
+      'Restore volumes and chapters from Heading 1 / Heading 2';
+
+  @override
+  String get importPendingTitle => 'Import is being built';
+
+  @override
+  String get importPendingMessage =>
+      'M1 starts with TXT: encoding detection, chapter scoring, then manual review. This build only proves the interface language and data model.';
+
+  @override
+  String get settingsGlassDesc =>
+      'Used only for sidebar, overlays and dialogs. Body text always sits on opaque paper.';
+
+  @override
+  String get settingsDataLocationDesc =>
+      'Books, covers and backups live here. Copy the folder to take everything with you.';
+
+  @override
+  String get settingsDesignSystemDesc =>
+      'Colors, type, spacing, glass and component states';
 }

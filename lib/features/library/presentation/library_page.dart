@@ -17,9 +17,6 @@ class LibraryPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
 
     return AppPage(
-      eyebrow: l10n.appTagline,
-      title: l10n.libraryTitle,
-      subtitle: l10n.librarySubtitle,
       scrollable: false,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
@@ -30,8 +27,6 @@ class LibraryPage extends ConsumerWidget {
                 child: EmptyState(
                   illustration: const BookPlate(),
                   title: l10n.libraryEmptyTitle,
-                  message: l10n.libraryEmptyMessage,
-                  hint: l10n.libraryEmptyHint,
                   actions: <Widget>[
                     FilledButton.icon(
                       onPressed: () => context.go('/import'),

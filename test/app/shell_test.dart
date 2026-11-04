@@ -15,7 +15,7 @@ void main() {
     expect(find.text(zh.navLibrary), findsWidgets);
     expect(find.text(zh.navImport), findsWidgets);
     expect(find.text(zh.libraryEmptyTitle), findsOneWidget);
-    expect(find.text(zh.appTagline), findsOneWidget);
+    expect(find.text(zh.libraryEmptyAction), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
 
     // Branches are preloaded, so the first switch to another tab does not pay
@@ -34,7 +34,9 @@ void main() {
     await tester.tap(find.text(zh.navImport).first);
     await tester.pumpAndSettle();
 
-    expect(find.text(zh.importPendingTitle), findsOneWidget);
+    expect(find.text(zh.importFormatsTitle), findsOneWidget);
+    expect(find.text(zh.importStatusNext), findsOneWidget);
+    // Guidance stays: each format explains what it will do.
     expect(find.text(zh.importFormatTxtDesc), findsOneWidget);
   });
 
@@ -49,6 +51,8 @@ void main() {
     expect(find.text(zh.settingsAppearance), findsOneWidget);
     expect(find.text(zh.settingsDataLocation), findsOneWidget);
     expect(find.text(zh.settingsDesignSystem), findsOneWidget);
+    // Settings keep their one-line explanations.
+    expect(find.text(zh.settingsGlassDesc), findsOneWidget);
   });
 
   testWidgets('narrow layout uses the bottom navigation bar', (

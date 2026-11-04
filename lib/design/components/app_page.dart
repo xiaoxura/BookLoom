@@ -8,7 +8,7 @@ import '../tokens/app_metrics.dart';
 class AppPage extends StatelessWidget {
   const AppPage({
     super.key,
-    required this.title,
+    this.title,
     this.subtitle,
     this.eyebrow,
     this.actions = const <Widget>[],
@@ -17,7 +17,9 @@ class AppPage extends StatelessWidget {
     this.leading,
   });
 
-  final String title;
+  /// Page heading. When null (and no [actions] or [leading] are given) the page
+  /// renders only its content — menu pages rely on the sidebar for context.
+  final String? title;
   final String? subtitle;
   final String? eyebrow;
   final List<Widget> actions;
@@ -50,15 +52,21 @@ class AppPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  _PageHeader(
-                    eyebrow: eyebrow,
-                    title: title,
-                    subtitle: subtitle,
-                    actions: actions,
-                    compact: compact,
-                    leading: leading,
-                  ),
-                  SizedBox(height: compact ? AppSpacing.lg : AppSpacing.xl),
+                  if (title != null ||
+                      subtitle != null ||
+                      eyebrow != null ||
+                      actions.isNotEmpty ||
+                      leading != null) ...<Widget>[
+                    _PageHeader(
+                      eyebrow: eyebrow,
+                      title: title,
+                      subtitle: subtitle,
+                      actions: actions,
+                      compact: compact,
+                      leading: leading,
+                    ),
+                    SizedBox(height: compact ? AppSpacing.lg : AppSpacing.xl),
+                  ],
                   Expanded(
                     child: scrollable
                         ? SingleChildScrollView(
@@ -90,7 +98,7 @@ class _PageHeader extends StatelessWidget {
   });
 
   final String? eyebrow;
-  final String title;
+  final String? title;
   final String? subtitle;
   final List<Widget> actions;
   final bool compact;
@@ -115,12 +123,13 @@ class _PageHeader extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs + 2),
         ],
-        Text(
-          title,
-          style: theme.textTheme.headlineLarge?.copyWith(
-            fontSize: compact ? 24 : 27,
+        if (title != null)
+          Text(
+            title!,
+            style: theme.textTheme.headlineLarge?.copyWith(
+              fontSize: compact ? 24 : 27,
+            ),
           ),
-        ),
         if (subtitle != null) ...<Widget>[
           const SizedBox(height: AppSpacing.xs + 2),
           Text(

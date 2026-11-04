@@ -123,7 +123,8 @@ final glass = context.glass;     // GlassTokens
 - 按钮、输入框、分段选择、开关、Chip 全部由 `AppTheme` 统一，页面不得局部覆写。
 - 卡片：`surface` + 1px `hairline`，不加阴影；只有浮层与书封允许阴影。
 - 空状态：`EmptyState`（图示 + 标题 + 一句说明 + 至多两个操作 + 可选提示）。
-- 页面骨架：`AppPage`（eyebrow / 标题 / 副标题 / 操作 / 滚动体），推入页传 `leading` 返回键。
+- 页面骨架：`AppPage` 支持 eyebrow / 标题 / 副标题 / 操作 / 滚动体，但**菜单页不显示标题与副标题**——当前在哪一页由侧栏选中态表达，标题重复只是噪音；推入页（如 `/design`）才用标题 + `leading` 返回键。
+- 文案原则：**指导性文字保留**（设置项的一句话释义、格式能力说明、空状态的必要提示），**纯装饰性文字删掉**（和侧栏重复的页面名、复述标题的副标题、空状态里「把文字整理成一本书」这类口号）。
 - 图标默认 20px，线性风格；选中态用 `accent` + `accentSoft` 药丸底。
 
 ## 9. 怎么改视觉
@@ -142,9 +143,13 @@ final glass = context.glass;     // GlassTokens
 | --- | --- |
 | ![浅色](design/home-light.png) | ![深色](design/home-dark.png) |
 
-| 设置 | 设计系统 |
+| 导入（保留格式释义） | 设置（保留配置释义） |
 | --- | --- |
-| ![设置](design/settings-light.png) | ![设计系统](design/design-system.png) |
+| ![导入](design/import-light.png) | ![设置](design/settings-light.png) |
+
+| 设计系统 |
+| --- | 
+| ![设计系统](design/design-system.png) |
 
 移动/窄窗（< 960）：![窄窗](design/home-compact.png)
 

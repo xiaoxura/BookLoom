@@ -22,8 +22,6 @@ class SettingsPage extends ConsumerWidget {
     final String dataPath = ref.watch(appPathsProvider).support.path;
 
     return AppPage(
-      title: l10n.settingsTitle,
-      subtitle: l10n.settingsSubtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -219,6 +217,9 @@ class _SettingRow extends StatelessWidget {
   });
 
   final String title;
+
+  /// One-line explanation of what the setting does. Keep it short and useful;
+  /// this is guidance, not filler.
   final String? description;
   final Widget control;
 

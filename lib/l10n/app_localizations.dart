@@ -110,12 +110,6 @@ abstract class AppLocalizations {
   /// **'Bookloom'**
   String get appNameLatin;
 
-  /// No description provided for @appTagline.
-  ///
-  /// In zh, this message translates to:
-  /// **'把文字织成书'**
-  String get appTagline;
-
   /// No description provided for @navLibrary.
   ///
   /// In zh, this message translates to:
@@ -164,23 +158,11 @@ abstract class AppLocalizations {
   /// **'书架'**
   String get libraryTitle;
 
-  /// No description provided for @librarySubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'书稿都在本机，随时可以带走'**
-  String get librarySubtitle;
-
   /// No description provided for @libraryEmptyTitle.
   ///
   /// In zh, this message translates to:
   /// **'书架还是空的'**
   String get libraryEmptyTitle;
-
-  /// No description provided for @libraryEmptyMessage.
-  ///
-  /// In zh, this message translates to:
-  /// **'导入第一份 TXT、EPUB 或 DOCX，把散落的文字整理成一本书。'**
-  String get libraryEmptyMessage;
 
   /// No description provided for @libraryEmptyAction.
   ///
@@ -188,35 +170,11 @@ abstract class AppLocalizations {
   /// **'导入书稿'**
   String get libraryEmptyAction;
 
-  /// No description provided for @libraryEmptyHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'支持 TXT · EPUB · DOCX'**
-  String get libraryEmptyHint;
-
   /// No description provided for @importTitle.
   ///
   /// In zh, this message translates to:
   /// **'导入'**
   String get importTitle;
-
-  /// No description provided for @importSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'解析全部在本机完成，文件不会离开设备'**
-  String get importSubtitle;
-
-  /// No description provided for @importPendingTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'导入流程正在搭建'**
-  String get importPendingTitle;
-
-  /// No description provided for @importPendingMessage.
-  ///
-  /// In zh, this message translates to:
-  /// **'M1 会先打通 TXT：编码探测、分章评分、目录校对。当前版本先确认界面语言与数据结构。'**
-  String get importPendingMessage;
 
   /// No description provided for @importFormatsTitle.
   ///
@@ -230,35 +188,17 @@ abstract class AppLocalizations {
   /// **'TXT'**
   String get importFormatTxt;
 
-  /// No description provided for @importFormatTxtDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'自动识别 UTF-8 / GBK / Big5，按标题密度分章'**
-  String get importFormatTxtDesc;
-
   /// No description provided for @importFormatEpub.
   ///
   /// In zh, this message translates to:
   /// **'EPUB'**
   String get importFormatEpub;
 
-  /// No description provided for @importFormatEpubDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'保留 spine 顺序、目录层级与封面'**
-  String get importFormatEpubDesc;
-
   /// No description provided for @importFormatDocx.
   ///
   /// In zh, this message translates to:
   /// **'DOCX'**
   String get importFormatDocx;
-
-  /// No description provided for @importFormatDocxDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'还原「标题 1 / 标题 2」的卷章结构'**
-  String get importFormatDocxDesc;
 
   /// No description provided for @importStatusPlanned.
   ///
@@ -277,12 +217,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'设置'**
   String get settingsTitle;
-
-  /// No description provided for @settingsSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'外观、数据与关于'**
-  String get settingsSubtitle;
 
   /// No description provided for @settingsAppearance.
   ///
@@ -320,12 +254,6 @@ abstract class AppLocalizations {
   /// **'磨砂玻璃'**
   String get settingsGlass;
 
-  /// No description provided for @settingsGlassDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'只用于侧栏、浮层与对话框；正文始终落在不透明的纸面上。'**
-  String get settingsGlassDesc;
-
   /// No description provided for @glassStrong.
   ///
   /// In zh, this message translates to:
@@ -355,12 +283,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'数据目录'**
   String get settingsDataLocation;
-
-  /// No description provided for @settingsDataLocationDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'书籍、封面和备份都保存在这里，可以直接拷贝带走。'**
-  String get settingsDataLocationDesc;
 
   /// No description provided for @settingsCopyPath.
   ///
@@ -403,12 +325,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'设计系统'**
   String get settingsDesignSystem;
-
-  /// No description provided for @settingsDesignSystemDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'颜色、字体、间距、玻璃与组件状态'**
-  String get settingsDesignSystemDesc;
 
   /// No description provided for @settingsOpen.
   ///
@@ -613,6 +529,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'返回书架'**
   String get notFoundBack;
+
+  /// No description provided for @importFormatTxtDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动识别 UTF-8 / GBK / Big5，按标题密度分章'**
+  String get importFormatTxtDesc;
+
+  /// No description provided for @importFormatEpubDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'保留 spine 顺序、目录层级与封面'**
+  String get importFormatEpubDesc;
+
+  /// No description provided for @importFormatDocxDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'还原「标题 1 / 标题 2」的卷章结构'**
+  String get importFormatDocxDesc;
+
+  /// No description provided for @importPendingTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入流程正在搭建'**
+  String get importPendingTitle;
+
+  /// No description provided for @importPendingMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'M1 会先打通 TXT：编码探测、分章评分、目录校对。当前版本先确认界面语言与数据结构。'**
+  String get importPendingMessage;
+
+  /// No description provided for @settingsGlassDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'只用于侧栏、浮层与对话框；正文始终落在不透明的纸面上。'**
+  String get settingsGlassDesc;
+
+  /// No description provided for @settingsDataLocationDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'书籍、封面和备份都保存在这里，可以直接拷贝带走。'**
+  String get settingsDataLocationDesc;
+
+  /// No description provided for @settingsDesignSystemDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'颜色、字体、间距、玻璃与组件状态'**
+  String get settingsDesignSystemDesc;
 }
 
 class _AppLocalizationsDelegate
