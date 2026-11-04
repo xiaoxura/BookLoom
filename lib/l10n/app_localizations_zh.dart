@@ -251,4 +251,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsDesignSystemDesc => '颜色、字体、间距、玻璃与组件状态';
+
+  @override
+  String get windowMinimize => '最小化';
+
+  @override
+  String get windowMaximize => '最大化';
+
+  @override
+  String get windowClose => '关闭';
 }

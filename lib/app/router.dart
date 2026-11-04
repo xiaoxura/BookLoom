@@ -12,6 +12,7 @@ import '../features/library/presentation/library_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../l10n/app_localizations.dart';
 import 'shell/app_shell.dart';
+import 'shell/window_caption.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'root',
@@ -86,7 +87,14 @@ NoTransitionPage<void> _tabPage(Widget page) =>
 /// Short cross-fade with a 1% rise for pushed pages (e.g. /design).
 CustomTransitionPage<void> _fadePage(Widget page) {
   return CustomTransitionPage<void>(
-    child: AppSurface(child: page),
+    // Pushed pages replace the shell, so they carry their own window caption;
+    // otherwise the frameless window could not be dragged or closed there.
+    child: Column(
+      children: <Widget>[
+        const WindowCaption(),
+        Expanded(child: AppSurface(child: page)),
+      ],
+    ),
     transitionDuration: AppMotion.page,
     reverseTransitionDuration: AppMotion.page,
     transitionsBuilder:

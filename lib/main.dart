@@ -5,10 +5,12 @@ import 'app/app.dart';
 import 'app/bootstrap.dart';
 import 'app/error_handling.dart';
 import 'app/providers.dart';
+import 'app/window/window_controls.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   installErrorHandlers();
+  WindowControls.configure();
 
   try {
     final BootstrapResult boot = await bootstrap();

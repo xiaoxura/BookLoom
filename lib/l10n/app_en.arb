@@ -86,5 +86,8 @@
   "importPendingMessage": "M1 starts with TXT: encoding detection, chapter scoring, then manual review. This build only proves the interface language and data model.",
   "settingsGlassDesc": "Used only for sidebar, overlays and dialogs. Body text always sits on opaque paper.",
   "settingsDataLocationDesc": "Books, covers and backups live here. Copy the folder to take everything with you.",
-  "settingsDesignSystemDesc": "Colors, type, spacing, glass and component states"
+  "settingsDesignSystemDesc": "Colors, type, spacing, glass and component states",
+  "windowMinimize": "Minimize",
+  "windowMaximize": "Maximize",
+  "windowClose": "Close"
 }

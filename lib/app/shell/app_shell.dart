@@ -9,6 +9,8 @@ import '../../design/theme/app_tokens.dart';
 import '../../design/tokens/app_metrics.dart';
 import '../../design/tokens/app_typography.dart';
 import '../../l10n/app_localizations.dart';
+import '../window/window_controls.dart';
+import 'window_caption.dart';
 
 /// Floating chrome around the routed pages: a glass sidebar on desktop and a
 /// glass navigation bar on narrow screens.
@@ -43,37 +45,50 @@ class AppShell extends ConsumerWidget {
       initialLocation: index == navigationShell.currentIndex,
     );
 
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final bool wide = constraints.maxWidth >= AppLayout.railBreakpoint;
-        if (!wide) {
-          return Column(
-            children: <Widget>[
-              Expanded(child: AppSurface(child: navigationShell)),
-              _BottomBar(
-                destinations: destinations,
-                currentIndex: navigationShell.currentIndex,
-                onSelect: select,
-              ),
-            ],
+    return DesktopWindowFrame(
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final bool wide = constraints.maxWidth >= AppLayout.railBreakpoint;
+          if (!wide) {
+            return Column(
+              children: <Widget>[
+                const WindowCaption(),
+                Expanded(child: AppSurface(child: navigationShell)),
+                _BottomBar(
+                  destinations: destinations,
+                  currentIndex: navigationShell.currentIndex,
+                  onSelect: select,
+                ),
+              ],
+            );
+          }
+          return Padding(
+            padding: const EdgeInsets.all(AppLayout.shellGutter),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                _Sidebar(
+                  destinations: destinations,
+                  currentIndex: navigationShell.currentIndex,
+                  onSelect: select,
+                ),
+                const SizedBox(width: AppLayout.shellGutter),
+                // The caption sits above the page column only, so the sidebar
+                // keeps the full window height and the top-left corner is not
+                // an empty band.
+                Expanded(
+                  child: Column(
+                    children: <Widget>[
+                      const WindowCaption(),
+                      Expanded(child: AppSurface(child: navigationShell)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           );
-        }
-        return Padding(
-          padding: const EdgeInsets.all(AppLayout.shellGutter),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              _Sidebar(
-                destinations: destinations,
-                currentIndex: navigationShell.currentIndex,
-                onSelect: select,
-              ),
-              const SizedBox(width: AppLayout.shellGutter),
-              Expanded(child: AppSurface(child: navigationShell)),
-            ],
-          ),
-        );
-      },
+        },
+      ),
     );
   }
 }

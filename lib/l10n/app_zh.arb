@@ -89,5 +89,8 @@
   "importPendingMessage": "M1 会先打通 TXT：编码探测、分章评分、目录校对。当前版本先确认界面语言与数据结构。",
   "settingsGlassDesc": "只用于侧栏、浮层与对话框；正文始终落在不透明的纸面上。",
   "settingsDataLocationDesc": "书籍、封面和备份都保存在这里，可以直接拷贝带走。",
-  "settingsDesignSystemDesc": "颜色、字体、间距、玻璃与组件状态"
+  "settingsDesignSystemDesc": "颜色、字体、间距、玻璃与组件状态",
+  "windowMinimize": "最小化",
+  "windowMaximize": "最大化",
+  "windowClose": "关闭"
 }

@@ -112,6 +112,18 @@ final glass = context.glass;     // GlassTokens
 | ≥ 960 | 玻璃侧栏 252px + 内容区，四周留 16px，侧栏圆角 22 |
 | < 960 | 内容区 + 悬浮玻璃底部导航（高 68，圆角 22，留安全区） |
 
+### 窗口标题栏
+
+窗口是**无边框**的（`gtk_window_set_decorated(FALSE)` / `TitleBarStyle.hidden`），系统那条灰色标题栏不再出现。取而代之的是 40px 高的自绘 caption：
+
+- 只铺在**内容列**上方，侧栏保持通高 —— 左上角不会出现一条空白带；
+- 整条 caption 可拖拽窗口，双击切换最大化；
+- 右上角三个 34×26 按钮（最小化 / 最大化 / 关闭）跟随主题 token，关闭按钮悬停时转朱砂色；
+- 窗口四边和四角有 6–14px 隐形热区，拖拽交给 GTK/Win32 处理（`window_manager` 的 `startResizing`）；
+- 推入页（如 `/design`）由路由自己再挂一条 caption，保证任何页面都能拖窗口、能关窗口。
+
+代价：窗口没有系统阴影；Linux 上圆角由合成器决定。这些在 M4 打包时再统一处理（Windows 11 自带圆角，GNOME 由 Shell 处理）。
+
 内容列最宽 1080，页面左右内边距 32（窄屏 20）。列表永远用 `ListView.builder` / `SliverList`，不整页 `SingleChildScrollView` 包长列表。
 
 玻璃面板把「模糊底」和「内容」分成两个绘制层：模糊结果被 `RepaintBoundary` 缓存，选中态动画或墨水涟漪只重绘内容，不会每帧重跑一次背景模糊。
@@ -147,9 +159,9 @@ final glass = context.glass;     // GlassTokens
 | --- | --- |
 | ![导入](design/import-light.png) | ![设置](design/settings-light.png) |
 
-| 设计系统 |
-| --- | 
-| ![设计系统](design/design-system.png) |
+| 设计系统 | 深色设置 |
+| --- | --- |
+| ![设计系统](design/design-system.png) | ![深色设置](design/settings-dark.png) |
 
 移动/窄窗（< 960）：![窄窗](design/home-compact.png)
 

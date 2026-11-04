@@ -577,6 +577,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'颜色、字体、间距、玻璃与组件状态'**
   String get settingsDesignSystemDesc;
+
+  /// No description provided for @windowMinimize.
+  ///
+  /// In zh, this message translates to:
+  /// **'最小化'**
+  String get windowMinimize;
+
+  /// No description provided for @windowMaximize.
+  ///
+  /// In zh, this message translates to:
+  /// **'最大化'**
+  String get windowMaximize;
+
+  /// No description provided for @windowClose.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get windowClose;
 }
 
 class _AppLocalizationsDelegate
