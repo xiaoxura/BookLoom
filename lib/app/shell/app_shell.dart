@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../design/components/app_mark.dart';
 import '../../design/components/app_surface.dart';
 import '../../design/components/glass_surface.dart';
 import '../../design/theme/app_tokens.dart';
 import '../../design/tokens/app_metrics.dart';
-import '../../design/tokens/app_typography.dart';
 import '../../l10n/app_localizations.dart';
 import '../window/window_controls.dart';
 import 'window_caption.dart';
@@ -145,7 +145,11 @@ class _Sidebar extends StatelessWidget {
               child: _Brand(),
             ),
             const SizedBox(height: AppSpacing.xl),
-            for (int i = 0; i < _primaryCount; i++)
+            for (int i = 0; i < destinations.length; i++) ...<Widget>[
+              if (i == _primaryCount) ...<Widget>[
+                const Spacer(),
+                Divider(color: colors.hairline, height: 28),
+              ],
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.xxs + 2),
                 child: _NavTile(
@@ -154,17 +158,7 @@ class _Sidebar extends StatelessWidget {
                   onTap: () => onSelect(i),
                 ),
               ),
-            Divider(color: colors.hairline, height: 28),
-            for (int i = _primaryCount; i < destinations.length; i++)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.xxs + 2),
-                child: _NavTile(
-                  destination: destinations[i],
-                  selected: i == currentIndex,
-                  onTap: () => onSelect(i),
-                ),
-              ),
-            const Spacer(),
+            ],
           ],
         ),
       ),
@@ -177,68 +171,11 @@ class _Brand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = context.colors;
-    final l10n = AppLocalizations.of(context);
-
-    return Row(
+    return const Row(
       children: <Widget>[
-        Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.sm + 2),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: <Color>[
-                colors.accent,
-                Color.lerp(colors.accent, colors.ink, 0.35)!,
-              ],
-            ),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: colors.accent.withValues(alpha: 0.28),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
-                spreadRadius: -4,
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              '书',
-              style: TextStyle(
-                fontFamily: AppTypography.serif,
-                fontFamilyFallback: AppTypography.serifFallback,
-                fontSize: 19,
-                height: 1,
-                fontWeight: FontWeight.w600,
-                color: colors.accentContrast,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.md - 2),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(l10n.appName, style: theme.textTheme.titleLarge),
-              const SizedBox(height: 1),
-              Text(
-                l10n.appNameLatin.toUpperCase(),
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontSize: 9,
-                  letterSpacing: 2.4,
-                  color: colors.inkMuted,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
+        AppMark(),
+        SizedBox(width: AppSpacing.md - 2),
+        Expanded(child: AppWordmark(compact: true)),
       ],
     );
   }
@@ -273,7 +210,7 @@ class _NavTile extends StatelessWidget {
           // indicator must land in the same frame. A 120ms fade left the pill
           // trailing behind the content and read as a flicker.
           child: Container(
-            height: 42,
+            height: 44,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md - 2),
             decoration: BoxDecoration(
               color: selected ? colors.accentSoft : Colors.transparent,
@@ -283,7 +220,7 @@ class _NavTile extends StatelessWidget {
               children: <Widget>[
                 Icon(
                   selected ? destination.selectedIcon : destination.icon,
-                  size: 19,
+                  size: 20,
                   color: foreground,
                 ),
                 const SizedBox(width: AppSpacing.md - 2),
@@ -293,6 +230,7 @@ class _NavTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelLarge?.copyWith(
+                      fontSize: 14.5,
                       color: foreground,
                       fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                     ),

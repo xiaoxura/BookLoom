@@ -104,12 +104,6 @@ abstract class AppLocalizations {
   /// **'书织'**
   String get appName;
 
-  /// No description provided for @appNameLatin.
-  ///
-  /// In zh, this message translates to:
-  /// **'Bookloom'**
-  String get appNameLatin;
-
   /// No description provided for @navLibrary.
   ///
   /// In zh, this message translates to:
@@ -482,41 +476,11 @@ abstract class AppLocalizations {
   /// **'关于'**
   String get navAbout;
 
-  /// No description provided for @aboutProject.
-  ///
-  /// In zh, this message translates to:
-  /// **'项目'**
-  String get aboutProject;
-
-  /// No description provided for @aboutVersion.
-  ///
-  /// In zh, this message translates to:
-  /// **'版本'**
-  String get aboutVersion;
-
   /// No description provided for @aboutLicense.
   ///
   /// In zh, this message translates to:
   /// **'许可证'**
   String get aboutLicense;
-
-  /// No description provided for @aboutAuthor.
-  ///
-  /// In zh, this message translates to:
-  /// **'作者'**
-  String get aboutAuthor;
-
-  /// No description provided for @aboutRepo.
-  ///
-  /// In zh, this message translates to:
-  /// **'开源地址'**
-  String get aboutRepo;
-
-  /// No description provided for @aboutWebsite.
-  ///
-  /// In zh, this message translates to:
-  /// **'官网'**
-  String get aboutWebsite;
 
   /// No description provided for @aboutTech.
   ///
@@ -530,41 +494,71 @@ abstract class AppLocalizations {
   /// **'解析与导出全部在本机完成，不依赖云服务。'**
   String get aboutTechNote;
 
-  /// No description provided for @aboutInterface.
-  ///
-  /// In zh, this message translates to:
-  /// **'界面'**
-  String get aboutInterface;
-
   /// No description provided for @aboutDesignSystem.
   ///
   /// In zh, this message translates to:
   /// **'设计系统'**
   String get aboutDesignSystem;
 
-  /// No description provided for @aboutDesignSystemDesc.
+  /// No description provided for @appTagline.
   ///
   /// In zh, this message translates to:
-  /// **'颜色、字体、间距、玻璃与组件状态'**
-  String get aboutDesignSystemDesc;
+  /// **'把文字织成书'**
+  String get appTagline;
 
-  /// No description provided for @aboutOpen.
+  /// No description provided for @aboutBadgeLocal.
   ///
   /// In zh, this message translates to:
-  /// **'打开'**
-  String get aboutOpen;
+  /// **'本地优先'**
+  String get aboutBadgeLocal;
 
-  /// No description provided for @aboutCopied.
+  /// No description provided for @aboutStoryLocalTitle.
   ///
   /// In zh, this message translates to:
-  /// **'已复制'**
-  String get aboutCopied;
+  /// **'文字只在本机'**
+  String get aboutStoryLocalTitle;
 
-  /// No description provided for @aboutCopyLink.
+  /// No description provided for @aboutStoryLocalBody.
   ///
   /// In zh, this message translates to:
-  /// **'复制链接'**
-  String get aboutCopyLink;
+  /// **'解析、编辑、导出都在本机完成，默认不联网，也不需要账号。'**
+  String get aboutStoryLocalBody;
+
+  /// No description provided for @aboutStoryStructureTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先结构，后排版'**
+  String get aboutStoryStructureTitle;
+
+  /// No description provided for @aboutStoryStructureBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'章节、卷、内容块先立住，再交给导出器生成 EPUB、DOCX 或单文件 HTML。'**
+  String get aboutStoryStructureBody;
+
+  /// No description provided for @aboutLinks.
+  ///
+  /// In zh, this message translates to:
+  /// **'项目与文档'**
+  String get aboutLinks;
+
+  /// No description provided for @aboutRepoAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'开源仓库'**
+  String get aboutRepoAction;
+
+  /// No description provided for @aboutWebsiteAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'官网'**
+  String get aboutWebsiteAction;
+
+  /// No description provided for @aboutLicenseAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'许可协议'**
+  String get aboutLicenseAction;
 }
 
 class _AppLocalizationsDelegate

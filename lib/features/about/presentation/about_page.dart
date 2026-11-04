@@ -1,109 +1,126 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/app_info.dart';
+import '../../../core/platform/external_links.dart';
+import '../../../design/components/app_mark.dart';
 import '../../../design/components/app_page.dart';
 import '../../../design/theme/app_tokens.dart';
 import '../../../design/tokens/app_metrics.dart';
+import '../../../design/tokens/app_typography.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// Project facts: version, license, source, tech stack, and the way into the
-/// living style guide.
+/// About: identity, two short why-cards, tech stack, links — the same shape as
+/// the qingdh about panel, translated into paper tokens.
 class AboutPage extends ConsumerWidget {
   const AboutPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final colors = context.colors;
 
     return AppPage(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          _SectionTitle(l10n.aboutProject),
-          _Card(
-            children: <Widget>[
-              _InfoRow(
-                title: l10n.aboutVersion,
-                control: Text(
-                  '${AppInfo.displayVersion} (${AppInfo.buildNumber})',
-                  style: theme.textTheme.bodyMedium,
+          const _HeroCard(),
+          const SizedBox(height: AppSpacing.lg),
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final List<Widget> cards = <Widget>[
+                _StoryCard(
+                  title: l10n.aboutStoryLocalTitle,
+                  body: l10n.aboutStoryLocalBody,
                 ),
-              ),
-              const _CardDivider(),
-              _InfoRow(
-                title: l10n.aboutLicense,
-                control: Text(
-                  AppInfo.license,
-                  style: theme.textTheme.bodyMedium,
+                _StoryCard(
+                  title: l10n.aboutStoryStructureTitle,
+                  body: l10n.aboutStoryStructureBody,
                 ),
-              ),
-              const _CardDivider(),
-              _InfoRow(
-                title: l10n.aboutAuthor,
-                control: Text(
-                  AppInfo.author,
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ),
-              const _CardDivider(),
-              _LinkRow(title: l10n.aboutRepo, url: AppInfo.repository),
-              const _CardDivider(),
-              _LinkRow(title: l10n.aboutWebsite, url: AppInfo.website),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-          _SectionTitle(l10n.aboutTech),
-          _Card(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ];
+              if (constraints.maxWidth < 720) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: const <Widget>[
-                        _TechChip('Flutter 3.47'),
-                        _TechChip('Dart 3'),
-                        _TechChip('Riverpod'),
-                        _TechChip('go_router'),
-                        _TechChip('Drift'),
-                        _TechChip('SQLite'),
-                        _TechChip('window_manager'),
-                      ],
-                    ),
+                    cards[0],
                     const SizedBox(height: AppSpacing.md),
-                    Text(
-                      l10n.aboutTechNote,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.inkSecondary,
-                        height: 1.6,
-                      ),
-                    ),
+                    cards[1],
+                  ],
+                );
+              }
+              // Equal-height pair: IntrinsicHeight gives the two cards a shared
+              // height without forcing an unbounded row inside the scroll view.
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Expanded(child: cards[0]),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(child: cards[1]),
                   ],
                 ),
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          _SectionLabel(l10n.aboutTech),
+          const SizedBox(height: AppSpacing.sm + 2),
+          const Wrap(
+            spacing: AppSpacing.xs + 2,
+            runSpacing: AppSpacing.xs + 2,
+            children: <Widget>[
+              _Tag('Flutter 3.47'),
+              _Tag('Dart 3'),
+              _Tag('Riverpod'),
+              _Tag('go_router'),
+              _Tag('Drift'),
+              _Tag('SQLite'),
+              _Tag('window_manager'),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm + 2),
+          Text(
+            l10n.aboutTechNote,
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: colors.inkSecondary, height: 1.7),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          _SectionLabel(l10n.aboutLinks),
+          const SizedBox(height: AppSpacing.sm + 2),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: <Widget>[
+              _LinkButton(
+                icon: Icons.code,
+                label: l10n.aboutRepoAction,
+                onPressed: () => ExternalLinks.open(AppInfo.repository),
+              ),
+              _LinkButton(
+                icon: Icons.public,
+                label: l10n.aboutWebsiteAction,
+                onPressed: () => ExternalLinks.open(AppInfo.website),
+              ),
+              _LinkButton(
+                icon: Icons.balance,
+                label: l10n.aboutLicenseAction,
+                onPressed: () => ExternalLinks.open(
+                  '${AppInfo.repository}/blob/main/LICENSE',
+                ),
+              ),
+              _LinkButton(
+                icon: Icons.palette_outlined,
+                label: l10n.aboutDesignSystem,
+                onPressed: () => context.push('/design'),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.xxl),
-          _SectionTitle(l10n.aboutInterface),
-          _Card(
-            children: <Widget>[
-              _InfoRow(
-                title: l10n.aboutDesignSystem,
-                description: l10n.aboutDesignSystemDesc,
-                control: OutlinedButton(
-                  onPressed: () => context.push('/design'),
-                  child: Text(l10n.aboutOpen),
-                ),
-              ),
-            ],
+          Text(
+            '© 2026 ${AppInfo.author} · ${AppInfo.license}',
+            style: Theme.of(context).textTheme.labelSmall
+                ?.copyWith(color: colors.inkMuted, letterSpacing: 0.4),
           ),
           const SizedBox(height: AppSpacing.xl),
         ],
@@ -112,37 +129,8 @@ class AboutPage extends ConsumerWidget {
   }
 }
 
-class _TechChip extends StatelessWidget {
-  const _TechChip(this.label);
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md - 2,
-        vertical: 5,
-      ),
-      decoration: BoxDecoration(
-        color: colors.surfaceSunken,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall
-            ?.copyWith(color: colors.inkSecondary, letterSpacing: 0.3),
-      ),
-    );
-  }
-}
-
-class _LinkRow extends StatelessWidget {
-  const _LinkRow({required this.title, required this.url});
-
-  final String title;
-  final String url;
+class _HeroCard extends StatelessWidget {
+  const _HeroCard();
 
   @override
   Widget build(BuildContext context) {
@@ -150,39 +138,66 @@ class _LinkRow extends StatelessWidget {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.lg,
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg + 2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: colors.hairline),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[
+            Color.lerp(colors.surface, colors.accentSoft, 0.55)!,
+            colors.surface,
+          ],
+          stops: const <double>[0, 0.7],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: <Widget>[
-          Text(title, style: theme.textTheme.titleMedium),
-          const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: SelectableText(
-                  url,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.accent,
-                    height: 1.6,
+          const AppMark(size: 54),
+          const SizedBox(width: AppSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: <Widget>[
+                    Flexible(
+                      child: Text(
+                        l10n.appName,
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontFamily: AppTypography.serif,
+                          fontFamilyFallback: AppTypography.serifFallback,
+                          fontSize: 22,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    _Pill('v${AppInfo.version}'),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  l10n.appTagline,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.inkSecondary,
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              TextButton.icon(
-                onPressed: () async {
-                  await Clipboard.setData(ClipboardData(text: url));
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(l10n.aboutCopied)));
-                },
-                icon: const Icon(Icons.copy_rounded, size: 15),
-                label: Text(l10n.aboutCopyLink),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.md),
+                Wrap(
+                  spacing: AppSpacing.xs + 2,
+                  runSpacing: AppSpacing.xs,
+                  children: <Widget>[
+                    _Badge(AppInfo.license),
+                    _Badge(l10n.aboutBadgeLocal),
+                    _Badge('Flutter'),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -190,118 +205,145 @@ class _LinkRow extends StatelessWidget {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.title);
+class _StoryCard extends StatelessWidget {
+  const _StoryCard({required this.title, required this.body});
 
   final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: AppSpacing.xxs,
-        bottom: AppSpacing.sm + 2,
-      ),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleSmall
-            ?.copyWith(letterSpacing: 0.6, color: context.colors.inkMuted),
-      ),
-    );
-  }
-}
-
-class _Card extends StatelessWidget {
-  const _Card({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: context.colors.hairline),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: children,
-      ),
-    );
-  }
-}
-
-class _CardDivider extends StatelessWidget {
-  const _CardDivider();
-
-  @override
-  Widget build(BuildContext context) => Divider(
-    height: 1,
-    color: context.colors.hairline,
-    indent: AppSpacing.lg,
-    endIndent: AppSpacing.lg,
-  );
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.title,
-    required this.control,
-    this.description,
-  });
-
-  final String title;
-  final Widget control;
-  final String? description;
+  final String body;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md + 2),
+        border: Border.all(color: colors.hairline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(title, style: theme.textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.xs + 2),
+          Text(
+            body,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colors.inkSecondary,
+              height: 1.7,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.lg,
+class _Pill extends StatelessWidget {
+  const _Pill(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.surfaceSunken,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: colors.hairline),
       ),
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final Widget label = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(title, style: theme.textTheme.titleMedium),
-              if (description != null) ...<Widget>[
-                const SizedBox(height: AppSpacing.xxs + 2),
-                Text(
-                  description!,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.inkSecondary,
-                    height: 1.6,
-                  ),
-                ),
-              ],
-            ],
-          );
-          if (constraints.maxWidth < 520) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                label,
-                const SizedBox(height: AppSpacing.md),
-                control,
-              ],
-            );
-          }
-          return Row(
-            children: <Widget>[
-              Expanded(child: label),
-              const SizedBox(width: AppSpacing.xl),
-              control,
-            ],
-          );
-        },
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: colors.inkMuted, letterSpacing: 0.2),
       ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: colors.surface.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: colors.hairline),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: colors.inkMuted),
+      ),
+    );
+  }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: colors.hairline),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: colors.inkSecondary, letterSpacing: 0.2),
+      ),
+    );
+  }
+}
+
+class _LinkButton extends StatelessWidget {
+  const _LinkButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 15, color: context.colors.inkSecondary),
+      label: Text(label),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: Theme.of(context).textTheme.titleSmall
+          ?.copyWith(letterSpacing: 0.6, color: context.colors.inkMuted),
     );
   }
 }

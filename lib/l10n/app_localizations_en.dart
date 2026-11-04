@@ -13,9 +13,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appName => 'Bookloom';
 
   @override
-  String get appNameLatin => 'Bookloom';
-
-  @override
   String get navLibrary => 'Library';
 
   @override
@@ -216,22 +213,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navAbout => 'About';
 
   @override
-  String get aboutProject => 'Project';
-
-  @override
-  String get aboutVersion => 'Version';
-
-  @override
   String get aboutLicense => 'License';
-
-  @override
-  String get aboutAuthor => 'Author';
-
-  @override
-  String get aboutRepo => 'Source code';
-
-  @override
-  String get aboutWebsite => 'Website';
 
   @override
   String get aboutTech => 'Tech stack';
@@ -241,21 +223,37 @@ class AppLocalizationsEn extends AppLocalizations {
       'Parsing and export happen locally; no cloud dependency.';
 
   @override
-  String get aboutInterface => 'Interface';
-
-  @override
   String get aboutDesignSystem => 'Design system';
 
   @override
-  String get aboutDesignSystemDesc =>
-      'Colors, type, spacing, glass and component states';
+  String get appTagline => 'Weave text into books';
 
   @override
-  String get aboutOpen => 'Open';
+  String get aboutBadgeLocal => 'Local-first';
 
   @override
-  String get aboutCopied => 'Copied';
+  String get aboutStoryLocalTitle => 'Words stay on this device';
 
   @override
-  String get aboutCopyLink => 'Copy link';
+  String get aboutStoryLocalBody =>
+      'Parsing, editing and export all happen locally. Offline by default, no account needed.';
+
+  @override
+  String get aboutStoryStructureTitle => 'Structure first, then type';
+
+  @override
+  String get aboutStoryStructureBody =>
+      'Chapters, volumes and blocks settle first; exporters then produce EPUB, DOCX or single-file HTML.';
+
+  @override
+  String get aboutLinks => 'Project & docs';
+
+  @override
+  String get aboutRepoAction => 'Repository';
+
+  @override
+  String get aboutWebsiteAction => 'Website';
+
+  @override
+  String get aboutLicenseAction => 'License';
 }

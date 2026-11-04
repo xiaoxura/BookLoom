@@ -56,7 +56,7 @@ void main() {
     // Settings keep their one-line explanations.
     expect(find.text(zh.settingsGlassDesc), findsOneWidget);
     // Project facts moved to their own page.
-    expect(find.text(zh.aboutProject), findsNothing);
+    expect(find.text(zh.aboutStoryLocalTitle), findsNothing);
   });
 
   testWidgets('about page lists version, license and tech stack', (
@@ -67,11 +67,11 @@ void main() {
     await tester.tap(find.text(zh.navAbout).first);
     await tester.pumpAndSettle();
 
-    expect(find.text(zh.aboutProject), findsOneWidget);
+    expect(find.text(zh.aboutStoryLocalTitle), findsOneWidget);
     expect(find.text(zh.aboutTech), findsOneWidget);
     expect(find.text('AGPL-3.0'), findsOneWidget);
     expect(find.text('Flutter 3.47'), findsOneWidget);
-    expect(find.textContaining('github.com/xiaoxura/bookloom'), findsOneWidget);
+    expect(find.text(zh.aboutRepoAction), findsOneWidget);
   });
 
   testWidgets('narrow layout uses the bottom navigation bar', (
@@ -95,7 +95,7 @@ void main() {
     await tester.tap(find.text(zh.navAbout).first);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text(zh.aboutOpen));
+    await tester.tap(find.text(zh.aboutDesignSystem));
     await tester.pumpAndSettle();
 
     expect(find.text(zh.designSectionColors), findsOneWidget);

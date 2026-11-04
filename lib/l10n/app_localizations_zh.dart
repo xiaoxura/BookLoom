@@ -13,9 +13,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appName => '书织';
 
   @override
-  String get appNameLatin => 'Bookloom';
-
-  @override
   String get navLibrary => '书架';
 
   @override
@@ -203,22 +200,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get navAbout => '关于';
 
   @override
-  String get aboutProject => '项目';
-
-  @override
-  String get aboutVersion => '版本';
-
-  @override
   String get aboutLicense => '许可证';
-
-  @override
-  String get aboutAuthor => '作者';
-
-  @override
-  String get aboutRepo => '开源地址';
-
-  @override
-  String get aboutWebsite => '官网';
 
   @override
   String get aboutTech => '技术栈';
@@ -227,20 +209,36 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutTechNote => '解析与导出全部在本机完成，不依赖云服务。';
 
   @override
-  String get aboutInterface => '界面';
-
-  @override
   String get aboutDesignSystem => '设计系统';
 
   @override
-  String get aboutDesignSystemDesc => '颜色、字体、间距、玻璃与组件状态';
+  String get appTagline => '把文字织成书';
 
   @override
-  String get aboutOpen => '打开';
+  String get aboutBadgeLocal => '本地优先';
 
   @override
-  String get aboutCopied => '已复制';
+  String get aboutStoryLocalTitle => '文字只在本机';
 
   @override
-  String get aboutCopyLink => '复制链接';
+  String get aboutStoryLocalBody => '解析、编辑、导出都在本机完成，默认不联网，也不需要账号。';
+
+  @override
+  String get aboutStoryStructureTitle => '先结构，后排版';
+
+  @override
+  String get aboutStoryStructureBody =>
+      '章节、卷、内容块先立住，再交给导出器生成 EPUB、DOCX 或单文件 HTML。';
+
+  @override
+  String get aboutLinks => '项目与文档';
+
+  @override
+  String get aboutRepoAction => '开源仓库';
+
+  @override
+  String get aboutWebsiteAction => '官网';
+
+  @override
+  String get aboutLicenseAction => '许可协议';
 }

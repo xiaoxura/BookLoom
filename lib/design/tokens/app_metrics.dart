@@ -42,7 +42,7 @@ abstract final class AppLayout {
   static const double railBreakpoint = 960;
 
   /// Sidebar width on desktop.
-  static const double sidebarWidth = 252;
+  static const double sidebarWidth = 220;
 
   /// Content column maximum width; keeps prose readable on wide monitors.
   static const double contentMaxWidth = 1080;
