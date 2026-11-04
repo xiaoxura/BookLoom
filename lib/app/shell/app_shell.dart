@@ -261,9 +261,10 @@ class _NavTile extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppRadius.md),
-          child: AnimatedContainer(
-            duration: AppMotion.fast,
-            curve: AppMotion.enter,
+          // No cross-fade here: the page swaps in a single frame, so the
+          // indicator must land in the same frame. A 120ms fade left the pill
+          // trailing behind the content and read as a flicker.
+          child: Container(
             height: 42,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md - 2),
             decoration: BoxDecoration(
