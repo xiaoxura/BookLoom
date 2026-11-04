@@ -25,30 +25,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navSettings => 'Settings';
 
   @override
-  String get sidebarFooter => 'Local only · offline';
-
-  @override
-  String sidebarVersion(String version) {
-    return 'v$version';
-  }
-
-  @override
-  String get quickToggleTheme => 'Toggle theme';
-
-  @override
-  String get quickToggleGlass => 'Toggle glass strength';
-
-  @override
-  String get libraryTitle => 'Library';
-
-  @override
   String get libraryEmptyTitle => 'Your shelf is empty';
 
   @override
   String get libraryEmptyAction => 'Import a manuscript';
-
-  @override
-  String get importTitle => 'Import';
 
   @override
   String get importFormatsTitle => 'Planned formats';
@@ -67,9 +47,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importStatusNext => 'M1';
-
-  @override
-  String get settingsTitle => 'Settings';
 
   @override
   String get settingsAppearance => 'Appearance';
@@ -109,24 +86,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsCopied => 'Path copied to clipboard';
-
-  @override
-  String get settingsAbout => 'About';
-
-  @override
-  String get settingsVersion => 'Version';
-
-  @override
-  String get settingsLicense => 'License';
-
-  @override
-  String get settingsLicenseValue => 'MIT';
-
-  @override
-  String get settingsDesignSystem => 'Design system';
-
-  @override
-  String get settingsOpen => 'Open';
 
   @override
   String get designTitle => 'Design system';
@@ -196,29 +155,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get designLabelText => 'Text';
 
   @override
-  String get designLabelDisabled => 'Disabled';
-
-  @override
-  String get designLabelInput => 'Input';
-
-  @override
   String get designLabelChip => 'Chips';
 
   @override
   String get designLabelSwitch => 'Switch';
 
   @override
-  String get designLabelSegmented => 'Segmented';
-
-  @override
   String get designPlaceholderInput => 'Search or type a title';
-
-  @override
-  String get errorTitle => 'Something went wrong';
-
-  @override
-  String get errorBody =>
-      'The interface hit an unexpected error. Details were logged.';
 
   @override
   String get bootstrapFailureTitle => 'Cannot start';
@@ -226,9 +169,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get bootstrapFailureBody =>
       'The data folder or local database could not be opened.';
-
-  @override
-  String get bootstrapFailureRetry => 'Retry';
 
   @override
   String get notFoundTitle => 'Page not found';
@@ -264,10 +204,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Books, covers and backups live here. Copy the folder to take everything with you.';
 
   @override
-  String get settingsDesignSystemDesc =>
-      'Colors, type, spacing, glass and component states';
-
-  @override
   String get windowMinimize => 'Minimize';
 
   @override
@@ -275,4 +211,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get windowClose => 'Close';
+
+  @override
+  String get navAbout => 'About';
+
+  @override
+  String get aboutProject => 'Project';
+
+  @override
+  String get aboutVersion => 'Version';
+
+  @override
+  String get aboutLicense => 'License';
+
+  @override
+  String get aboutAuthor => 'Author';
+
+  @override
+  String get aboutRepo => 'Source code';
+
+  @override
+  String get aboutWebsite => 'Website';
+
+  @override
+  String get aboutTech => 'Tech stack';
+
+  @override
+  String get aboutTechNote =>
+      'Parsing and export happen locally; no cloud dependency.';
+
+  @override
+  String get aboutInterface => 'Interface';
+
+  @override
+  String get aboutDesignSystem => 'Design system';
+
+  @override
+  String get aboutDesignSystemDesc =>
+      'Colors, type, spacing, glass and component states';
+
+  @override
+  String get aboutOpen => 'Open';
+
+  @override
+  String get aboutCopied => 'Copied';
+
+  @override
+  String get aboutCopyLink => 'Copy link';
 }

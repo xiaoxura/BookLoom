@@ -186,7 +186,7 @@ flutter build ios --release --no-codesign   # 仅验证编译
 - 隐私政策：明确“文件只在本机处理、不上传、不收集正文”。
 - 权限说明：Android 只申请 SAF 所需权限；不申请通讯录、定位、后台定位。
 - 内容政策：工具不提供书源、不破解 DRM；用户需对导入内容拥有权利。
-- 第三方许可：OpenCC、字体、Dart 包在 `THIRD_PARTY_NOTICES.md` 列出。
+- 项目许可：代码以 **AGPL-3.0** 发布（见仓库 `LICENSE`）；第三方许可：OpenCC、字体、Dart 包在 `THIRD_PARTY_NOTICES.md` 列出。
 - 年龄分级：工具类，无用户生成内容分发。
 
 ## 9. 发布检查清单

@@ -6,6 +6,7 @@ import '../design/components/app_page.dart';
 import '../design/components/app_surface.dart';
 import '../design/components/empty_state.dart';
 import '../design/tokens/app_metrics.dart';
+import '../features/about/presentation/about_page.dart';
 import '../features/design_system/presentation/design_system_page.dart';
 import '../features/import/presentation/import_page.dart';
 import '../features/library/presentation/library_page.dart';
@@ -59,6 +60,16 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
                 path: '/settings',
                 pageBuilder: (BuildContext context, GoRouterState state) =>
                     _tabPage(const SettingsPage()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            preload: true,
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/about',
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    _tabPage(const AboutPage()),
               ),
             ],
           ),

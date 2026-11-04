@@ -71,7 +71,7 @@ docs/                      # 产品、架构、技术栈、数据、路线图、
 - 视觉语言：**纸面 + 墨色 + 玻璃浮层**，见 [设计系统](docs/07-design-system.md)。
 - 应用 ID：**`com.xiaoxura.bookloom`**。
 - 官网/文档：**`https://bookloom.xiaoxura.com`**；`https://bl.xiaoxura.com` 作为短链跳转。
-- 许可证：代码默认 MIT；第三方词典、字体、库单独列 NOTICE。
+- 许可证：代码采用 **AGPL-3.0**（见 [LICENSE](LICENSE)）；第三方词典、字体、库单独列 NOTICE。
 
 ## 文档
 
@@ -92,3 +92,11 @@ docs/                      # 产品、架构、技术栈、数据、路线图、
 - `main` 保持可构建；新功能走 `feat/xxx` 分支。
 - 界面文案全部走 `l10n`；颜色、间距、字号全部走设计 token。
 - 业务错误统一用 `AppFailure`，日志不写正文。
+
+## 许可证
+
+代码以 **AGPL-3.0** 发布，见 [LICENSE](LICENSE)。
+
+- 自用、修改、分发都可以，前提是保留版权声明；
+- 如果你把修改后的版本部署成网络服务，也需要向用户提供对应源码；
+- 第三方依赖（Flutter、Drift、Riverpod、go_router、window_manager 等）保持各自许可证，汇总在 `THIRD_PARTY_NOTICES.md`（待补）。

@@ -25,30 +25,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get navSettings => '设置';
 
   @override
-  String get sidebarFooter => '本地运行 · 不联网';
-
-  @override
-  String sidebarVersion(String version) {
-    return 'v$version';
-  }
-
-  @override
-  String get quickToggleTheme => '切换主题';
-
-  @override
-  String get quickToggleGlass => '切换玻璃强度';
-
-  @override
-  String get libraryTitle => '书架';
-
-  @override
   String get libraryEmptyTitle => '书架还是空的';
 
   @override
   String get libraryEmptyAction => '导入书稿';
-
-  @override
-  String get importTitle => '导入';
 
   @override
   String get importFormatsTitle => '计划支持的格式';
@@ -67,9 +47,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get importStatusNext => 'M1';
-
-  @override
-  String get settingsTitle => '设置';
 
   @override
   String get settingsAppearance => '外观';
@@ -109,24 +86,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsCopied => '路径已复制到剪贴板';
-
-  @override
-  String get settingsAbout => '关于';
-
-  @override
-  String get settingsVersion => '版本';
-
-  @override
-  String get settingsLicense => '许可证';
-
-  @override
-  String get settingsLicenseValue => 'MIT';
-
-  @override
-  String get settingsDesignSystem => '设计系统';
-
-  @override
-  String get settingsOpen => '打开';
 
   @override
   String get designTitle => '设计系统';
@@ -189,37 +148,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get designLabelText => '文字按钮';
 
   @override
-  String get designLabelDisabled => '禁用';
-
-  @override
-  String get designLabelInput => '输入框';
-
-  @override
   String get designLabelChip => '标签';
 
   @override
   String get designLabelSwitch => '开关';
 
   @override
-  String get designLabelSegmented => '分段选择';
-
-  @override
   String get designPlaceholderInput => '搜索或输入书名';
-
-  @override
-  String get errorTitle => '出了点问题';
-
-  @override
-  String get errorBody => '界面遇到未预期的错误，已记录日志。';
 
   @override
   String get bootstrapFailureTitle => '无法启动';
 
   @override
   String get bootstrapFailureBody => '数据目录或本地数据库无法打开。';
-
-  @override
-  String get bootstrapFailureRetry => '重试';
 
   @override
   String get notFoundTitle => '页面不存在';
@@ -250,9 +191,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsDataLocationDesc => '书籍、封面和备份都保存在这里，可以直接拷贝带走。';
 
   @override
-  String get settingsDesignSystemDesc => '颜色、字体、间距、玻璃与组件状态';
-
-  @override
   String get windowMinimize => '最小化';
 
   @override
@@ -260,4 +198,49 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get windowClose => '关闭';
+
+  @override
+  String get navAbout => '关于';
+
+  @override
+  String get aboutProject => '项目';
+
+  @override
+  String get aboutVersion => '版本';
+
+  @override
+  String get aboutLicense => '许可证';
+
+  @override
+  String get aboutAuthor => '作者';
+
+  @override
+  String get aboutRepo => '开源地址';
+
+  @override
+  String get aboutWebsite => '官网';
+
+  @override
+  String get aboutTech => '技术栈';
+
+  @override
+  String get aboutTechNote => '解析与导出全部在本机完成，不依赖云服务。';
+
+  @override
+  String get aboutInterface => '界面';
+
+  @override
+  String get aboutDesignSystem => '设计系统';
+
+  @override
+  String get aboutDesignSystemDesc => '颜色、字体、间距、玻璃与组件状态';
+
+  @override
+  String get aboutOpen => '打开';
+
+  @override
+  String get aboutCopied => '已复制';
+
+  @override
+  String get aboutCopyLink => '复制链接';
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/app_info.dart';
 import '../../design/components/app_surface.dart';
 import '../../design/components/glass_surface.dart';
 import '../../design/theme/app_tokens.dart';
@@ -37,6 +36,11 @@ class AppShell extends ConsumerWidget {
         icon: Icons.tune_outlined,
         selectedIcon: Icons.tune,
         label: l10n.navSettings,
+      ),
+      _Destination(
+        icon: Icons.info_outline,
+        selectedIcon: Icons.info_outline,
+        label: l10n.navAbout,
       ),
     ];
 
@@ -93,6 +97,9 @@ class AppShell extends ConsumerWidget {
   }
 }
 
+/// Destinations above the divider; settings and about live below it.
+const int _primaryCount = 2;
+
 class _Destination {
   const _Destination({
     required this.icon,
@@ -118,7 +125,6 @@ class _Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final colors = context.colors;
 
     return SizedBox(
@@ -139,7 +145,17 @@ class _Sidebar extends StatelessWidget {
               child: _Brand(),
             ),
             const SizedBox(height: AppSpacing.xl),
-            for (int i = 0; i < destinations.length; i++)
+            for (int i = 0; i < _primaryCount; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.xxs + 2),
+                child: _NavTile(
+                  destination: destinations[i],
+                  selected: i == currentIndex,
+                  onTap: () => onSelect(i),
+                ),
+              ),
+            Divider(color: colors.hairline, height: 28),
+            for (int i = _primaryCount; i < destinations.length; i++)
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.xxs + 2),
                 child: _NavTile(
@@ -149,29 +165,6 @@ class _Sidebar extends StatelessWidget {
                 ),
               ),
             const Spacer(),
-            Divider(color: colors.hairline, height: 28),
-            const SizedBox(height: AppSpacing.sm),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    l10n.sidebarFooter,
-                    style: Theme.of(context).textTheme.labelSmall
-                        ?.copyWith(color: colors.inkMuted),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    l10n.sidebarVersion(AppInfo.version),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: colors.inkMuted.withValues(alpha: 0.75),
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),

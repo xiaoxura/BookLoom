@@ -128,36 +128,6 @@ abstract class AppLocalizations {
   /// **'设置'**
   String get navSettings;
 
-  /// No description provided for @sidebarFooter.
-  ///
-  /// In zh, this message translates to:
-  /// **'本地运行 · 不联网'**
-  String get sidebarFooter;
-
-  /// No description provided for @sidebarVersion.
-  ///
-  /// In zh, this message translates to:
-  /// **'v{version}'**
-  String sidebarVersion(String version);
-
-  /// No description provided for @quickToggleTheme.
-  ///
-  /// In zh, this message translates to:
-  /// **'切换主题'**
-  String get quickToggleTheme;
-
-  /// No description provided for @quickToggleGlass.
-  ///
-  /// In zh, this message translates to:
-  /// **'切换玻璃强度'**
-  String get quickToggleGlass;
-
-  /// No description provided for @libraryTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'书架'**
-  String get libraryTitle;
-
   /// No description provided for @libraryEmptyTitle.
   ///
   /// In zh, this message translates to:
@@ -169,12 +139,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'导入书稿'**
   String get libraryEmptyAction;
-
-  /// No description provided for @importTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'导入'**
-  String get importTitle;
 
   /// No description provided for @importFormatsTitle.
   ///
@@ -211,12 +175,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'M1'**
   String get importStatusNext;
-
-  /// No description provided for @settingsTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'设置'**
-  String get settingsTitle;
 
   /// No description provided for @settingsAppearance.
   ///
@@ -295,42 +253,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'路径已复制到剪贴板'**
   String get settingsCopied;
-
-  /// No description provided for @settingsAbout.
-  ///
-  /// In zh, this message translates to:
-  /// **'关于'**
-  String get settingsAbout;
-
-  /// No description provided for @settingsVersion.
-  ///
-  /// In zh, this message translates to:
-  /// **'版本'**
-  String get settingsVersion;
-
-  /// No description provided for @settingsLicense.
-  ///
-  /// In zh, this message translates to:
-  /// **'许可证'**
-  String get settingsLicense;
-
-  /// No description provided for @settingsLicenseValue.
-  ///
-  /// In zh, this message translates to:
-  /// **'MIT'**
-  String get settingsLicenseValue;
-
-  /// No description provided for @settingsDesignSystem.
-  ///
-  /// In zh, this message translates to:
-  /// **'设计系统'**
-  String get settingsDesignSystem;
-
-  /// No description provided for @settingsOpen.
-  ///
-  /// In zh, this message translates to:
-  /// **'打开'**
-  String get settingsOpen;
 
   /// No description provided for @designTitle.
   ///
@@ -452,18 +374,6 @@ abstract class AppLocalizations {
   /// **'文字按钮'**
   String get designLabelText;
 
-  /// No description provided for @designLabelDisabled.
-  ///
-  /// In zh, this message translates to:
-  /// **'禁用'**
-  String get designLabelDisabled;
-
-  /// No description provided for @designLabelInput.
-  ///
-  /// In zh, this message translates to:
-  /// **'输入框'**
-  String get designLabelInput;
-
   /// No description provided for @designLabelChip.
   ///
   /// In zh, this message translates to:
@@ -476,29 +386,11 @@ abstract class AppLocalizations {
   /// **'开关'**
   String get designLabelSwitch;
 
-  /// No description provided for @designLabelSegmented.
-  ///
-  /// In zh, this message translates to:
-  /// **'分段选择'**
-  String get designLabelSegmented;
-
   /// No description provided for @designPlaceholderInput.
   ///
   /// In zh, this message translates to:
   /// **'搜索或输入书名'**
   String get designPlaceholderInput;
-
-  /// No description provided for @errorTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'出了点问题'**
-  String get errorTitle;
-
-  /// No description provided for @errorBody.
-  ///
-  /// In zh, this message translates to:
-  /// **'界面遇到未预期的错误，已记录日志。'**
-  String get errorBody;
 
   /// No description provided for @bootstrapFailureTitle.
   ///
@@ -511,12 +403,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'数据目录或本地数据库无法打开。'**
   String get bootstrapFailureBody;
-
-  /// No description provided for @bootstrapFailureRetry.
-  ///
-  /// In zh, this message translates to:
-  /// **'重试'**
-  String get bootstrapFailureRetry;
 
   /// No description provided for @notFoundTitle.
   ///
@@ -572,12 +458,6 @@ abstract class AppLocalizations {
   /// **'书籍、封面和备份都保存在这里，可以直接拷贝带走。'**
   String get settingsDataLocationDesc;
 
-  /// No description provided for @settingsDesignSystemDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'颜色、字体、间距、玻璃与组件状态'**
-  String get settingsDesignSystemDesc;
-
   /// No description provided for @windowMinimize.
   ///
   /// In zh, this message translates to:
@@ -595,6 +475,96 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'关闭'**
   String get windowClose;
+
+  /// No description provided for @navAbout.
+  ///
+  /// In zh, this message translates to:
+  /// **'关于'**
+  String get navAbout;
+
+  /// No description provided for @aboutProject.
+  ///
+  /// In zh, this message translates to:
+  /// **'项目'**
+  String get aboutProject;
+
+  /// No description provided for @aboutVersion.
+  ///
+  /// In zh, this message translates to:
+  /// **'版本'**
+  String get aboutVersion;
+
+  /// No description provided for @aboutLicense.
+  ///
+  /// In zh, this message translates to:
+  /// **'许可证'**
+  String get aboutLicense;
+
+  /// No description provided for @aboutAuthor.
+  ///
+  /// In zh, this message translates to:
+  /// **'作者'**
+  String get aboutAuthor;
+
+  /// No description provided for @aboutRepo.
+  ///
+  /// In zh, this message translates to:
+  /// **'开源地址'**
+  String get aboutRepo;
+
+  /// No description provided for @aboutWebsite.
+  ///
+  /// In zh, this message translates to:
+  /// **'官网'**
+  String get aboutWebsite;
+
+  /// No description provided for @aboutTech.
+  ///
+  /// In zh, this message translates to:
+  /// **'技术栈'**
+  String get aboutTech;
+
+  /// No description provided for @aboutTechNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'解析与导出全部在本机完成，不依赖云服务。'**
+  String get aboutTechNote;
+
+  /// No description provided for @aboutInterface.
+  ///
+  /// In zh, this message translates to:
+  /// **'界面'**
+  String get aboutInterface;
+
+  /// No description provided for @aboutDesignSystem.
+  ///
+  /// In zh, this message translates to:
+  /// **'设计系统'**
+  String get aboutDesignSystem;
+
+  /// No description provided for @aboutDesignSystemDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'颜色、字体、间距、玻璃与组件状态'**
+  String get aboutDesignSystemDesc;
+
+  /// No description provided for @aboutOpen.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开'**
+  String get aboutOpen;
+
+  /// No description provided for @aboutCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制'**
+  String get aboutCopied;
+
+  /// No description provided for @aboutCopyLink.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制链接'**
+  String get aboutCopyLink;
 }
 
 class _AppLocalizationsDelegate

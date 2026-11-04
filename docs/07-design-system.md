@@ -112,6 +112,8 @@ final glass = context.glass;     // GlassTokens
 | ≥ 960 | 玻璃侧栏 252px + 内容区，四周留 16px，侧栏圆角 22 |
 | < 960 | 内容区 + 悬浮玻璃底部导航（高 68，圆角 22，留安全区） |
 
+侧栏分两组：**书架 / 导入** 在上，细分隔线之下是 **设置 / 关于**；底部不再放版本号或口号。窄屏底栏对应四个入口。
+
 ### 窗口标题栏
 
 窗口是**无边框**的（`gtk_window_set_decorated(FALSE)` / `TitleBarStyle.hidden`），系统那条灰色标题栏不再出现。取而代之的是 40px 高的自绘 caption：
@@ -162,6 +164,10 @@ final glass = context.glass;     // GlassTokens
 | 设计系统 | 深色设置 |
 | --- | --- |
 | ![设计系统](design/design-system.png) | ![深色设置](design/settings-dark.png) |
+
+关于页（版本 / 许可证 / 作者 / 开源地址 / 技术栈）：
+
+![关于](design/about-light.png)
 
 移动/窄窗（< 960）：![窄窗](design/home-compact.png)
 

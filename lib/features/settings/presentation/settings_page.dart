@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../app/providers.dart';
-import '../../../core/app_info.dart';
 import '../../../core/settings/appearance.dart';
 import '../../../design/components/app_page.dart';
 import '../../../design/theme/app_tokens.dart';
@@ -116,36 +114,6 @@ class SettingsPage extends ConsumerWidget {
                       label: Text(l10n.settingsCopyPath),
                     ),
                   ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-          _SectionTitle(l10n.settingsAbout),
-          _SettingsCard(
-            children: <Widget>[
-              _SettingRow(
-                title: l10n.settingsVersion,
-                control: Text(
-                  AppInfo.displayVersion,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-              const _CardDivider(),
-              _SettingRow(
-                title: l10n.settingsLicense,
-                control: Text(
-                  l10n.settingsLicenseValue,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-              const _CardDivider(),
-              _SettingRow(
-                title: l10n.settingsDesignSystem,
-                description: l10n.settingsDesignSystemDesc,
-                control: OutlinedButton(
-                  onPressed: () => context.push('/design'),
-                  child: Text(l10n.settingsOpen),
                 ),
               ),
             ],
