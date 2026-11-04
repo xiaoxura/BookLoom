@@ -200,13 +200,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get navAbout => '关于';
 
   @override
-  String get aboutLicense => '许可证';
-
-  @override
   String get aboutTech => '技术栈';
-
-  @override
-  String get aboutTechNote => '解析与导出全部在本机完成，不依赖云服务。';
 
   @override
   String get aboutDesignSystem => '设计系统';
@@ -215,30 +209,73 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appTagline => '把文字织成书';
 
   @override
-  String get aboutBadgeLocal => '本地优先';
+  String get aboutHeading => '关于书织';
 
   @override
-  String get aboutStoryLocalTitle => '文字只在本机';
+  String aboutVersionLabel(String version) {
+    return 'Version $version';
+  }
 
   @override
-  String get aboutStoryLocalBody => '解析、编辑、导出都在本机完成，默认不联网，也不需要账号。';
+  String get aboutChangelog => '更新日志';
 
   @override
-  String get aboutStoryStructureTitle => '先结构，后排版';
+  String get aboutTechIntro => '核心用纯 Dart，界面用 Flutter，所有数据落在本机 SQLite。';
 
   @override
-  String get aboutStoryStructureBody =>
-      '章节、卷、内容块先立住，再交给导出器生成 EPUB、DOCX 或单文件 HTML。';
+  String get aboutOpenSource => '开放源代码';
 
   @override
-  String get aboutLinks => '项目与文档';
+  String get aboutDeveloper => '开发者';
 
   @override
-  String get aboutRepoAction => '开源仓库';
+  String get aboutBio => '独立开发者 / 开源爱好者';
 
   @override
-  String get aboutWebsiteAction => '官网';
+  String get aboutHomepage => '个人主页';
 
   @override
-  String get aboutLicenseAction => '许可协议';
+  String get aboutContact => '联系作者';
+
+  @override
+  String get aboutThanks => '感谢每一位开源贡献者';
+
+  @override
+  String get aboutViewLicense => '查看开源许可';
+
+  @override
+  String get techFlutter => 'Flutter';
+
+  @override
+  String get techFlutterDesc => '跨平台界面框架';
+
+  @override
+  String get techDart => 'Dart 3';
+
+  @override
+  String get techDartDesc => '核心语言';
+
+  @override
+  String get techRiverpod => 'Riverpod';
+
+  @override
+  String get techRiverpodDesc => '状态管理';
+
+  @override
+  String get techDrift => 'Drift';
+
+  @override
+  String get techDriftDesc => '类型安全 SQLite';
+
+  @override
+  String get techRouter => 'go_router';
+
+  @override
+  String get techRouterDesc => '路由与深链';
+
+  @override
+  String get techWindow => 'window_manager';
+
+  @override
+  String get techWindowDesc => '桌面窗口控制';
 }

@@ -213,14 +213,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navAbout => 'About';
 
   @override
-  String get aboutLicense => 'License';
-
-  @override
   String get aboutTech => 'Tech stack';
-
-  @override
-  String get aboutTechNote =>
-      'Parsing and export happen locally; no cloud dependency.';
 
   @override
   String get aboutDesignSystem => 'Design system';
@@ -229,31 +222,74 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTagline => 'Weave text into books';
 
   @override
-  String get aboutBadgeLocal => 'Local-first';
+  String get aboutHeading => 'About Bookloom';
 
   @override
-  String get aboutStoryLocalTitle => 'Words stay on this device';
+  String aboutVersionLabel(String version) {
+    return 'Version $version';
+  }
 
   @override
-  String get aboutStoryLocalBody =>
-      'Parsing, editing and export all happen locally. Offline by default, no account needed.';
+  String get aboutChangelog => 'Changelog';
 
   @override
-  String get aboutStoryStructureTitle => 'Structure first, then type';
+  String get aboutTechIntro =>
+      'Pure Dart at the core, Flutter for the interface, everything stored in local SQLite.';
 
   @override
-  String get aboutStoryStructureBody =>
-      'Chapters, volumes and blocks settle first; exporters then produce EPUB, DOCX or single-file HTML.';
+  String get aboutOpenSource => 'Open source';
 
   @override
-  String get aboutLinks => 'Project & docs';
+  String get aboutDeveloper => 'Developer';
 
   @override
-  String get aboutRepoAction => 'Repository';
+  String get aboutBio => 'Indie developer / open-source enthusiast';
 
   @override
-  String get aboutWebsiteAction => 'Website';
+  String get aboutHomepage => 'Homepage';
 
   @override
-  String get aboutLicenseAction => 'License';
+  String get aboutContact => 'Contact';
+
+  @override
+  String get aboutThanks => 'Thanks to every open-source contributor';
+
+  @override
+  String get aboutViewLicense => 'View license';
+
+  @override
+  String get techFlutter => 'Flutter';
+
+  @override
+  String get techFlutterDesc => 'Cross-platform UI toolkit';
+
+  @override
+  String get techDart => 'Dart 3';
+
+  @override
+  String get techDartDesc => 'Core language';
+
+  @override
+  String get techRiverpod => 'Riverpod';
+
+  @override
+  String get techRiverpodDesc => 'State management';
+
+  @override
+  String get techDrift => 'Drift';
+
+  @override
+  String get techDriftDesc => 'Type-safe SQLite';
+
+  @override
+  String get techRouter => 'go_router';
+
+  @override
+  String get techRouterDesc => 'Routing and deep links';
+
+  @override
+  String get techWindow => 'window_manager';
+
+  @override
+  String get techWindowDesc => 'Desktop window control';
 }

@@ -476,23 +476,11 @@ abstract class AppLocalizations {
   /// **'关于'**
   String get navAbout;
 
-  /// No description provided for @aboutLicense.
-  ///
-  /// In zh, this message translates to:
-  /// **'许可证'**
-  String get aboutLicense;
-
   /// No description provided for @aboutTech.
   ///
   /// In zh, this message translates to:
   /// **'技术栈'**
   String get aboutTech;
-
-  /// No description provided for @aboutTechNote.
-  ///
-  /// In zh, this message translates to:
-  /// **'解析与导出全部在本机完成，不依赖云服务。'**
-  String get aboutTechNote;
 
   /// No description provided for @aboutDesignSystem.
   ///
@@ -506,59 +494,143 @@ abstract class AppLocalizations {
   /// **'把文字织成书'**
   String get appTagline;
 
-  /// No description provided for @aboutBadgeLocal.
+  /// No description provided for @aboutHeading.
   ///
   /// In zh, this message translates to:
-  /// **'本地优先'**
-  String get aboutBadgeLocal;
+  /// **'关于书织'**
+  String get aboutHeading;
 
-  /// No description provided for @aboutStoryLocalTitle.
+  /// No description provided for @aboutVersionLabel.
   ///
   /// In zh, this message translates to:
-  /// **'文字只在本机'**
-  String get aboutStoryLocalTitle;
+  /// **'Version {version}'**
+  String aboutVersionLabel(String version);
 
-  /// No description provided for @aboutStoryLocalBody.
+  /// No description provided for @aboutChangelog.
   ///
   /// In zh, this message translates to:
-  /// **'解析、编辑、导出都在本机完成，默认不联网，也不需要账号。'**
-  String get aboutStoryLocalBody;
+  /// **'更新日志'**
+  String get aboutChangelog;
 
-  /// No description provided for @aboutStoryStructureTitle.
+  /// No description provided for @aboutTechIntro.
   ///
   /// In zh, this message translates to:
-  /// **'先结构，后排版'**
-  String get aboutStoryStructureTitle;
+  /// **'核心用纯 Dart，界面用 Flutter，所有数据落在本机 SQLite。'**
+  String get aboutTechIntro;
 
-  /// No description provided for @aboutStoryStructureBody.
+  /// No description provided for @aboutOpenSource.
   ///
   /// In zh, this message translates to:
-  /// **'章节、卷、内容块先立住，再交给导出器生成 EPUB、DOCX 或单文件 HTML。'**
-  String get aboutStoryStructureBody;
+  /// **'开放源代码'**
+  String get aboutOpenSource;
 
-  /// No description provided for @aboutLinks.
+  /// No description provided for @aboutDeveloper.
   ///
   /// In zh, this message translates to:
-  /// **'项目与文档'**
-  String get aboutLinks;
+  /// **'开发者'**
+  String get aboutDeveloper;
 
-  /// No description provided for @aboutRepoAction.
+  /// No description provided for @aboutBio.
   ///
   /// In zh, this message translates to:
-  /// **'开源仓库'**
-  String get aboutRepoAction;
+  /// **'独立开发者 / 开源爱好者'**
+  String get aboutBio;
 
-  /// No description provided for @aboutWebsiteAction.
+  /// No description provided for @aboutHomepage.
   ///
   /// In zh, this message translates to:
-  /// **'官网'**
-  String get aboutWebsiteAction;
+  /// **'个人主页'**
+  String get aboutHomepage;
 
-  /// No description provided for @aboutLicenseAction.
+  /// No description provided for @aboutContact.
   ///
   /// In zh, this message translates to:
-  /// **'许可协议'**
-  String get aboutLicenseAction;
+  /// **'联系作者'**
+  String get aboutContact;
+
+  /// No description provided for @aboutThanks.
+  ///
+  /// In zh, this message translates to:
+  /// **'感谢每一位开源贡献者'**
+  String get aboutThanks;
+
+  /// No description provided for @aboutViewLicense.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看开源许可'**
+  String get aboutViewLicense;
+
+  /// No description provided for @techFlutter.
+  ///
+  /// In zh, this message translates to:
+  /// **'Flutter'**
+  String get techFlutter;
+
+  /// No description provided for @techFlutterDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'跨平台界面框架'**
+  String get techFlutterDesc;
+
+  /// No description provided for @techDart.
+  ///
+  /// In zh, this message translates to:
+  /// **'Dart 3'**
+  String get techDart;
+
+  /// No description provided for @techDartDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'核心语言'**
+  String get techDartDesc;
+
+  /// No description provided for @techRiverpod.
+  ///
+  /// In zh, this message translates to:
+  /// **'Riverpod'**
+  String get techRiverpod;
+
+  /// No description provided for @techRiverpodDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'状态管理'**
+  String get techRiverpodDesc;
+
+  /// No description provided for @techDrift.
+  ///
+  /// In zh, this message translates to:
+  /// **'Drift'**
+  String get techDrift;
+
+  /// No description provided for @techDriftDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'类型安全 SQLite'**
+  String get techDriftDesc;
+
+  /// No description provided for @techRouter.
+  ///
+  /// In zh, this message translates to:
+  /// **'go_router'**
+  String get techRouter;
+
+  /// No description provided for @techRouterDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'路由与深链'**
+  String get techRouterDesc;
+
+  /// No description provided for @techWindow.
+  ///
+  /// In zh, this message translates to:
+  /// **'window_manager'**
+  String get techWindow;
+
+  /// No description provided for @techWindowDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'桌面窗口控制'**
+  String get techWindowDesc;
 }
 
 class _AppLocalizationsDelegate

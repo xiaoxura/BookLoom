@@ -165,7 +165,7 @@ final glass = context.glass;     // GlassTokens
 | --- | --- |
 | ![设计系统](design/design-system.png) | ![深色设置](design/settings-dark.png) |
 
-关于页（hero + 两张说明卡 + 技术栈标签 + 项目链接，参照 qingdh 的关于面板）：
+关于页（左：hero 标题 + 版本 + 大标志；右：技术栈两列网格 + 仓库卡；侧栏：开发者与许可；底部：版权与链接）：
 
 ![关于](design/about-light.png)
 
