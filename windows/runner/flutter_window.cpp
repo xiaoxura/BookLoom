@@ -11,7 +11,6 @@
 #include "utils.h"
 
 #include <flutter/standard_method_codec.h>
-#include <flutter/plugin_registrar_windows.h>
 
 namespace {
 
@@ -92,14 +91,13 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
-  FlutterDesktopPluginRegistrarRef registrar_ref =
-      flutter_controller_->engine()->GetRegistrarForPlugin("bookloom_file_service");
-  flutter::PluginRegistrarWindows* registrar =
-      flutter::PluginRegistrarManager::GetInstance()
-          ->GetRegistrar<flutter::PluginRegistrarWindows>(registrar_ref);
+  // The runner links flutter_wrapper_app, which does not carry
+  // plugin_registrar.cc, so a channel cannot be opened through
+  // PluginRegistrarManager here. The engine's own messenger is the documented
+  // way to host a runner-level channel.
   file_channel_ =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-          registrar->messenger(), "bookloom/file_service",
+          flutter_controller_->engine()->messenger(), "bookloom/file_service",
           &flutter::StandardMethodCodec::GetInstance());
   file_channel_->SetMethodCallHandler([this](const auto& call, auto result) {
     if (call.method_name() == "commitStagedFile") {
