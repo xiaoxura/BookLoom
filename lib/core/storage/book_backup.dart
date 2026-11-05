@@ -1465,7 +1465,7 @@ class BookBackup {
                   asset.copyWith(
                     id: assetIds[asset.id],
                     bookId: targetBookId,
-                    storedPath: p.join(bookRelative, relative),
+                    storedPath: files.storedPathFor(targetBookId, relative),
                   ),
                 );
           }
@@ -1479,8 +1479,8 @@ class BookBackup {
                   source.copyWith(
                     id: mapId('source', source.id),
                     bookId: targetBookId,
-                    storedPath: p.join(
-                      bookRelative,
+                    storedPath: files.storedPathFor(
+                      targetBookId,
                       'source-${mapId('source', source.id)}.$extension',
                     ),
                   ),
@@ -1621,10 +1621,9 @@ class BookBackup {
   }
 
   Future<void> _cleanupRestorePaths(String bookId, List<String> paths) async {
-    final bookRelative = repository.files.bookRelativePath(bookId);
     for (final relative in paths) {
       if (!_managedRelative(relative)) continue;
-      final storedPath = p.join(bookRelative, relative);
+      final storedPath = repository.files.storedPathFor(bookId, relative);
       final source =
           await (repository.db.select(repository.db.sources)
                 ..where((table) => table.storedPath.equals(storedPath))

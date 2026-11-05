@@ -314,8 +314,8 @@ class BookRepository {
                   bookId: book.id,
                   format: source.format,
                   originalName: source.originalName,
-                  storedPath: p.join(
-                    files.bookRelativePath(book.id),
+                  storedPath: files.storedPathFor(
+                    book.id,
                     stagedSource.storedPath,
                   ),
                   byteSize: stagedSource.byteSize,
@@ -618,7 +618,7 @@ class BookRepository {
       }
       return StoredFile(
         id: id,
-        storedPath: p.join(files.bookRelativePath(bookId), relative),
+        storedPath: files.storedPathFor(bookId, relative),
         byteSize: staged.byteSize,
         sha256: staged.sha256,
       );
@@ -731,7 +731,7 @@ class BookRepository {
             continue;
           }
           files.checkId(sourceId);
-          final storedPath = p.join(files.bookRelativePath(bookId), relative);
+          final storedPath = files.storedPathFor(bookId, relative);
           final currentSource =
               await (db.select(db.sources)
                     ..where((table) => table.storedPath.equals(storedPath))
@@ -761,7 +761,7 @@ class BookRepository {
           final asset = await (db.select(
             db.assets,
           )..where((table) => table.id.equals(assetId))).getSingleOrNull();
-          final storedPath = p.join(files.bookRelativePath(bookId), relative);
+          final storedPath = files.storedPathFor(bookId, relative);
           if (asset == null ||
               asset.bookId != bookId ||
               asset.storedPath != storedPath ||
@@ -783,7 +783,7 @@ class BookRepository {
                         table.id.equals(assetId) & table.bookId.equals(bookId),
                   ))
                   .getSingleOrNull();
-          final oldPath = p.join(files.bookRelativePath(bookId), relative);
+          final oldPath = files.storedPathFor(bookId, relative);
           // A reused ID may now point to a different filename. Keep a file
           // whenever a current row points at this exact path, even if its hash
           // changed, to avoid removing the replacement's content.
@@ -793,12 +793,11 @@ class BookRepository {
         } else if (kind == 'restore') {
           final paths = marker['paths'];
           if (paths is! List || paths.length > 100000) continue;
-          final bookRelative = files.bookRelativePath(bookId);
           for (final value in paths) {
             if (value is! String || !_restoreManagedPath(value)) {
               throw const FormatException('Unsafe restore marker path');
             }
-            final storedPath = p.join(bookRelative, value);
+            final storedPath = files.storedPathFor(bookId, value);
             final source =
                 await (db.select(db.sources)
                       ..where((table) => table.storedPath.equals(storedPath))
@@ -1100,7 +1099,7 @@ class BookRepository {
     bookId: bookId,
     kind: input.kind,
     mime: input.mime,
-    storedPath: p.join(files.bookRelativePath(bookId), staged.storedPath),
+    storedPath: files.storedPathFor(bookId, staged.storedPath),
     width: drift.Value(input.width),
     height: drift.Value(input.height),
     byteSize: staged.byteSize,

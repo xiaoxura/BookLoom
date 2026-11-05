@@ -54,7 +54,7 @@ CREATE TABLE sources (
   book_id        TEXT NOT NULL UNIQUE REFERENCES books(id) ON DELETE CASCADE,
   format         TEXT NOT NULL,        -- txt / epub / docx
   original_name  TEXT NOT NULL,
-  stored_path    TEXT NOT NULL,        -- 相对 app support 目录
+  stored_path    TEXT NOT NULL,        -- 相对 app support 目录，始终用 / 分隔
   byte_size      INTEGER NOT NULL,
   sha256         TEXT NOT NULL,
   created_at     INTEGER NOT NULL
@@ -89,7 +89,7 @@ CREATE TABLE assets (
   book_id      TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
   kind         TEXT NOT NULL,           -- image / cover / font
   mime         TEXT NOT NULL,
-  stored_path  TEXT NOT NULL,
+  stored_path  TEXT NOT NULL,          -- 同上，始终用 / 分隔
   width        INTEGER,
   height       INTEGER,
   byte_size    INTEGER NOT NULL,

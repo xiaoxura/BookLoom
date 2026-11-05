@@ -80,10 +80,24 @@ class BookFiles {
     }
   }
 
+  /// Book-relative path, always in `/` form.
+  ///
+  /// This value is persisted (SQLite columns and operation markers) and is
+  /// compared for equality during recovery, so it must not depend on the host
+  /// separator: a support directory copied between Windows and POSIX has to
+  /// keep resolving to the same rows. Filesystem access normalizes it through
+  /// [_inside].
   String bookRelativePath(String bookId) {
     checkId(bookId);
-    return p.join('books', bookId);
+    return 'books/$bookId';
   }
+
+  /// Canonical form of a stored path: `books/<id>/<relative>`, `/`-separated.
+  String storedPathFor(String bookId, String relative) => p.posix.normalize(
+    p.posix.join(bookRelativePath(bookId), _posixSeparators(relative)),
+  );
+
+  static String _posixSeparators(String value) => value.replaceAll(r'\', '/');
 
   String _inside(String relative) {
     if (p.isAbsolute(relative)) throw ArgumentError.value(relative, 'path');
