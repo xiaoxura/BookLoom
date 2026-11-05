@@ -19,9 +19,22 @@ sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
 
 ### Windows
 
-- Visual Studio 2022 Build Tools，勾选「使用 C++ 的桌面开发」
-- Windows 10/11 SDK
+- Visual Studio 2022 Build Tools，勾选「使用 C++ 的桌面开发」（含 MSVC、CMake、Ninja）
+- Windows 10/11 SDK（随上面的工作负载安装）
 - 开启开发者模式（调试）
+
+装 VS 时不必装 IDE 本体，只装 Build Tools 即可；`flutter doctor -v` 能列出 MSVC 与 SDK 版本就说明就绪。
+
+桌面构建还依赖两处平台能力，缺一个都会在构建前失败：
+
+- **插件符号链接**：Flutter 在 `windows/flutter/ephemeral/.plugin_symlinks/` 建符号链接。未开开发者模式时 `flutter pub get` 之后会报 `Building with plugins requires symlink support`。开发者模式开关写在用户登录令牌里，**开启后需要重新登录或重启**才对已运行的会话生效。
+- **注册表探测**：Flutter 用 `reg query` 定位 Windows SDK 的 `InstallationFolder`，再把 SDK 的 `INCLUDE`/`LIB` 交给 `native_toolchain_c` 编译 `sqlite3`、`nativeapi` 等原生资产。若 `reg.exe` 被安全软件或策略拦截，原生资产会以 `fatal error C1083: 无法打开包括文件: windows.h` 失败。
+
+构建：
+
+```bash
+flutter build windows --release   # 产物在 build/windows/x64/runner/Release/
+```
 
 ### Android
 
@@ -184,10 +197,12 @@ jobs:
 
 后续加：
 
-- `build-linux`：安装 GTK/CMake 依赖，`flutter build linux`；
-- `build-windows`：`windows-latest` + VS Build Tools；
+- ~~`build-linux`：安装 GTK/CMake 依赖，`flutter build linux`；~~ 已接入
+- ~~`build-windows`：`windows-latest` + VS Build Tools；~~ 已接入
 - `build-android`：JDK + Android SDK，`flutter build apk --debug`；
 - 产物上传，PR 保留 7 天。
+
+Windows 桌面构建把三个平台的差异都串起来了：MSVC 工具链、开发者模式下的符号链接、`reg query` 探测 SDK。`windows-latest` 运行器已具备这三项，本地复现路径见 §1「Windows」。
 
 CI 不跑真实设备 smoke；三端手工验收另建清单。
 

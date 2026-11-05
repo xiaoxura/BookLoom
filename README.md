@@ -13,11 +13,17 @@
 
 ## 快速开始
 
-要求 Flutter stable（当前验证版本 **3.47.9** / Dart 3.13.7）与 Linux 桌面构建依赖：
+要求 Flutter stable（当前验证版本 **3.47.9** / Dart 3.13.7）与平台构建依赖。
+
+Linux：
 
 ```bash
 sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+```
 
+Windows：安装 Visual Studio 2022 Build Tools 的「使用 C++ 的桌面开发」工作负载（含 Windows SDK），并开启开发者模式后**重新登录**——Flutter 需要它来建插件符号链接。
+
+```bash
 flutter pub get
 dart run build_runner build          # 生成 Drift 代码
 flutter gen-l10n                     # 生成多语言代码（首次或改 arb 后）
@@ -31,6 +37,7 @@ flutter test
 
 ```bash
 flutter build linux --release
+flutter build windows --release
 flutter build apk --release --split-per-abi
 ```
 

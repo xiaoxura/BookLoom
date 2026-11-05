@@ -1,0 +1,13 @@
+# Normalize line endings so Windows and Linux checkouts produce identical diffs.
+# Text files are stored with LF; the working tree may use either.
+* text=auto
+
+# Binary assets must never be converted.
+*.png binary
+*.jpg binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.zip binary
+*.epub binary
+*.docx binary
