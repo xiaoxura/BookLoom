@@ -16,7 +16,7 @@ class AppSurface extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
-      body: child,
+      body: SafeArea(bottom: false, child: child),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/providers.dart';
 import '../../../core/settings/appearance.dart';
@@ -8,6 +9,7 @@ import '../../../design/components/app_page.dart';
 import '../../../design/theme/app_tokens.dart';
 import '../../../design/tokens/app_metrics.dart';
 import '../../../l10n/app_localizations.dart';
+import 'workbench_defaults.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -18,6 +20,9 @@ class SettingsPage extends ConsumerWidget {
     final appearance = ref.watch(appearanceProvider);
     final controller = ref.read(appearanceProvider.notifier);
     final String dataPath = ref.watch(appPathsProvider).support.path;
+    final bool showThemeIcons =
+        MediaQuery.sizeOf(context).width >=
+        AppLayout.themeControlIconBreakpoint;
 
     return AppPage(
       child: Column(
@@ -28,26 +33,30 @@ class SettingsPage extends ConsumerWidget {
             children: <Widget>[
               _SettingRow(
                 title: l10n.settingsThemeMode,
+                scrollableControl: true,
                 control: SegmentedButton<AppThemeMode>(
                   showSelectedIcon: false,
                   segments: <ButtonSegment<AppThemeMode>>[
                     ButtonSegment<AppThemeMode>(
                       value: AppThemeMode.system,
-                      label: Text(l10n.themeSystem),
-                      icon: const Icon(
-                        Icons.brightness_auto_outlined,
-                        size: 17,
-                      ),
+                      label: Text(l10n.themeSystem, softWrap: false),
+                      icon: showThemeIcons
+                          ? const Icon(Icons.brightness_auto_outlined, size: 17)
+                          : null,
                     ),
                     ButtonSegment<AppThemeMode>(
                       value: AppThemeMode.light,
-                      label: Text(l10n.themeLight),
-                      icon: const Icon(Icons.light_mode_outlined, size: 17),
+                      label: Text(l10n.themeLight, softWrap: false),
+                      icon: showThemeIcons
+                          ? const Icon(Icons.light_mode_outlined, size: 17)
+                          : null,
                     ),
                     ButtonSegment<AppThemeMode>(
                       value: AppThemeMode.dark,
-                      label: Text(l10n.themeDark),
-                      icon: const Icon(Icons.dark_mode_outlined, size: 17),
+                      label: Text(l10n.themeDark, softWrap: false),
+                      icon: showThemeIcons
+                          ? const Icon(Icons.dark_mode_outlined, size: 17)
+                          : null,
                     ),
                   ],
                   selected: <AppThemeMode>{appearance.themeMode},
@@ -59,6 +68,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingRow(
                 title: l10n.settingsGlass,
                 description: l10n.settingsGlassDesc,
+                scrollableControl: true,
                 control: SegmentedButton<GlassQuality>(
                   showSelectedIcon: false,
                   segments: <ButtonSegment<GlassQuality>>[
@@ -79,6 +89,15 @@ class SettingsPage extends ConsumerWidget {
                   onSelectionChanged: (Set<GlassQuality> selection) =>
                       controller.setGlass(selection.first),
                 ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          const _SettingsCard(
+            children: [
+              Padding(
+                padding: EdgeInsets.all(AppSpacing.lg),
+                child: WorkbenchDefaults(),
               ),
             ],
           ),
@@ -118,6 +137,33 @@ class SettingsPage extends ConsumerWidget {
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.md),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: () => context.push('/data'),
+              icon: const Icon(Icons.backup_outlined),
+              label: Text(l10n.workbenchOpenData),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          _SettingsCard(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.shield_outlined),
+                title: Text(l10n.settingsPermissions),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/permissions'),
+              ),
+              const _CardDivider(),
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: Text(l10n.navAbout),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/about-info'),
+              ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.xl),
         ],
       ),
@@ -153,11 +199,11 @@ class _SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.colors.surface,
+    return Material(
+      color: context.colors.surface,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: context.colors.hairline),
+        side: BorderSide(color: context.colors.hairline),
       ),
       child: Column(children: children),
     );
@@ -182,6 +228,7 @@ class _SettingRow extends StatelessWidget {
     required this.control,
     this.description,
     this.stack = false,
+    this.scrollableControl = false,
   });
 
   final String title;
@@ -193,6 +240,7 @@ class _SettingRow extends StatelessWidget {
 
   /// Force the control onto its own line (used for wide controls like paths).
   final bool stack;
+  final bool scrollableControl;
 
   @override
   Widget build(BuildContext context) {
@@ -225,12 +273,21 @@ class _SettingRow extends StatelessWidget {
         builder: (BuildContext context, BoxConstraints constraints) {
           final bool narrow = stack || constraints.maxWidth < 560;
           if (narrow) {
+            final Widget narrowControl = scrollableControl
+                ? SizedBox(
+                    width: constraints.maxWidth,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: control,
+                    ),
+                  )
+                : control;
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 label,
                 const SizedBox(height: AppSpacing.md),
-                control,
+                narrowControl,
               ],
             );
           }

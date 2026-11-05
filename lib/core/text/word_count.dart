@@ -1,11 +1,9 @@
-import '../model/block.dart';
+import 'package:bookloom/core/model/block.dart';
 
 /// Word/character counting shared by the shelf, the editor and the auditor.
 ///
-/// Current rule (kept identical to txt2book so golden cases stay comparable):
-/// every non-whitespace rune counts as one. CJK punctuation counts, as it does
-/// upstream. A "Chinese characters + English words" mode can be added later
-/// without touching call sites.
+/// Every rune outside the ECMAScript `\s` whitespace set counts as one.
+/// Punctuation counts; chapter titles are not passed to [ofBlocks].
 abstract final class WordCount {
   static const Set<int> _whitespace = <int>{
     0x0009, // tab
@@ -15,6 +13,13 @@ abstract final class WordCount {
     0x000D, // carriage return
     0x0020, // space
     0x00A0, // no-break space
+    0x1680, // ogham space mark
+    0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005,
+    0x2006, 0x2007, 0x2008, 0x2009, 0x200A,
+    0x2028, // line separator
+    0x2029, // paragraph separator
+    0x202F, // narrow no-break space
+    0x205F, // medium mathematical space
     0x3000, // ideographic space
     0xFEFF, // zero width no-break space
   };

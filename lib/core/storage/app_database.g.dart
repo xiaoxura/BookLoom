@@ -114,6 +114,42 @@ class $BooksTable extends Books with TableInfo<$BooksTable, Book> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _coverModeMeta = const VerificationMeta(
+    'coverMode',
+  );
+  @override
+  late final GeneratedColumn<String> coverMode = GeneratedColumn<String>(
+    'cover_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('template'),
+  );
+  static const VerificationMeta _parseOptionsJsonMeta = const VerificationMeta(
+    'parseOptionsJson',
+  );
+  @override
+  late final GeneratedColumn<String> parseOptionsJson = GeneratedColumn<String>(
+    'parse_options_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _chapterCountMeta = const VerificationMeta(
     'chapterCount',
   );
@@ -219,6 +255,9 @@ class $BooksTable extends Books with TableInfo<$BooksTable, Book> {
     tagsJson,
     publishedAt,
     coverAssetId,
+    coverMode,
+    parseOptionsJson,
+    revision,
     chapterCount,
     wordCount,
     layoutJson,
@@ -308,6 +347,27 @@ class $BooksTable extends Books with TableInfo<$BooksTable, Book> {
           data['cover_asset_id']!,
           _coverAssetIdMeta,
         ),
+      );
+    }
+    if (data.containsKey('cover_mode')) {
+      context.handle(
+        _coverModeMeta,
+        coverMode.isAcceptableOrUnknown(data['cover_mode']!, _coverModeMeta),
+      );
+    }
+    if (data.containsKey('parse_options_json')) {
+      context.handle(
+        _parseOptionsJsonMeta,
+        parseOptionsJson.isAcceptableOrUnknown(
+          data['parse_options_json']!,
+          _parseOptionsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
       );
     }
     if (data.containsKey('chapter_count')) {
@@ -420,6 +480,18 @@ class $BooksTable extends Books with TableInfo<$BooksTable, Book> {
         DriftSqlType.string,
         data['${effectivePrefix}cover_asset_id'],
       ),
+      coverMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cover_mode'],
+      )!,
+      parseOptionsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parse_options_json'],
+      )!,
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
       chapterCount: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}chapter_count'],
@@ -472,6 +544,9 @@ class Book extends DataClass implements Insertable<Book> {
   final String tagsJson;
   final String? publishedAt;
   final String? coverAssetId;
+  final String coverMode;
+  final String parseOptionsJson;
+  final int revision;
   final int chapterCount;
   final int wordCount;
   final String layoutJson;
@@ -491,6 +566,9 @@ class Book extends DataClass implements Insertable<Book> {
     required this.tagsJson,
     this.publishedAt,
     this.coverAssetId,
+    required this.coverMode,
+    required this.parseOptionsJson,
+    required this.revision,
     required this.chapterCount,
     required this.wordCount,
     required this.layoutJson,
@@ -521,6 +599,9 @@ class Book extends DataClass implements Insertable<Book> {
     if (!nullToAbsent || coverAssetId != null) {
       map['cover_asset_id'] = Variable<String>(coverAssetId);
     }
+    map['cover_mode'] = Variable<String>(coverMode);
+    map['parse_options_json'] = Variable<String>(parseOptionsJson);
+    map['revision'] = Variable<int>(revision);
     map['chapter_count'] = Variable<int>(chapterCount);
     map['word_count'] = Variable<int>(wordCount);
     map['layout_json'] = Variable<String>(layoutJson);
@@ -554,6 +635,9 @@ class Book extends DataClass implements Insertable<Book> {
       coverAssetId: coverAssetId == null && nullToAbsent
           ? const Value.absent()
           : Value(coverAssetId),
+      coverMode: Value(coverMode),
+      parseOptionsJson: Value(parseOptionsJson),
+      revision: Value(revision),
       chapterCount: Value(chapterCount),
       wordCount: Value(wordCount),
       layoutJson: Value(layoutJson),
@@ -583,6 +667,9 @@ class Book extends DataClass implements Insertable<Book> {
       tagsJson: serializer.fromJson<String>(json['tagsJson']),
       publishedAt: serializer.fromJson<String?>(json['publishedAt']),
       coverAssetId: serializer.fromJson<String?>(json['coverAssetId']),
+      coverMode: serializer.fromJson<String>(json['coverMode']),
+      parseOptionsJson: serializer.fromJson<String>(json['parseOptionsJson']),
+      revision: serializer.fromJson<int>(json['revision']),
       chapterCount: serializer.fromJson<int>(json['chapterCount']),
       wordCount: serializer.fromJson<int>(json['wordCount']),
       layoutJson: serializer.fromJson<String>(json['layoutJson']),
@@ -607,6 +694,9 @@ class Book extends DataClass implements Insertable<Book> {
       'tagsJson': serializer.toJson<String>(tagsJson),
       'publishedAt': serializer.toJson<String?>(publishedAt),
       'coverAssetId': serializer.toJson<String?>(coverAssetId),
+      'coverMode': serializer.toJson<String>(coverMode),
+      'parseOptionsJson': serializer.toJson<String>(parseOptionsJson),
+      'revision': serializer.toJson<int>(revision),
       'chapterCount': serializer.toJson<int>(chapterCount),
       'wordCount': serializer.toJson<int>(wordCount),
       'layoutJson': serializer.toJson<String>(layoutJson),
@@ -629,6 +719,9 @@ class Book extends DataClass implements Insertable<Book> {
     String? tagsJson,
     Value<String?> publishedAt = const Value.absent(),
     Value<String?> coverAssetId = const Value.absent(),
+    String? coverMode,
+    String? parseOptionsJson,
+    int? revision,
     int? chapterCount,
     int? wordCount,
     String? layoutJson,
@@ -648,6 +741,9 @@ class Book extends DataClass implements Insertable<Book> {
     tagsJson: tagsJson ?? this.tagsJson,
     publishedAt: publishedAt.present ? publishedAt.value : this.publishedAt,
     coverAssetId: coverAssetId.present ? coverAssetId.value : this.coverAssetId,
+    coverMode: coverMode ?? this.coverMode,
+    parseOptionsJson: parseOptionsJson ?? this.parseOptionsJson,
+    revision: revision ?? this.revision,
     chapterCount: chapterCount ?? this.chapterCount,
     wordCount: wordCount ?? this.wordCount,
     layoutJson: layoutJson ?? this.layoutJson,
@@ -675,6 +771,11 @@ class Book extends DataClass implements Insertable<Book> {
       coverAssetId: data.coverAssetId.present
           ? data.coverAssetId.value
           : this.coverAssetId,
+      coverMode: data.coverMode.present ? data.coverMode.value : this.coverMode,
+      parseOptionsJson: data.parseOptionsJson.present
+          ? data.parseOptionsJson.value
+          : this.parseOptionsJson,
+      revision: data.revision.present ? data.revision.value : this.revision,
       chapterCount: data.chapterCount.present
           ? data.chapterCount.value
           : this.chapterCount,
@@ -707,6 +808,9 @@ class Book extends DataClass implements Insertable<Book> {
           ..write('tagsJson: $tagsJson, ')
           ..write('publishedAt: $publishedAt, ')
           ..write('coverAssetId: $coverAssetId, ')
+          ..write('coverMode: $coverMode, ')
+          ..write('parseOptionsJson: $parseOptionsJson, ')
+          ..write('revision: $revision, ')
           ..write('chapterCount: $chapterCount, ')
           ..write('wordCount: $wordCount, ')
           ..write('layoutJson: $layoutJson, ')
@@ -720,7 +824,7 @@ class Book extends DataClass implements Insertable<Book> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     title,
     author,
@@ -731,6 +835,9 @@ class Book extends DataClass implements Insertable<Book> {
     tagsJson,
     publishedAt,
     coverAssetId,
+    coverMode,
+    parseOptionsJson,
+    revision,
     chapterCount,
     wordCount,
     layoutJson,
@@ -739,7 +846,7 @@ class Book extends DataClass implements Insertable<Book> {
     updatedAt,
     lastOpenedAt,
     progress,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -754,6 +861,9 @@ class Book extends DataClass implements Insertable<Book> {
           other.tagsJson == this.tagsJson &&
           other.publishedAt == this.publishedAt &&
           other.coverAssetId == this.coverAssetId &&
+          other.coverMode == this.coverMode &&
+          other.parseOptionsJson == this.parseOptionsJson &&
+          other.revision == this.revision &&
           other.chapterCount == this.chapterCount &&
           other.wordCount == this.wordCount &&
           other.layoutJson == this.layoutJson &&
@@ -775,6 +885,9 @@ class BooksCompanion extends UpdateCompanion<Book> {
   final Value<String> tagsJson;
   final Value<String?> publishedAt;
   final Value<String?> coverAssetId;
+  final Value<String> coverMode;
+  final Value<String> parseOptionsJson;
+  final Value<int> revision;
   final Value<int> chapterCount;
   final Value<int> wordCount;
   final Value<String> layoutJson;
@@ -795,6 +908,9 @@ class BooksCompanion extends UpdateCompanion<Book> {
     this.tagsJson = const Value.absent(),
     this.publishedAt = const Value.absent(),
     this.coverAssetId = const Value.absent(),
+    this.coverMode = const Value.absent(),
+    this.parseOptionsJson = const Value.absent(),
+    this.revision = const Value.absent(),
     this.chapterCount = const Value.absent(),
     this.wordCount = const Value.absent(),
     this.layoutJson = const Value.absent(),
@@ -816,6 +932,9 @@ class BooksCompanion extends UpdateCompanion<Book> {
     this.tagsJson = const Value.absent(),
     this.publishedAt = const Value.absent(),
     this.coverAssetId = const Value.absent(),
+    this.coverMode = const Value.absent(),
+    this.parseOptionsJson = const Value.absent(),
+    this.revision = const Value.absent(),
     this.chapterCount = const Value.absent(),
     this.wordCount = const Value.absent(),
     this.layoutJson = const Value.absent(),
@@ -840,6 +959,9 @@ class BooksCompanion extends UpdateCompanion<Book> {
     Expression<String>? tagsJson,
     Expression<String>? publishedAt,
     Expression<String>? coverAssetId,
+    Expression<String>? coverMode,
+    Expression<String>? parseOptionsJson,
+    Expression<int>? revision,
     Expression<int>? chapterCount,
     Expression<int>? wordCount,
     Expression<String>? layoutJson,
@@ -861,6 +983,9 @@ class BooksCompanion extends UpdateCompanion<Book> {
       if (tagsJson != null) 'tags_json': tagsJson,
       if (publishedAt != null) 'published_at': publishedAt,
       if (coverAssetId != null) 'cover_asset_id': coverAssetId,
+      if (coverMode != null) 'cover_mode': coverMode,
+      if (parseOptionsJson != null) 'parse_options_json': parseOptionsJson,
+      if (revision != null) 'revision': revision,
       if (chapterCount != null) 'chapter_count': chapterCount,
       if (wordCount != null) 'word_count': wordCount,
       if (layoutJson != null) 'layout_json': layoutJson,
@@ -884,6 +1009,9 @@ class BooksCompanion extends UpdateCompanion<Book> {
     Value<String>? tagsJson,
     Value<String?>? publishedAt,
     Value<String?>? coverAssetId,
+    Value<String>? coverMode,
+    Value<String>? parseOptionsJson,
+    Value<int>? revision,
     Value<int>? chapterCount,
     Value<int>? wordCount,
     Value<String>? layoutJson,
@@ -905,6 +1033,9 @@ class BooksCompanion extends UpdateCompanion<Book> {
       tagsJson: tagsJson ?? this.tagsJson,
       publishedAt: publishedAt ?? this.publishedAt,
       coverAssetId: coverAssetId ?? this.coverAssetId,
+      coverMode: coverMode ?? this.coverMode,
+      parseOptionsJson: parseOptionsJson ?? this.parseOptionsJson,
+      revision: revision ?? this.revision,
       chapterCount: chapterCount ?? this.chapterCount,
       wordCount: wordCount ?? this.wordCount,
       layoutJson: layoutJson ?? this.layoutJson,
@@ -950,6 +1081,15 @@ class BooksCompanion extends UpdateCompanion<Book> {
     if (coverAssetId.present) {
       map['cover_asset_id'] = Variable<String>(coverAssetId.value);
     }
+    if (coverMode.present) {
+      map['cover_mode'] = Variable<String>(coverMode.value);
+    }
+    if (parseOptionsJson.present) {
+      map['parse_options_json'] = Variable<String>(parseOptionsJson.value);
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
     if (chapterCount.present) {
       map['chapter_count'] = Variable<int>(chapterCount.value);
     }
@@ -993,6 +1133,9 @@ class BooksCompanion extends UpdateCompanion<Book> {
           ..write('tagsJson: $tagsJson, ')
           ..write('publishedAt: $publishedAt, ')
           ..write('coverAssetId: $coverAssetId, ')
+          ..write('coverMode: $coverMode, ')
+          ..write('parseOptionsJson: $parseOptionsJson, ')
+          ..write('revision: $revision, ')
           ..write('chapterCount: $chapterCount, ')
           ..write('wordCount: $wordCount, ')
           ..write('layoutJson: $layoutJson, ')
@@ -1029,7 +1172,9 @@ class $SourcesTable extends Sources with TableInfo<$SourcesTable, Source> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'UNIQUE REFERENCES books (id) ON DELETE CASCADE',
+    ),
   );
   static const VerificationMeta _formatMeta = const VerificationMeta('format');
   @override
@@ -1579,6 +1724,21 @@ class $ChaptersTable extends Chapters with TableInfo<$ChaptersTable, Chapter> {
     requiredDuringInsert: false,
     defaultValue: const Constant(2),
   );
+  static const VerificationMeta _frontMatterMeta = const VerificationMeta(
+    'frontMatter',
+  );
+  @override
+  late final GeneratedColumn<bool> frontMatter = GeneratedColumn<bool>(
+    'front_matter',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("front_matter" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _sortOrderMeta = const VerificationMeta(
     'sortOrder',
   );
@@ -1631,6 +1791,7 @@ class $ChaptersTable extends Chapters with TableInfo<$ChaptersTable, Chapter> {
     parentId,
     title,
     level,
+    frontMatter,
     sortOrder,
     wordCount,
     createdAt,
@@ -1679,6 +1840,15 @@ class $ChaptersTable extends Chapters with TableInfo<$ChaptersTable, Chapter> {
       context.handle(
         _levelMeta,
         level.isAcceptableOrUnknown(data['level']!, _levelMeta),
+      );
+    }
+    if (data.containsKey('front_matter')) {
+      context.handle(
+        _frontMatterMeta,
+        frontMatter.isAcceptableOrUnknown(
+          data['front_matter']!,
+          _frontMatterMeta,
+        ),
       );
     }
     if (data.containsKey('sort_order')) {
@@ -1740,6 +1910,10 @@ class $ChaptersTable extends Chapters with TableInfo<$ChaptersTable, Chapter> {
         DriftSqlType.int,
         data['${effectivePrefix}level'],
       )!,
+      frontMatter: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}front_matter'],
+      )!,
       sortOrder: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}sort_order'],
@@ -1771,6 +1945,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
   final String? parentId;
   final String title;
   final int level;
+  final bool frontMatter;
   final int sortOrder;
   final int wordCount;
   final DateTime createdAt;
@@ -1781,6 +1956,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
     this.parentId,
     required this.title,
     required this.level,
+    required this.frontMatter,
     required this.sortOrder,
     required this.wordCount,
     required this.createdAt,
@@ -1796,6 +1972,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
     }
     map['title'] = Variable<String>(title);
     map['level'] = Variable<int>(level);
+    map['front_matter'] = Variable<bool>(frontMatter);
     map['sort_order'] = Variable<int>(sortOrder);
     map['word_count'] = Variable<int>(wordCount);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -1812,6 +1989,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
           : Value(parentId),
       title: Value(title),
       level: Value(level),
+      frontMatter: Value(frontMatter),
       sortOrder: Value(sortOrder),
       wordCount: Value(wordCount),
       createdAt: Value(createdAt),
@@ -1830,6 +2008,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
       parentId: serializer.fromJson<String?>(json['parentId']),
       title: serializer.fromJson<String>(json['title']),
       level: serializer.fromJson<int>(json['level']),
+      frontMatter: serializer.fromJson<bool>(json['frontMatter']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       wordCount: serializer.fromJson<int>(json['wordCount']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -1845,6 +2024,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
       'parentId': serializer.toJson<String?>(parentId),
       'title': serializer.toJson<String>(title),
       'level': serializer.toJson<int>(level),
+      'frontMatter': serializer.toJson<bool>(frontMatter),
       'sortOrder': serializer.toJson<int>(sortOrder),
       'wordCount': serializer.toJson<int>(wordCount),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -1858,6 +2038,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
     Value<String?> parentId = const Value.absent(),
     String? title,
     int? level,
+    bool? frontMatter,
     int? sortOrder,
     int? wordCount,
     DateTime? createdAt,
@@ -1868,6 +2049,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
     parentId: parentId.present ? parentId.value : this.parentId,
     title: title ?? this.title,
     level: level ?? this.level,
+    frontMatter: frontMatter ?? this.frontMatter,
     sortOrder: sortOrder ?? this.sortOrder,
     wordCount: wordCount ?? this.wordCount,
     createdAt: createdAt ?? this.createdAt,
@@ -1880,6 +2062,9 @@ class Chapter extends DataClass implements Insertable<Chapter> {
       parentId: data.parentId.present ? data.parentId.value : this.parentId,
       title: data.title.present ? data.title.value : this.title,
       level: data.level.present ? data.level.value : this.level,
+      frontMatter: data.frontMatter.present
+          ? data.frontMatter.value
+          : this.frontMatter,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       wordCount: data.wordCount.present ? data.wordCount.value : this.wordCount,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -1895,6 +2080,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
           ..write('parentId: $parentId, ')
           ..write('title: $title, ')
           ..write('level: $level, ')
+          ..write('frontMatter: $frontMatter, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('wordCount: $wordCount, ')
           ..write('createdAt: $createdAt, ')
@@ -1910,6 +2096,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
     parentId,
     title,
     level,
+    frontMatter,
     sortOrder,
     wordCount,
     createdAt,
@@ -1924,6 +2111,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
           other.parentId == this.parentId &&
           other.title == this.title &&
           other.level == this.level &&
+          other.frontMatter == this.frontMatter &&
           other.sortOrder == this.sortOrder &&
           other.wordCount == this.wordCount &&
           other.createdAt == this.createdAt &&
@@ -1936,6 +2124,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
   final Value<String?> parentId;
   final Value<String> title;
   final Value<int> level;
+  final Value<bool> frontMatter;
   final Value<int> sortOrder;
   final Value<int> wordCount;
   final Value<DateTime> createdAt;
@@ -1947,6 +2136,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
     this.parentId = const Value.absent(),
     this.title = const Value.absent(),
     this.level = const Value.absent(),
+    this.frontMatter = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.wordCount = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1959,6 +2149,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
     this.parentId = const Value.absent(),
     required String title,
     this.level = const Value.absent(),
+    this.frontMatter = const Value.absent(),
     required int sortOrder,
     this.wordCount = const Value.absent(),
     required DateTime createdAt,
@@ -1976,6 +2167,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
     Expression<String>? parentId,
     Expression<String>? title,
     Expression<int>? level,
+    Expression<bool>? frontMatter,
     Expression<int>? sortOrder,
     Expression<int>? wordCount,
     Expression<DateTime>? createdAt,
@@ -1988,6 +2180,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
       if (parentId != null) 'parent_id': parentId,
       if (title != null) 'title': title,
       if (level != null) 'level': level,
+      if (frontMatter != null) 'front_matter': frontMatter,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (wordCount != null) 'word_count': wordCount,
       if (createdAt != null) 'created_at': createdAt,
@@ -2002,6 +2195,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
     Value<String?>? parentId,
     Value<String>? title,
     Value<int>? level,
+    Value<bool>? frontMatter,
     Value<int>? sortOrder,
     Value<int>? wordCount,
     Value<DateTime>? createdAt,
@@ -2014,6 +2208,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
       parentId: parentId ?? this.parentId,
       title: title ?? this.title,
       level: level ?? this.level,
+      frontMatter: frontMatter ?? this.frontMatter,
       sortOrder: sortOrder ?? this.sortOrder,
       wordCount: wordCount ?? this.wordCount,
       createdAt: createdAt ?? this.createdAt,
@@ -2039,6 +2234,9 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
     }
     if (level.present) {
       map['level'] = Variable<int>(level.value);
+    }
+    if (frontMatter.present) {
+      map['front_matter'] = Variable<bool>(frontMatter.value);
     }
     if (sortOrder.present) {
       map['sort_order'] = Variable<int>(sortOrder.value);
@@ -2066,6 +2264,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
           ..write('parentId: $parentId, ')
           ..write('title: $title, ')
           ..write('level: $level, ')
+          ..write('frontMatter: $frontMatter, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('wordCount: $wordCount, ')
           ..write('createdAt: $createdAt, ')
@@ -3451,6 +3650,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         'books',
         limitUpdateKind: UpdateKind.delete,
       ),
+      result: [TableUpdate('sources', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'books',
+        limitUpdateKind: UpdateKind.delete,
+      ),
       result: [TableUpdate('chapters', kind: UpdateKind.delete)],
     ),
     WritePropagation(
@@ -3488,6 +3694,9 @@ typedef $$BooksTableCreateCompanionBuilder = BooksCompanion Function({
   Value<String> tagsJson,
   Value<String?> publishedAt,
   Value<String?> coverAssetId,
+  Value<String> coverMode,
+  Value<String> parseOptionsJson,
+  Value<int> revision,
   Value<int> chapterCount,
   Value<int> wordCount,
   Value<String> layoutJson,
@@ -3509,6 +3718,9 @@ typedef $$BooksTableUpdateCompanionBuilder = BooksCompanion Function({
   Value<String> tagsJson,
   Value<String?> publishedAt,
   Value<String?> coverAssetId,
+  Value<String> coverMode,
+  Value<String> parseOptionsJson,
+  Value<int> revision,
   Value<int> chapterCount,
   Value<int> wordCount,
   Value<String> layoutJson,
@@ -3523,6 +3735,25 @@ typedef $$BooksTableUpdateCompanionBuilder = BooksCompanion Function({
 final class $$BooksTableReferences
     extends BaseReferences<_$AppDatabase, $BooksTable, Book> {
   $$BooksTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$SourcesTable, List<Source>> _sourcesRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.sources,
+    aliasName: 'books__id__sources__book_id',
+  );
+
+  $$SourcesTableProcessedTableManager get sourcesRefs {
+    final manager = $$SourcesTableTableManager(
+      $_db,
+      $_db.sources,
+    ).filter((f) => f.bookId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_sourcesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$ChaptersTable, List<Chapter>> _chaptersRefsTable(
     _$AppDatabase db,
@@ -3621,6 +3852,21 @@ class $$BooksTableFilterComposer extends Composer<_$AppDatabase, $BooksTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get coverMode => $composableBuilder(
+    column: $table.coverMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parseOptionsJson => $composableBuilder(
+    column: $table.parseOptionsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get chapterCount => $composableBuilder(
     column: $table.chapterCount,
     builder: (column) => ColumnFilters(column),
@@ -3660,6 +3906,31 @@ class $$BooksTableFilterComposer extends Composer<_$AppDatabase, $BooksTable> {
     column: $table.progress,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> sourcesRefs(
+    Expression<bool> Function($$SourcesTableFilterComposer f) f,
+  ) {
+    final $$SourcesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.sources,
+      getReferencedColumn: (t) => t.bookId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SourcesTableFilterComposer(
+            $db: $db,
+            $table: $db.sources,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> chaptersRefs(
     Expression<bool> Function($$ChaptersTableFilterComposer f) f,
@@ -3771,6 +4042,21 @@ class $$BooksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get coverMode => $composableBuilder(
+    column: $table.coverMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parseOptionsJson => $composableBuilder(
+    column: $table.parseOptionsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get chapterCount => $composableBuilder(
     column: $table.chapterCount,
     builder: (column) => ColumnOrderings(column),
@@ -3857,6 +4143,17 @@ class $$BooksTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get coverMode =>
+      $composableBuilder(column: $table.coverMode, builder: (column) => column);
+
+  GeneratedColumn<String> get parseOptionsJson => $composableBuilder(
+    column: $table.parseOptionsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
   GeneratedColumn<int> get chapterCount => $composableBuilder(
     column: $table.chapterCount,
     builder: (column) => column,
@@ -3888,6 +4185,31 @@ class $$BooksTableAnnotationComposer
 
   GeneratedColumn<double> get progress =>
       $composableBuilder(column: $table.progress, builder: (column) => column);
+
+  Expression<T> sourcesRefs<T extends Object>(
+    Expression<T> Function($$SourcesTableAnnotationComposer a) f,
+  ) {
+    final $$SourcesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.sources,
+      getReferencedColumn: (t) => t.bookId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SourcesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.sources,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<T> chaptersRefs<T extends Object>(
     Expression<T> Function($$ChaptersTableAnnotationComposer a) f,
@@ -3953,7 +4275,11 @@ class $$BooksTableTableManager
           $$BooksTableUpdateCompanionBuilder,
           (Book, $$BooksTableReferences),
           Book,
-          PrefetchHooks Function({bool chaptersRefs, bool assetsRefs})
+          PrefetchHooks Function({
+            bool sourcesRefs,
+            bool chaptersRefs,
+            bool assetsRefs,
+          })
         > {
   $$BooksTableTableManager(_$AppDatabase db, $BooksTable table)
     : super(
@@ -3978,6 +4304,9 @@ class $$BooksTableTableManager
                 Value<String> tagsJson = const Value.absent(),
                 Value<String?> publishedAt = const Value.absent(),
                 Value<String?> coverAssetId = const Value.absent(),
+                Value<String> coverMode = const Value.absent(),
+                Value<String> parseOptionsJson = const Value.absent(),
+                Value<int> revision = const Value.absent(),
                 Value<int> chapterCount = const Value.absent(),
                 Value<int> wordCount = const Value.absent(),
                 Value<String> layoutJson = const Value.absent(),
@@ -3998,6 +4327,9 @@ class $$BooksTableTableManager
                 tagsJson: tagsJson,
                 publishedAt: publishedAt,
                 coverAssetId: coverAssetId,
+                coverMode: coverMode,
+                parseOptionsJson: parseOptionsJson,
+                revision: revision,
                 chapterCount: chapterCount,
                 wordCount: wordCount,
                 layoutJson: layoutJson,
@@ -4020,6 +4352,9 @@ class $$BooksTableTableManager
                 Value<String> tagsJson = const Value.absent(),
                 Value<String?> publishedAt = const Value.absent(),
                 Value<String?> coverAssetId = const Value.absent(),
+                Value<String> coverMode = const Value.absent(),
+                Value<String> parseOptionsJson = const Value.absent(),
+                Value<int> revision = const Value.absent(),
                 Value<int> chapterCount = const Value.absent(),
                 Value<int> wordCount = const Value.absent(),
                 Value<String> layoutJson = const Value.absent(),
@@ -4040,6 +4375,9 @@ class $$BooksTableTableManager
                 tagsJson: tagsJson,
                 publishedAt: publishedAt,
                 coverAssetId: coverAssetId,
+                coverMode: coverMode,
+                parseOptionsJson: parseOptionsJson,
+                revision: revision,
                 chapterCount: chapterCount,
                 wordCount: wordCount,
                 layoutJson: layoutJson,
@@ -4058,53 +4396,78 @@ class $$BooksTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({chaptersRefs = false, assetsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (chaptersRefs) db.chapters,
-                if (assetsRefs) db.assets,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (chaptersRefs)
-                    await $_getPrefetchedDataByColumns<
-                      Book,
-                      $BooksTable,
-                      Chapter,
-                      $ChaptersTable
-                    >(
-                      currentTable: table,
-                      referencedTable: $$BooksTableReferences
-                          ._chaptersRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$BooksTableReferences(db, table, p0).chaptersRefs,
-                      currentColumn: 'id',
-                      referencedColumn: 'book_id',
-                      typedResults: items,
-                    ),
-                  if (assetsRefs)
-                    await $_getPrefetchedDataByColumns<
-                      Book,
-                      $BooksTable,
-                      Asset,
-                      $AssetsTable
-                    >(
-                      currentTable: table,
-                      referencedTable: $$BooksTableReferences._assetsRefsTable(
-                        db,
-                      ),
-                      managerFromTypedResult: (p0) =>
-                          $$BooksTableReferences(db, table, p0).assetsRefs,
-                      currentColumn: 'id',
-                      referencedColumn: 'book_id',
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({
+                sourcesRefs = false,
+                chaptersRefs = false,
+                assetsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (sourcesRefs) db.sources,
+                    if (chaptersRefs) db.chapters,
+                    if (assetsRefs) db.assets,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (sourcesRefs)
+                        await $_getPrefetchedDataByColumns<
+                          Book,
+                          $BooksTable,
+                          Source,
+                          $SourcesTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$BooksTableReferences
+                              ._sourcesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$BooksTableReferences(db, table, p0).sourcesRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'book_id',
+                          typedResults: items,
+                        ),
+                      if (chaptersRefs)
+                        await $_getPrefetchedDataByColumns<
+                          Book,
+                          $BooksTable,
+                          Chapter,
+                          $ChaptersTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$BooksTableReferences
+                              ._chaptersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$BooksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).chaptersRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'book_id',
+                          typedResults: items,
+                        ),
+                      if (assetsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          Book,
+                          $BooksTable,
+                          Asset,
+                          $AssetsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$BooksTableReferences
+                              ._assetsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$BooksTableReferences(db, table, p0).assetsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'book_id',
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -4121,7 +4484,11 @@ typedef $$BooksTableProcessedTableManager =
       $$BooksTableUpdateCompanionBuilder,
       (Book, $$BooksTableReferences),
       Book,
-      PrefetchHooks Function({bool chaptersRefs, bool assetsRefs})
+      PrefetchHooks Function({
+        bool sourcesRefs,
+        bool chaptersRefs,
+        bool assetsRefs,
+      })
     >;
 typedef $$SourcesTableCreateCompanionBuilder = SourcesCompanion Function({
   required String id,
@@ -4146,6 +4513,28 @@ typedef $$SourcesTableUpdateCompanionBuilder = SourcesCompanion Function({
   Value<int> rowid,
 });
 
+final class $$SourcesTableReferences
+    extends BaseReferences<_$AppDatabase, $SourcesTable, Source> {
+  $$SourcesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $BooksTable _bookIdTable(_$AppDatabase db) =>
+      db.books.createAlias('sources__book_id__books__id');
+
+  $$BooksTableProcessedTableManager get bookId {
+    final $_column = $_itemColumn<String>('book_id')!;
+
+    final manager = $$BooksTableTableManager(
+      $_db,
+      $_db.books,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_bookIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
 class $$SourcesTableFilterComposer
     extends Composer<_$AppDatabase, $SourcesTable> {
   $$SourcesTableFilterComposer({
@@ -4157,11 +4546,6 @@ class $$SourcesTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get bookId => $composableBuilder(
-    column: $table.bookId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4194,6 +4578,29 @@ class $$SourcesTableFilterComposer
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$BooksTableFilterComposer get bookId {
+    final $$BooksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.bookId,
+      referencedTable: $db.books,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BooksTableFilterComposer(
+            $db: $db,
+            $table: $db.books,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$SourcesTableOrderingComposer
@@ -4207,11 +4614,6 @@ class $$SourcesTableOrderingComposer
   });
   ColumnOrderings<String> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get bookId => $composableBuilder(
-    column: $table.bookId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4244,6 +4646,29 @@ class $$SourcesTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  $$BooksTableOrderingComposer get bookId {
+    final $$BooksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.bookId,
+      referencedTable: $db.books,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BooksTableOrderingComposer(
+            $db: $db,
+            $table: $db.books,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$SourcesTableAnnotationComposer
@@ -4257,9 +4682,6 @@ class $$SourcesTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get bookId =>
-      $composableBuilder(column: $table.bookId, builder: (column) => column);
 
   GeneratedColumn<String> get format =>
       $composableBuilder(column: $table.format, builder: (column) => column);
@@ -4282,6 +4704,29 @@ class $$SourcesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$BooksTableAnnotationComposer get bookId {
+    final $$BooksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.bookId,
+      referencedTable: $db.books,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BooksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.books,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$SourcesTableTableManager
@@ -4295,9 +4740,9 @@ class $$SourcesTableTableManager
           $$SourcesTableAnnotationComposer,
           $$SourcesTableCreateCompanionBuilder,
           $$SourcesTableUpdateCompanionBuilder,
-          (Source, BaseReferences<_$AppDatabase, $SourcesTable, Source>),
+          (Source, $$SourcesTableReferences),
           Source,
-          PrefetchHooks Function()
+          PrefetchHooks Function({bool bookId})
         > {
   $$SourcesTableTableManager(_$AppDatabase db, $SourcesTable table)
     : super(
@@ -4358,15 +4803,50 @@ class $$SourcesTableTableManager
               .map(
                 (e) => (
                   e.readTable<$SourcesTable, Source>(table),
-                  BaseReferences<_$AppDatabase, $SourcesTable, Source>(
-                    db,
-                    table,
-                    e,
-                  ),
+                  $$SourcesTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({bookId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (bookId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.bookId,
+                        referencedTable: $$SourcesTableReferences._bookIdTable(
+                          db,
+                        ),
+                        referencedColumn: $$SourcesTableReferences
+                            ._bookIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ),
       );
 }
@@ -4381,9 +4861,9 @@ typedef $$SourcesTableProcessedTableManager =
       $$SourcesTableAnnotationComposer,
       $$SourcesTableCreateCompanionBuilder,
       $$SourcesTableUpdateCompanionBuilder,
-      (Source, BaseReferences<_$AppDatabase, $SourcesTable, Source>),
+      (Source, $$SourcesTableReferences),
       Source,
-      PrefetchHooks Function()
+      PrefetchHooks Function({bool bookId})
     >;
 typedef $$ChaptersTableCreateCompanionBuilder = ChaptersCompanion Function({
   required String id,
@@ -4391,6 +4871,7 @@ typedef $$ChaptersTableCreateCompanionBuilder = ChaptersCompanion Function({
   Value<String?> parentId,
   required String title,
   Value<int> level,
+  Value<bool> frontMatter,
   required int sortOrder,
   Value<int> wordCount,
   required DateTime createdAt,
@@ -4403,6 +4884,7 @@ typedef $$ChaptersTableUpdateCompanionBuilder = ChaptersCompanion Function({
   Value<String?> parentId,
   Value<String> title,
   Value<int> level,
+  Value<bool> frontMatter,
   Value<int> sortOrder,
   Value<int> wordCount,
   Value<DateTime> createdAt,
@@ -4489,6 +4971,11 @@ class $$ChaptersTableFilterComposer
 
   ColumnFilters<int> get level => $composableBuilder(
     column: $table.level,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get frontMatter => $composableBuilder(
+    column: $table.frontMatter,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4608,6 +5095,11 @@ class $$ChaptersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get frontMatter => $composableBuilder(
+    column: $table.frontMatter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get sortOrder => $composableBuilder(
     column: $table.sortOrder,
     builder: (column) => ColumnOrderings(column),
@@ -4692,6 +5184,11 @@ class $$ChaptersTableAnnotationComposer
 
   GeneratedColumn<int> get level =>
       $composableBuilder(column: $table.level, builder: (column) => column);
+
+  GeneratedColumn<bool> get frontMatter => $composableBuilder(
+    column: $table.frontMatter,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get sortOrder =>
       $composableBuilder(column: $table.sortOrder, builder: (column) => column);
@@ -4810,6 +5307,7 @@ class $$ChaptersTableTableManager
                 Value<String?> parentId = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<int> level = const Value.absent(),
+                Value<bool> frontMatter = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 Value<int> wordCount = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -4821,6 +5319,7 @@ class $$ChaptersTableTableManager
                 parentId: parentId,
                 title: title,
                 level: level,
+                frontMatter: frontMatter,
                 sortOrder: sortOrder,
                 wordCount: wordCount,
                 createdAt: createdAt,
@@ -4834,6 +5333,7 @@ class $$ChaptersTableTableManager
                 Value<String?> parentId = const Value.absent(),
                 required String title,
                 Value<int> level = const Value.absent(),
+                Value<bool> frontMatter = const Value.absent(),
                 required int sortOrder,
                 Value<int> wordCount = const Value.absent(),
                 required DateTime createdAt,
@@ -4845,6 +5345,7 @@ class $$ChaptersTableTableManager
                 parentId: parentId,
                 title: title,
                 level: level,
+                frontMatter: frontMatter,
                 sortOrder: sortOrder,
                 wordCount: wordCount,
                 createdAt: createdAt,

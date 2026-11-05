@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
@@ -60,6 +61,59 @@ abstract final class WindowControls {
     } on Object {
       // Best effort.
     }
+  }
+
+  /// Defers native caption/Alt+F4 close requests until the active manuscript
+  /// has flushed. Failed saves cancel closing and keep the session available.
+  static VoidCallback guardClose(
+    Future<void> Function() beforeClose, {
+    void Function(Object)? onError,
+  }) {
+    final window = _current();
+    if (window == null) return () {};
+    ListenerId? listener;
+    var saving = false;
+    try {
+      listener = window.addListener((WindowEvent event) async {
+        if (event is! WindowCloseRequestedEvent) return;
+        if (saving) {
+          event.request.cancel();
+          return;
+        }
+        final decision = event.request.defer();
+        if (decision == null) event.request.cancel();
+        saving = true;
+        try {
+          await beforeClose();
+          if (decision != null) {
+            decision.accept();
+          } else {
+            // Older native implementations may only support synchronous
+            // cancellation. Close again after removing this guard.
+            if (listener != null) window.removeListener(listener!);
+            listener = null;
+            window.close();
+          }
+        } on Object catch (error) {
+          decision?.cancel();
+          onError?.call(error);
+        } finally {
+          decision?.dispose();
+          saving = false;
+        }
+      });
+    } on Object {
+      return () {};
+    }
+    return () {
+      if (listener == null) return;
+      try {
+        window.removeListener(listener!);
+      } on Object {
+        // The native window may already have closed.
+      }
+      listener = null;
+    };
   }
 
   static void toggleMaximize() {

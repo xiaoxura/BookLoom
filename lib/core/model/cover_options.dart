@@ -1,14 +1,23 @@
-import 'package:flutter/foundation.dart';
-
-/// Cover designer parameters. Stored as `books.cover_options_json`.
-@immutable
+/// Parameters for a generated cover, independent of the current cover source.
 class CoverOptions {
-  const CoverOptions({
+  CoverOptions({
     this.template = CoverTemplate.vertical,
-    this.palette = 'sea',
-    this.titleScale = 1,
+    String palette = 'auto',
+    double titleScale = 1,
     this.authorPosition = AuthorPosition.bottom,
-  });
+  }) : palette = _palettes.contains(palette) ? palette : 'auto',
+       titleScale = titleScale.isFinite
+           ? ((titleScale.clamp(0.8, 1.3) * 100).round() / 100)
+           : 1;
+
+  static const Set<String> _palettes = <String>{
+    'auto',
+    'sand',
+    'ink',
+    'sea',
+    'wine',
+    'forest',
+  };
 
   final CoverTemplate template;
   final String palette;
@@ -35,11 +44,15 @@ class CoverOptions {
   };
 
   static CoverOptions fromJson(Map<String, Object?> json) => CoverOptions(
-    template: CoverTemplate.fromWire(json['template'] as String? ?? ''),
-    palette: json['palette'] as String? ?? 'sea',
-    titleScale: (json['titleScale'] as num?)?.toDouble() ?? 1,
+    template: CoverTemplate.fromWire(
+      json['template'] is String ? json['template']! as String : '',
+    ),
+    palette: json['palette'] is String ? json['palette']! as String : 'auto',
+    titleScale: json['titleScale'] is num
+        ? (json['titleScale']! as num).toDouble()
+        : 1,
     authorPosition: AuthorPosition.fromWire(
-      json['authorPosition'] as String? ?? '',
+      json['authorPosition'] is String ? json['authorPosition']! as String : '',
     ),
   );
 }
@@ -49,21 +62,28 @@ enum CoverTemplate {
   blocks('blocks');
 
   const CoverTemplate(this.wire);
-
   final String wire;
 
-  static CoverTemplate fromWire(String value) => CoverTemplate.values
-      .firstWhere((CoverTemplate t) => t.wire == value, orElse: () => vertical);
+  static CoverTemplate fromWire(String value) {
+    if (value == 'block') return blocks;
+    return CoverTemplate.values.firstWhere(
+      (CoverTemplate template) => template.wire == value,
+      orElse: () => vertical,
+    );
+  }
 }
 
 enum AuthorPosition {
   top('top'),
-  bottom('bottom');
+  bottom('bottom'),
+  hidden('hidden');
 
   const AuthorPosition(this.wire);
-
   final String wire;
 
-  static AuthorPosition fromWire(String value) => AuthorPosition.values
-      .firstWhere((AuthorPosition p) => p.wire == value, orElse: () => bottom);
+  static AuthorPosition fromWire(String value) =>
+      AuthorPosition.values.firstWhere(
+        (AuthorPosition position) => position.wire == value,
+        orElse: () => bottom,
+      );
 }

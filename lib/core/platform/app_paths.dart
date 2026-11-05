@@ -28,8 +28,15 @@ class AppPaths {
 
   /// Resolves and creates the directories. Safe to call once at startup.
   static Future<AppPaths> resolve() async {
-    final Directory support = await getApplicationSupportDirectory();
-    final Directory cache = await getApplicationCacheDirectory();
+    // The OS may return an alias (Android's /data/user/0 is a symlink inside
+    // the app's mount namespace). Establish trusted, canonical roots before
+    // the storage layer rejects links in book-controlled paths.
+    final Directory platformSupport = await getApplicationSupportDirectory();
+    final Directory platformCache = await getApplicationCacheDirectory();
+    await platformSupport.create(recursive: true);
+    await platformCache.create(recursive: true);
+    final support = Directory(await platformSupport.resolveSymbolicLinks());
+    final cache = Directory(await platformCache.resolveSymbolicLinks());
     final AppPaths paths = AppPaths(
       support: support,
       books: Directory(p.join(support.path, 'books')),

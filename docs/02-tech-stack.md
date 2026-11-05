@@ -20,7 +20,7 @@
 | 路由 | go_router | 桌面/移动统一，支持深链 |
 | 数据库 | Drift + SQLite | 类型安全、迁移、事务、FTS5 可选 |
 | 文件 | file_picker + path_provider | Android 走 SAF，桌面走原生对话框 |
-| 分享 | share_plus | Android 导出后分享 |
+| 分享 | Android 原生 MethodChannel + FileProvider | 仅暴露任务导出缓存，系统分享面板打开不等于传输完成 |
 | ZIP | archive | EPUB / DOCX 解压与打包 |
 | XML | xml | OOXML / OPF / XHTML 解析与生成 |
 | 图片 | image | 封面 JPEG 编码、尺寸处理 |
@@ -69,12 +69,12 @@ macOS / iOS 的 Bundle Identifier 统一设为 `com.xiaoxura.bookloom`。
 
 | 能力 | 首选 | 备选 | 风险 |
 | --- | --- | --- | --- |
-| TXT 编码 | `enough_convert` / `charset`（待验证） | 自己实现 UTF-8 校验 + GB18030/Big5 表 | 编码库对 Big5/GB18030 覆盖不全 |
+| TXT 编码 | 纯 Dart 严格 UTF-8 / UTF-16 + 固定 WHATWG GB18030 / Big5 表 | 人工覆盖编码后重试 | 不采用只有 GBK 的库声称完整 GB18030 |
 | EPUB 读 | `archive` + `xml` 自己解析 OPF/nav/NCX | `epubx` 等第三方包 | 第三方包对 EPUB 3、封面、DRM 支持参差 |
 | EPUB 写 | 自己生成 OPF/XHTML/NCX + `archive` | 模板库 | 必须自己保证 EPUB 3/2 结构正确 |
 | DOCX 读 | `archive` + `xml` 解析 `word/document.xml` | 第三方 docx 包 | 样式名、表格、图片、脚注复杂 |
 | DOCX 写 | 最小 OOXML 包 | 第三方库 | 兼容 Word 的细节多 |
-| 繁简转换 | OpenCC C++ / Rust 通过 FFI | 纯 Dart 词典 + 转换表 | 词典体积、Android 交叉编译 |
+| 繁简转换 | 纯 Dart OpenCC 词典链、mmseg 分词，词典随包 | 仅有性能证据时再评估 FFI | Windows / Android 首用打包仍需设备验收 |
 | 字体子集化 | harfbuzz/fonttools FFI | 暂不做，嵌整字体 | 成本高，后续再做 |
 | 封面 | Flutter `CustomPainter` + `ui.Image` | `image` 画布 | JPEG 编码质量、字体渲染差异 |
 
@@ -158,3 +158,9 @@ macOS / iOS 的 Bundle Identifier 统一设为 `com.xiaoxura.bookloom`。
 | 状态管理 | Riverpod | 可测试、无全局单例 |
 | 初始平台 | Linux / Windows / Android | 用户目标平台 |
 | Apple | 后续 | 代码保留扩展位，不阻塞 1.0 |
+
+## 9. 本轮已锁定的基础依赖
+
+本轮锁定 file_picker 13.3.2、archive 4.6.0、xml 7.1.0、uuid 4.6.0、image 4.12.0（MIT）及 crypto 3.0.8（BSD-3-Clause）；实际锁文件为 `pubspec.lock`。Linux / Windows 的流式保存由原生对话框返回目标后复制私有暂存文件；Android 用 ACTION_CREATE_DOCUMENT / ContentResolver 桥接。file_picker 的 bytes 保存接口不用于大备份。测试新增 Flutter SDK 自带 integration_test，不作为生产依赖。平台编译与交互证据统一记在 [本轮实施文档](development/00-native-workbench.md#143-当前实施依据与-spike-记录2026-11-05)。
+
+TXT 编码使用 WHATWG 固定索引生成纯 Dart 常量，包含 GB18030 四字节范围与 Big5 特例；没有运行期下载，许可证与归属保留于 `licenses/whatwg/LICENSE`。OpenCC 采用官方 1.4.2 固定提交的 10 个离线词典，支持 t2s / s2twp，Apache-2.0 LICENSE / NOTICE 随包注册。算法金样通过不代表三端首用验收，实际结果仍以实施文档为准。

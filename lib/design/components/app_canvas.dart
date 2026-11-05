@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
+import '../tokens/app_colors.dart';
 
-/// The paper backdrop: a warm vertical wash plus two soft ink glows.
+/// A quiet, neutral canvas with cool washes behind the floating chrome.
 ///
-/// The glows exist so frosted chrome has something worth blurring; they stay
-/// extremely low contrast so text contrast is unaffected.
+/// Washes follow the viewport instead of shrinking fixed-size circles into it.
+/// The reading area stays calm while the sidebar and bottom bar pick up enough
+/// variation to make their translucent material visible.
 class AppCanvas extends StatelessWidget {
   const AppCanvas({super.key, required this.child});
 
@@ -13,40 +15,12 @@ class AppCanvas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: <Color>[colors.canvasAlt, colors.canvas],
-            ),
-          ),
-        ),
-        // Layered washes: the sidebar frost needs something to pick up, and
-        // the page should never look like flat gray paper.
         IgnorePointer(
-          child: _InkWash(
-            alignment: const Alignment(-1, -0.55),
-            color: colors.accent.withValues(alpha: 0.16),
-            size: 1150,
-          ),
-        ),
-        IgnorePointer(
-          child: _InkWash(
-            alignment: const Alignment(-1.05, 1.15),
-            color: colors.warning.withValues(alpha: 0.12),
-            size: 700,
-          ),
-        ),
-        IgnorePointer(
-          child: _InkWash(
-            alignment: const Alignment(1.25, -1.35),
-            color: colors.accent.withValues(alpha: 0.12),
-            size: 700,
+          child: RepaintBoundary(
+            child: CustomPaint(painter: _CanvasPainter(context.colors)),
           ),
         ),
         child,
@@ -55,33 +29,79 @@ class AppCanvas extends StatelessWidget {
   }
 }
 
-class _InkWash extends StatelessWidget {
-  const _InkWash({
-    required this.alignment,
-    required this.color,
-    required this.size,
-  });
+class _CanvasPainter extends CustomPainter {
+  const _CanvasPainter(this.colors);
 
-  final Alignment alignment;
-  final Color color;
-  final double size;
+  final AppColors colors;
 
   @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: alignment,
-      child: SizedBox.square(
-        dimension: size,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: <Color>[color, color.withValues(alpha: 0)],
-              stops: const <double>[0, 1],
-            ),
-          ),
-        ),
+  void paint(Canvas canvas, Size size) {
+    final Rect bounds = Offset.zero & size;
+    canvas.drawRect(
+      bounds,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[colors.canvasAlt, colors.canvas],
+        ).createShader(bounds),
+    );
+
+    // Keep the strongest color near the navigation rather than across text.
+    _wash(
+      canvas,
+      Rect.fromCenter(
+        center: Offset(size.width * 0.03, size.height * 0.30),
+        width: size.width * 0.94,
+        height: size.height * 1.35,
       ),
+      colors.canvasMist,
+      0.60,
+    );
+    _wash(
+      canvas,
+      Rect.fromCenter(
+        center: Offset(size.width * 0.23, size.height * 1.03),
+        width: size.width * 1.06,
+        height: size.height * 0.90,
+      ),
+      colors.canvasBloom,
+      0.70,
+    );
+    _wash(
+      canvas,
+      Rect.fromCenter(
+        center: Offset(size.width * 1.02, size.height * 0.03),
+        width: size.width * 0.82,
+        height: size.height * 1.10,
+      ),
+      colors.canvasMist,
+      0.30,
     );
   }
+
+  void _wash(Canvas canvas, Rect bounds, Color color, double opacity) {
+    const Rect unit = Rect.fromLTRB(-1, -1, 1, 1);
+    canvas.save();
+    canvas.translate(bounds.center.dx, bounds.center.dy);
+    canvas.scale(bounds.width / 2, bounds.height / 2);
+    canvas.drawCircle(
+      Offset.zero,
+      1,
+      Paint()
+        ..shader = RadialGradient(
+          colors: <Color>[
+            color.withValues(alpha: opacity),
+            color.withValues(alpha: opacity * 0.55),
+            color.withValues(alpha: 0),
+          ],
+          stops: const <double>[0, 0.42, 1],
+        ).createShader(unit),
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_CanvasPainter oldDelegate) =>
+      oldDelegate.colors != colors;
 }

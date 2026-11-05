@@ -1,27 +1,30 @@
-import 'package:flutter/foundation.dart';
-
-import 'chapter.dart';
-import 'cover_options.dart';
-import 'layout_options.dart';
-import 'metadata.dart';
+import 'package:bookloom/core/model/chapter.dart';
+import 'package:bookloom/core/model/cover_options.dart';
+import 'package:bookloom/core/model/layout_options.dart';
+import 'package:bookloom/core/model/metadata.dart';
+import 'package:bookloom/core/model/parse_options.dart';
 
 /// A book loaded for editing: metadata plus the chapter tree.
 ///
 /// Chapter bodies are loaded lazily by the editor; [chapters] here is the
 /// structural list (ids, titles, order) and may carry blocks when already read.
-@immutable
 class Book {
-  const Book({
+  Book({
     required this.id,
     required this.meta,
     this.chapters = const <Chapter>[],
-    this.coverOptions = const CoverOptions(),
-    this.layout = const LayoutOptions(),
+    CoverOptions? coverOptions,
+    LayoutOptions? layout,
     required this.createdAt,
     required this.updatedAt,
     this.lastOpenedAt,
     this.wordCount = 0,
-  });
+    this.revision = 0,
+    this.parseOptions = const ParseOptions(),
+    this.coverMode = CoverMode.template,
+    this.coverAssetId,
+  }) : coverOptions = coverOptions ?? CoverOptions(),
+       layout = layout ?? LayoutOptions();
 
   final String id;
   final BookMeta meta;
@@ -33,6 +36,12 @@ class Book {
   final DateTime? lastOpenedAt;
   final int wordCount;
 
+  /// Incremented for current-content concurrency checks; not a history index.
+  final int revision;
+  final ParseOptions parseOptions;
+  final CoverMode coverMode;
+  final String? coverAssetId;
+
   int get chapterCount => chapters.length;
 
   Book copyWith({
@@ -43,6 +52,11 @@ class Book {
     DateTime? updatedAt,
     DateTime? lastOpenedAt,
     int? wordCount,
+    int? revision,
+    ParseOptions? parseOptions,
+    CoverMode? coverMode,
+    String? coverAssetId,
+    bool clearCoverAssetId = false,
   }) => Book(
     id: id,
     meta: meta ?? this.meta,
@@ -53,5 +67,24 @@ class Book {
     updatedAt: updatedAt ?? this.updatedAt,
     lastOpenedAt: lastOpenedAt ?? this.lastOpenedAt,
     wordCount: wordCount ?? this.wordCount,
+    revision: revision ?? this.revision,
+    parseOptions: parseOptions ?? this.parseOptions,
+    coverMode: coverMode ?? this.coverMode,
+    coverAssetId: clearCoverAssetId
+        ? null
+        : (coverAssetId ?? this.coverAssetId),
+  );
+}
+
+enum CoverMode {
+  template('template'),
+  image('image');
+
+  const CoverMode(this.wire);
+  final String wire;
+
+  static CoverMode fromWire(String value) => CoverMode.values.firstWhere(
+    (CoverMode mode) => mode.wire == value,
+    orElse: () => template,
   );
 }

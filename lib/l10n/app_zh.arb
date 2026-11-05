@@ -14,9 +14,10 @@
       }
     }
   },
-  "libraryEmptyTitle": "书架还是空的",
+  "libraryEmptyTitle": "书架里还没有书稿",
+  "libraryEmptyMessage": "导入书稿后，在这里查看和整理。",
   "libraryEmptyAction": "导入书稿",
-  "importFormatsTitle": "计划支持的格式",
+  "importFormatsTitle": "格式与处理方式",
   "importFormatTxt": "TXT",
   "importFormatEpub": "EPUB",
   "importFormatDocx": "DOCX",
@@ -77,7 +78,9 @@
   "aboutDesignSystem": "设计系统",
   "appTagline": "把文字织成书",
   "aboutHeading": "关于书织",
-  "aboutVersionLabel": "Version {version}",
+  "aboutVersionLabel": "版本 {version}",
+  "appDescription": "本地优先的电子书工作台",
+  "aboutLocalNote": "无需账号，书稿与编辑数据保存在本机。",
   "aboutChangelog": "更新日志",
   "aboutTechIntro": "核心用纯 Dart，界面用 Flutter，所有数据落在本机 SQLite。",
   "aboutOpenSource": "开放源代码",
@@ -105,5 +108,746 @@
         "type": "String"
       }
     }
-  }
+  },
+  "commonRetry": "重试",
+  "commonCancel": "取消",
+  "commonSave": "保存",
+  "libraryLoadFailed": "无法读取书架",
+  "libraryNoMatch": "没有找到匹配的书稿",
+  "librarySearch": "搜索书名或作者",
+  "libraryClearSearch": "清除搜索",
+  "librarySortRecent": "最近修改",
+  "librarySortTitle": "书名",
+  "librarySortOpened": "最近打开",
+  "libraryUnknownAuthor": "作者未填",
+  "libraryBookActions": "书籍操作",
+  "libraryRename": "重命名",
+  "libraryDelete": "删除书籍",
+  "libraryBookTitle": "书名",
+  "libraryOperationFailed": "操作失败，请重试。",
+  "libraryBookStats": "{chapters} 章 · {words} 字",
+  "@libraryBookStats": {
+    "placeholders": {
+      "chapters": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryDeleteConfirm": "确定删除《{title}》吗？书稿和本地资源将一并删除。",
+  "@libraryDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "importSelectTitle": "选择书稿",
+  "importTxtReady": "支持 TXT、EPUB 和 DOCX。解析完成后检查章节、文字与格式损失提示，再加入书架。",
+  "importChooseFile": "选择文件",
+  "importChooseAnother": "重新选择文件",
+  "importFileSize": "大小：{size}",
+  "@importFileSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "importSizeUnknown": "未知",
+  "importOptions": "解析选项",
+  "importEncoding": "文字编码",
+  "importEncodingAuto": "自动识别",
+  "importFilterAds": "过滤明显广告",
+  "importAnalyze": "解析并预览",
+  "importReviewTitle": "导入预览",
+  "importReviewStats": "{chapters} 章 · {words} 字",
+  "@importReviewStats": {
+    "placeholders": {
+      "chapters": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "importActualEncoding": "识别编码：{encoding}",
+  "@importActualEncoding": {
+    "placeholders": {
+      "encoding": {
+        "type": "String"
+      }
+    }
+  },
+  "importWarnings": "请留意",
+  "importExcerpt": "正文片段",
+  "importWarningEncoding": "编码识别信心较低；可改选编码并重新解析。",
+  "importWarningNoHeadings": "未识别到章节标题，已按单章整理。",
+  "importWarningManyChapters": "识别出较多章节，请检查目录。",
+  "importWarningGeneric": "解析提示：{code}",
+  "@importWarningGeneric": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "importAddToLibrary": "加入书架并编辑",
+  "importSaving": "正在保存书稿…",
+  "importStagePrepare": "正在准备…",
+  "importStageDecode": "正在识别编码…",
+  "importStageParse": "正在整理章节…",
+  "importStageReady": "解析完成",
+  "importPickFailed": "无法选择文件，请检查权限后重试。",
+  "importAnalyzeFailed": "解析失败，请检查文件或尝试其他编码。",
+  "importSaveFailed": "保存失败，预览仍保留，可重试。",
+  "importDiscardFailed": "无法清理暂存文件，请重试。",
+  "importFormatAvailable": "{format} · 可导入",
+  "@importFormatAvailable": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      }
+    }
+  },
+  "importFormatLater": "{format} · 后续批次支持",
+  "@importFormatLater": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      }
+    }
+  },
+  "editorOpenFailed": "无法打开书稿",
+  "editorBack": "返回书架",
+  "editorChapters": "章节目录",
+  "editorBookInfo": "书籍信息",
+  "editorExport": "导出书稿",
+  "editorUndo": "撤销",
+  "editorRedo": "重做",
+  "editorEdit": "编辑",
+  "editorPreview": "预览",
+  "editorSaving": "正在保存…",
+  "editorUnsaved": "尚有未保存修改",
+  "editorSaved": "已保存",
+  "editorSaveFailed": "保存失败",
+  "editorSaveFailedStay": "保存失败，已留在当前书稿。请重试。",
+  "editorSearchChapters": "搜索章节",
+  "editorNoChapters": "暂无章节",
+  "editorEmptyChapter": "本章没有正文",
+  "editorChapterActions": "章节操作",
+  "editorRenameChapter": "重命名章节",
+  "editorChapterTitle": "章节标题",
+  "editorMergePrevious": "并入上一章",
+  "editorPromote": "升为卷",
+  "editorDemote": "降为章",
+  "editorDeleteChapter": "删除章节",
+  "editorDeleteChapterConfirm": "确定删除“{title}”吗？其正文也会删除。",
+  "@editorDeleteChapterConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "editorParagraphActions": "段落操作",
+  "editorSplitHere": "从此段拆章",
+  "editorSetAsTitle": "设为章节标题",
+  "editorImageBlock": "图片段落",
+  "editorBookTitle": "书名",
+  "editorBookAuthor": "作者",
+  "editorMoreMetadata": "更多信息",
+  "editorDescription": "简介",
+  "editorSeries": "系列",
+  "editorPublisher": "出版社",
+  "editorLanguage": "语言",
+  "editorTags": "标签（用逗号分隔）",
+  "editorPublishedAt": "出版日期",
+  "editorInvalidDate": "请输入有效日期，格式为 YYYY-MM-DD。",
+  "editorTitleRequired": "书名不能为空。",
+  "editorLanguageRequired": "语言不能为空。",
+  "editorMetaSavedAutomatically": "更改会自动保存。",
+  "editorActionFailed": "操作未完成，请检查当前章节后重试。",
+  "editorExportSaved": "导出文件已保存。",
+  "editorExportFailed": "导出失败，请重试。",
+  "workbenchOpenBatch": "批量处理多本书",
+  "workbenchOpenData": "管理书籍数据与备份",
+  "workbenchSharingOpened": "分享面板已打开，请在目标应用中完成传输。",
+  "workbenchCoverUnavailable": "封面图片不可用",
+  "editorWorkbenchMoreActions": "更多书稿操作",
+  "editorWorkbenchTools": "书稿工具",
+  "editorWorkbenchReparse": "从原文件重新识别",
+  "editorWorkbenchShare": "分享到其他应用",
+  "editorWorkbenchCloseLocation": "关闭定位提示",
+  "editorWorkbenchLocationChanged": "该段落已变化，请重新检查。",
+  "editorWorkbenchLocationAt": "定位到第 {index} 段：{text}",
+  "@editorWorkbenchLocationAt": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "editorWorkbenchDeleteVolumeConfirm": "删除卷“{title}”后，卷内子章和正文会保留，并提升为顶层章节。",
+  "@editorWorkbenchDeleteVolumeConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "editorWorkbenchShareFailed": "无法打开分享面板，请重试。",
+  "editorWorkbenchToolFailed": "处理失败，请检查书稿后重试。",
+  "editorWorkbenchToolsIntro": "检查与批量修改作用于当前书稿；修改先预览，执行后可撤销一步。",
+  "editorWorkbenchPreparingBook": "准备书稿…",
+  "editorWorkbenchCancelTask": "取消任务",
+  "editorWorkbenchAuditTitle": "全书体检",
+  "editorWorkbenchAuditDesc": "编号、空章、重复标题及广告痕迹；短章 <120 字、长章 >30000 字为启发式提示",
+  "editorWorkbenchAuditRun": "检查当前书稿",
+  "editorWorkbenchAuditTotal": "共 {count} 项提示",
+  "@editorWorkbenchAuditTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchIssueCount": "{label}：{count}",
+  "@editorWorkbenchIssueCount": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchAuditLimit": "每类最多显示 20 条示例；总数包含全部提示。",
+  "editorWorkbenchMissedTitle": "疑似漏章",
+  "editorWorkbenchMissedDesc": "定位看起来像章节标题的正文段落，确认后可用段落菜单拆章",
+  "editorWorkbenchMissedRun": "查找疑似漏章",
+  "editorWorkbenchMissedCount": "找到 {count} 处候选",
+  "@editorWorkbenchMissedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchMissedLocation": "目录第 {chapter} 项 · 段落第 {paragraph} 项",
+  "@editorWorkbenchMissedLocation": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      },
+      "paragraph": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchMissedLimit": "仅显示前 100 处候选。",
+  "editorWorkbenchFindReplace": "查找与替换",
+  "editorWorkbenchFindText": "查找内容",
+  "editorWorkbenchReplaceWith": "替换为",
+  "editorWorkbenchScope": "范围",
+  "editorWorkbenchScopeAll": "标题和正文",
+  "editorWorkbenchScopeTitle": "仅章节标题",
+  "editorWorkbenchScopeBody": "仅正文",
+  "editorWorkbenchRegex": "正则表达式",
+  "editorWorkbenchCaseSensitive": "区分大小写",
+  "editorWorkbenchPreviewReplace": "预览替换",
+  "editorWorkbenchRenumberTitle": "按卷重编号",
+  "editorWorkbenchRenumberDesc": "检查各卷章号并预览标题修改，不改动正文。",
+  "editorWorkbenchPreviewRenumber": "预览重编号",
+  "editorWorkbenchConvertTitle": "转换当前书稿",
+  "editorWorkbenchConvertDesc": "只转换当前章节标题和正文；原文件不会重新识别",
+  "editorWorkbenchConvertDirection": "转换方向",
+  "editorWorkbenchConvertSimplified": "繁体转简体",
+  "editorWorkbenchConvertTraditional": "简体转台湾繁体",
+  "editorWorkbenchPreviewConvert": "预览转换",
+  "editorWorkbenchReplaceLabel": "替换",
+  "editorWorkbenchRenumberLabel": "重编号",
+  "editorWorkbenchConvertLabel": "繁简转换",
+  "editorWorkbenchBatchEdit": "批量修改",
+  "editorWorkbenchPreviewTitle": "{operation}预览",
+  "@editorWorkbenchPreviewTitle": {
+    "placeholders": {
+      "operation": {
+        "type": "String"
+      }
+    }
+  },
+  "editorWorkbenchPreviewStats": "命中 {hits} 处，实际修改 {fields} 个字段。",
+  "@editorWorkbenchPreviewStats": {
+    "placeholders": {
+      "hits": {
+        "type": "int"
+      },
+      "fields": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchBodyParagraph": "正文段落",
+  "editorWorkbenchApplyOneUndo": "执行修改（可撤销一步）",
+  "editorWorkbenchIssueMissingNumber": "缺失章号",
+  "editorWorkbenchIssueDuplicateNumber": "重复章号",
+  "editorWorkbenchIssueEmptyChapter": "空章",
+  "editorWorkbenchIssueDuplicateTitle": "重复标题",
+  "editorWorkbenchIssueTooLong": "长章",
+  "editorWorkbenchIssueTooShort": "短章",
+  "editorWorkbenchIssueEmptyVolume": "空卷",
+  "editorWorkbenchIssueAdLeftover": "广告痕迹",
+  "editorWorkbenchReparseInvalidRuleUtf8": "规则 JSON 不是有效的 UTF-8 文本。",
+  "editorWorkbenchReparseFailed": "重新识别失败，请检查原文与规则后重试。",
+  "editorWorkbenchOriginalCacheFailed": "所选原文临时文件未清理，请稍后重试。",
+  "editorWorkbenchRuleCacheFailed": "规则临时文件未清理，请稍后重试。",
+  "editorWorkbenchRuleTooLarge": "规则 JSON 超过 16 KiB",
+  "editorWorkbenchRuleExported": "规则 JSON 已导出。",
+  "editorWorkbenchReparseChanged": "书稿已改变，请重新准备识别结果。",
+  "editorWorkbenchReparseConfirmTitle": "替换当前全部章节？",
+  "editorWorkbenchReparseConfirmBody": "将用刚识别的 {count} 个目录项替换当前书稿的全部章节和正文。此操作会清空当前撤销历史；书名、作者、封面和排版设置会保留。已编辑内容不会保留在新章节中。",
+  "@editorWorkbenchReparseConfirmBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchReparseConfirmAction": "确认替换",
+  "editorWorkbenchPreparedCacheFailed": "识别结果临时文件未清理，请稍后重试。",
+  "editorWorkbenchReparseIntro": "仅支持已保留原文的 TXT。先准备预览，再明确确认替换当前全部章节。转换当前书稿请使用书稿工具。",
+  "editorWorkbenchSelectOriginal": "原文缺失时重新选择同一个 TXT",
+  "editorWorkbenchForgetOriginal": "不再使用所选原文",
+  "editorWorkbenchSourceEncoding": "原文编码",
+  "editorWorkbenchAutoDetect": "自动检测",
+  "editorWorkbenchFilterAds": "过滤广告",
+  "editorWorkbenchRules": "识别规则",
+  "editorWorkbenchCustomRules": "自定义规则",
+  "editorWorkbenchImportRulesJson": "导入规则 JSON",
+  "editorWorkbenchExportRulesJson": "导出当前规则 JSON",
+  "editorWorkbenchRulesJsonFields": "规则 JSON（name / chapter / volume / drop / inlineJunk）",
+  "editorWorkbenchRulesOnlyReparse": "规则只用于重新识别原文；普通批量替换请使用书稿工具。",
+  "editorWorkbenchPrepareReparse": "准备重新识别预览",
+  "editorWorkbenchPreparing": "准备中…",
+  "editorWorkbenchReparseAppliedUnsaved": "章节已替换，尚未保存成功；请使用顶部“重试”。",
+  "editorWorkbenchReparseAppliedSaved": "已替换当前章节并保存。",
+  "editorWorkbenchReparsePreview": "识别结果预览",
+  "editorWorkbenchReparseStats": "{chapters} 个目录项 · {words} 字",
+  "@editorWorkbenchReparseStats": {
+    "placeholders": {
+      "chapters": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchSourceEncodingSelected": "编码：按所选设置",
+  "editorWorkbenchSourceEncodingActual": "实际编码：{encoding}",
+  "@editorWorkbenchSourceEncodingActual": {
+    "placeholders": {
+      "encoding": {
+        "type": "String"
+      }
+    }
+  },
+  "editorWorkbenchReparseWarningsLimit": "仅显示前 20 条提示。",
+  "editorWorkbenchReparseApply": "替换当前全部章节…",
+  "editorWorkbenchOptionsFileEncoding": "文件编码",
+  "editorWorkbenchOptionsAuto": "自动",
+  "editorWorkbenchOptionsChapterRules": "章节识别",
+  "editorWorkbenchOptionsFilterAds": "过滤常见广告",
+  "editorWorkbenchOptionsEditRules": "编辑 JSON 规则",
+  "editorWorkbenchOptionsImportRules": "导入规则",
+  "editorWorkbenchOptionsExportRules": "导出规则",
+  "editorWorkbenchOptionsRemoveRules": "移除自定义规则",
+  "editorWorkbenchOptionsCurrentRules": "当前规则：{name}",
+  "@editorWorkbenchOptionsCurrentRules": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "editorWorkbenchOptionsConvertAtImport": "导入时简繁转换",
+  "editorWorkbenchOptionsKeepOriginal": "保持原样",
+  "editorWorkbenchOptionsToSimplified": "转为简体",
+  "editorWorkbenchOptionsToTaiwan": "台湾标准繁体",
+  "editorWorkbenchOptionsRulesTitle": "JSON 识别规则",
+  "editorWorkbenchOptionsRulesHelp": "字段：name、chapter、volume、drop、inlineJunk。规则独立于广告开关；危险或不支持的正则会被拒绝。",
+  "editorWorkbenchOptionsValidateApply": "校验并应用",
+  "editorWorkbenchRulePresetIxdzs": "爱下电子书",
+  "editorWorkbenchRulePresetBiquge": "笔趣阁",
+  "editorWorkbenchRulePresetNumbered": "数字标题",
+  "editorWorkbenchRulePresetBareNumber": "裸数字",
+  "editorWorkbenchRulePresetEnglish": "英文标题",
+  "bookWorkbenchSettings": "成书设置",
+  "bookWorkbenchMetadata": "书籍信息",
+  "bookWorkbenchLayoutFonts": "排版与字体",
+  "bookWorkbenchCover": "封面",
+  "bookWorkbenchReadingPreview": "阅读预览",
+  "bookWorkbenchTitleRequired": "书名不能为空",
+  "bookWorkbenchMoreInformation": "扩展信息",
+  "bookWorkbenchLanguageCodeHint": "使用 zh-CN 这类语言代码",
+  "bookWorkbenchPublicationDate": "出版日期（YYYY-MM-DD）",
+  "bookWorkbenchInvalidDate": "请输入有效日期",
+  "bookWorkbenchLineHeight": "行高 {value}",
+  "@bookWorkbenchLineHeight": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bookWorkbenchParagraphSpacing": "段间距 {value} em",
+  "@bookWorkbenchParagraphSpacing": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bookWorkbenchTwoCharacterIndent": "首行缩进两字",
+  "bookWorkbenchJustify": "两端对齐",
+  "bookWorkbenchSeparateChapterNumber": "章号独行",
+  "bookWorkbenchBodyFontStyle": "正文样式",
+  "bookWorkbenchSerif": "衬线",
+  "bookWorkbenchSans": "无衬线",
+  "bookWorkbenchKai": "楷体",
+  "bookWorkbenchEmbeddedFontInfo": "嵌入字体仅作用于支持的导出格式，可能增大文件。",
+  "bookWorkbenchImportFont": "导入字体",
+  "bookWorkbenchRemoveFont": "移除引用",
+  "bookWorkbenchCustomCssLabel": "附加 CSS（仅 EPUB / HTML 导出）",
+  "bookWorkbenchUnsafeCss": "CSS 不允许外链、脚本或不安全字符",
+  "bookWorkbenchCssNativeNote": "原生预览不会执行附加 CSS。",
+  "bookWorkbenchTemplate": "模板",
+  "bookWorkbenchImage": "图片",
+  "bookWorkbenchChooseCoverFirst": "请先选择封面图片。",
+  "bookWorkbenchChooseCoverImage": "选择封面图片",
+  "bookWorkbenchCoverLimits": "支持 JPEG、PNG、WebP；超过 1200 万像素的图片不会解码。",
+  "bookWorkbenchVertical": "竖排",
+  "bookWorkbenchBlocks": "色块",
+  "bookWorkbenchPalette": "配色",
+  "bookWorkbenchAuto": "自动",
+  "bookWorkbenchSand": "原木",
+  "bookWorkbenchInk": "墨夜",
+  "bookWorkbenchSea": "深海",
+  "bookWorkbenchWine": "酒红",
+  "bookWorkbenchForest": "松林",
+  "bookWorkbenchTitleScale": "标题倍率 {value}",
+  "@bookWorkbenchTitleScale": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bookWorkbenchAuthorPosition": "作者位置",
+  "bookWorkbenchTop": "上方",
+  "bookWorkbenchBottom": "下方",
+  "bookWorkbenchHidden": "隐藏",
+  "bookWorkbenchImageModeNote": "调整模板参数不会覆盖当前图片；切换到模板后应用。",
+  "bookWorkbenchPreviewCss": "附加 CSS 仅影响 EPUB / HTML 导出，原生预览不会执行。",
+  "bookWorkbenchPreviewWoff": "WOFF 字体会嵌入 EPUB；原生预览暂不加载此格式。",
+  "bookWorkbenchPreviewFontMissing": "字体资源暂不可用；原生预览使用系统字型。",
+  "bookWorkbenchPreviewFontFailed": "字体无法在原生预览加载；导出仍会保留此资源。",
+  "bookWorkbenchPreviewFontUnsupported": "此字体格式不支持原生预览。",
+  "bookWorkbenchPreviewFontLoaded": "嵌入字体已在原生预览加载。",
+  "bookWorkbenchPreviewLimits": "原生预览展示基础排版；阅读器分页与字体替换可能不同。TXT / Markdown 不保留视觉排版。",
+  "bookWorkbenchPreviewIllustration": "插图（此预览只显示说明）：{caption}",
+  "@bookWorkbenchPreviewIllustration": {
+    "placeholders": {
+      "caption": {
+        "type": "String"
+      }
+    }
+  },
+  "bookWorkbenchNewBookDefaults": "新书默认设置",
+  "bookWorkbenchDefaultsScope": "只影响以后导入的新书；已有书籍使用自己的排版。",
+  "bookWorkbenchDefaultExportFormat": "默认导出格式",
+  "bookWorkbenchDefaultFontRole": "默认字体角色",
+  "bookWorkbenchDefaultsLineHeight": "行高：{value}",
+  "bookWorkbenchDefaultsIndent": "首行缩进",
+  "bookWorkbenchSelectedFont": "已选择字体：{mime}",
+  "bookWorkbenchLoading": "正在读取",
+  "bookWorkbenchCoverSemantics": "{title} 的封面",
+  "bookWorkbenchCoverUnavailable": "封面图片不可用",
+  "@bookWorkbenchSelectedFont": {
+    "placeholders": {
+      "mime": {
+        "type": "String"
+      }
+    }
+  },
+  "@bookWorkbenchCoverSemantics": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@bookWorkbenchDefaultsLineHeight": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "dataWorkbenchBatchTitle": "批量任务",
+  "dataWorkbenchBatchSubtitle": "逐本处理，转换结果只在保存 ZIP 后离开应用。",
+  "dataWorkbenchBatchSettings": "任务设置",
+  "dataWorkbenchBatchAction": "操作",
+  "dataWorkbenchBatchAddToLibrary": "加入书架",
+  "dataWorkbenchBatchConvertFiles": "批量转换",
+  "dataWorkbenchOutputFormat": "输出格式",
+  "dataWorkbenchBatchTxtEncoding": "TXT 编码",
+  "dataWorkbenchBatchChineseConversion": "简繁转换",
+  "dataWorkbenchBatchNoConversion": "不转换",
+  "dataWorkbenchBatchSimplified": "转简体",
+  "dataWorkbenchBatchTaiwanTraditional": "转台湾繁体",
+  "dataWorkbenchBatchFilterAds": "过滤广告",
+  "dataWorkbenchBatchChooseFiles": "选择 TXT / EPUB / DOCX",
+  "dataWorkbenchBatchStart": "开始",
+  "dataWorkbenchBatchCancelAfterSave": "完成当前保存后取消剩余项",
+  "dataWorkbenchBatchCancelRemaining": "取消剩余任务",
+  "dataWorkbenchBatchQueue": "队列",
+  "dataWorkbenchRetryFailedOnly": "只重试失败项",
+  "dataWorkbenchBatchSaveZip": "保存 ZIP",
+  "dataWorkbenchZipSaved": "ZIP 已保存。",
+  "dataWorkbenchBatchSaveCancelled": "已取消保存，转换结果仍可重试保存。",
+  "dataWorkbenchBatchRetryEncoding": "重试编码",
+  "dataWorkbenchBatchAuto": "自动",
+  "dataWorkbenchStatusWaiting": "等待",
+  "dataWorkbenchStatusProcessing": "处理中",
+  "dataWorkbenchStatusSuccess": "成功",
+  "dataWorkbenchStatusFailed": "失败",
+  "dataWorkbenchStatusCancelled": "已取消",
+  "dataWorkbenchBatchPickFailed": "文件选择或清理失败。",
+  "dataWorkbenchBatchStartFailed": "批量任务无法启动。",
+  "dataWorkbenchZipSaveFailed": "ZIP 保存失败，请重试。",
+  "dataWorkbenchLibraryTitle": "批量导出已选书籍",
+  "dataWorkbenchLibraryExportSelected": "生成所选书籍",
+  "dataWorkbenchLibraryFinishingSave": "正在完成保存",
+  "dataWorkbenchLibraryCancelRemaining": "取消剩余项",
+  "dataWorkbenchLibrarySaveSuccessfulZip": "保存成功项 ZIP",
+  "dataWorkbenchLibrarySaveCancelled": "已取消保存，结果仍可再次保存。",
+  "dataWorkbenchLibraryStartFailed": "无法启动书架导出。",
+  "dataWorkbenchBackupTitle": "书籍数据与备份",
+  "dataWorkbenchBackupBack": "返回",
+  "dataWorkbenchBackupCurrentBooks": "备份当前书籍",
+  "dataWorkbenchBackupIncludes": "备份包含当前文字、目录、书籍信息、封面、字体、排版与规则，不包含撤销记录。",
+  "dataWorkbenchBackupIncludeSources": "包含原始文件",
+  "dataWorkbenchBackupWithoutSources": "不含原文的备份仍可续编，但无法从原文件换编码或重新分章。",
+  "dataWorkbenchBackupSaveFile": "生成并保存 .bookloom",
+  "dataWorkbenchBackupRestore": "恢复备份",
+  "dataWorkbenchBackupMaxData": "最大恢复数据量（MiB）",
+  "dataWorkbenchBackupMaxDataHelp": "按实际解压数据计量；备份副本、临时数据库与提交副本还需额外空间。",
+  "dataWorkbenchBackupChooseInspect": "选择并检查备份",
+  "dataWorkbenchBackupConflictPolicy": "相同 ID 的书籍",
+  "dataWorkbenchBackupKeepBoth": "保留两份",
+  "dataWorkbenchBackupSkipConflicts": "跳过备份中的同 ID 书",
+  "dataWorkbenchBackupOverwriteConflicts": "用备份覆盖同 ID 书",
+  "dataWorkbenchBackupCommitHelp": "逐本提交；若中途失败，已成功恢复的书会保留，失败项会明确列出。未涉及的书籍保持原状。",
+  "dataWorkbenchBackupConfirmRestore": "确认恢复",
+  "dataWorkbenchBackupDiscardPreview": "放弃预览",
+  "dataWorkbenchBackupCancelAfterCommit": "正在完成当前书的提交，取消后续项目",
+  "dataWorkbenchBackupCancelTask": "取消任务",
+  "dataWorkbenchBackupSaved": "备份已保存。",
+  "dataWorkbenchBackupOverwriteTitle": "覆盖同 ID 书稿？",
+  "dataWorkbenchBackupOverwriteBody": "备份中的当前内容将替换同 ID 书稿，不能通过会话撤销恢复。",
+  "dataWorkbenchBackupOverwriteRestore": "覆盖并恢复",
+  "dataWorkbenchBackupTaskCancelled": "任务已取消。",
+  "dataWorkbenchBatchSelectedFiles": "已选 {count} 个文件",
+  "@dataWorkbenchBatchSelectedFiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBatchSummary": "成功 {success} · 失败 {failed} · 共 {total}",
+  "@dataWorkbenchBatchSummary": {
+    "placeholders": {
+      "success": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchLibrarySelected": "当前选中 {count} 本；每批最多 40 本。",
+  "@dataWorkbenchLibrarySelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchLibrarySummary": "本次队列：成功 {success} · 失败 {failed} · 共 {total}",
+  "@dataWorkbenchLibrarySummary": {
+    "placeholders": {
+      "success": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBackupStorage": "应用数据：{support}；缓存：{cache}",
+  "@dataWorkbenchBackupStorage": {
+    "placeholders": {
+      "support": {
+        "type": "String"
+      },
+      "cache": {
+        "type": "String"
+      }
+    }
+  },
+  "dataWorkbenchBackupValidated": "已校验 {count} 本；数据 {size}",
+  "@dataWorkbenchBackupValidated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "dataWorkbenchBackupEstimatedSpace": "预计所需空间（估算）：{size}",
+  "@dataWorkbenchBackupEstimatedSpace": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "dataWorkbenchBackupPreviewBook": "{title} · {chapters} 章 · {words}",
+  "@dataWorkbenchBackupPreviewBook": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBackupRestored": "恢复成功 {count}",
+  "@dataWorkbenchBackupRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBackupSkipped": "跳过 {count}",
+  "@dataWorkbenchBackupSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBackupCancelled": "取消 {count}",
+  "@dataWorkbenchBackupCancelled": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportWorkbenchShareTitle": "分享书稿",
+  "exportWorkbenchExportTitle": "导出书稿",
+  "exportWorkbenchFormatLabel": "文件格式",
+  "exportWorkbenchEpubDescription": "保留封面、卷章目录、书籍信息、排版和嵌入字体。阅读器可能使用自己的分页与字体。",
+  "exportWorkbenchDocxDescription": "生成可编辑的标题和段落，映射基础排版。此格式不包含封面、插图和全部扩展元数据。",
+  "exportWorkbenchHtmlDescription": "生成离线单文件网页，包含目录和内联样式，不包含封面、插图或外部资源。",
+  "exportWorkbenchTextDescription": "保留文字与卷章结构；字体、封面、CSS 和视觉排版不适用于此格式。",
+  "exportWorkbenchDeviceHelpAction": "如何传到阅读设备",
+  "exportWorkbenchShareAction": "打开分享面板",
+  "exportWorkbenchSaveAction": "选择保存位置",
+  "exportWorkbenchDeviceHelpTitle": "导入到阅读设备",
+  "exportWorkbenchDeviceHelpIntro": "先把书稿导出并保存为文件，再按阅读设备的导入方式传送。不同机型和固件支持的格式、菜单可能不同，请以设备说明为准；传送后在设备上打开文件检查目录和排版。",
+  "exportWorkbenchOfficialInfoAction": "打开官方说明",
+  "exportWorkbenchKindleName": "Kindle",
+  "exportWorkbenchKindleSteps": "Amazon 的 Send to Kindle 可接收 EPUB。保存文件后，主动打开其网页上传，再在 Kindle 上查看个人文档。该服务需要联网；设备收到文件后再检查显示效果。",
+  "exportWorkbenchKoboName": "Kobo",
+  "exportWorkbenchKoboSteps": "Kobo 官方说明提供未加 DRM 的 EPUB 文件的 USB 传送步骤：连接设备、在设备上确认连接、把文件复制到设备盘，安全弹出后在“我的书籍”查看。",
+  "exportWorkbenchBooxName": "BOOX / 文石",
+  "exportWorkbenchBooxSteps": "部分固件提供 BooxDrop。若你的设备有此入口，可按设备显示的地址，在同一 Wi-Fi 网络中从电脑传送文件；菜单和支持格式请按当前机型核对。",
+  "exportWorkbenchHanvonName": "汉王 / Hanvon",
+  "exportWorkbenchHanvonSteps": "先核对当前机型的说明书，确认可读取的格式和 USB、传书或本地导入入口。完成传送后在设备书架中打开检查。官方页面只描述其所列机型，不代表所有汉王设备。",
+  "exportWorkbenchIreaderName": "掌阅 / iReader",
+  "exportWorkbenchIreaderSteps": "先在当前机型或应用的帮助中确认支持格式及本地导入、传书入口；导出后按其提示选择文件，并在书架检查。不同 iReader 设备和应用版本可能不同。",
+  "dataWorkbenchBackupAnotherTaskRunning": "另一项任务正在运行。",
+  "dataWorkbenchBackupInvalidBudget": "请输入 1 到 1048576 MiB 的写入预算。",
+  "dataWorkbenchBackupFileTooLarge": "备份文件超过本次写入预算。",
+  "dataWorkbenchBackupActualSizeTooLarge": "备份文件实际大小超过本次预算。",
+  "editorWorkbenchReparsePresetBiquge": "笔趣阁系",
+  "editorWorkbenchReparsePresetBareNumber": "裸数字标题",
+  "editorWorkbenchReparsePresetEnglish": "英文 Chapter / Section",
+  "settingsPermissions": "权限与访问检查",
+  "permissionsIntro": "仅在使用相关功能时访问必要数据。这里检查应用自身目录；外部文件与保存位置的访问权，需要在实际选择时由系统确认。",
+  "permissionsRefresh": "重新检查",
+  "permissionsStorageTitle": "应用数据与缓存",
+  "permissionsStorageHelp": "书架、编辑内容、封面和字体保存在应用自身目录。检查只读写一份临时标记并立即清理，不读取或修改已有书稿。系统目录别名或文件损坏不等同于缺少存储权限。",
+  "permissionsSupport": "应用数据",
+  "permissionsBooks": "书稿与资源",
+  "permissionsCache": "临时缓存",
+  "permissionsReadReady": "读取：可用",
+  "permissionsReadFailed": "读取：不可用",
+  "permissionsWriteReady": "写入：可用",
+  "permissionsWriteFailed": "写入：不可用",
+  "permissionsCheckFailed": "检查未完成，请重试；不要据此判断权限已允许。",
+  "permissionsSystemTitle": "系统权限",
+  "permissionsNoRuntime": "当前安装包没有需要弹窗申请的运行时权限。无需授予全盘存储、照片库、相机、麦克风、通讯录或定位权限来使用书稿功能。",
+  "permissionsDesktopSystem": "桌面端按当前系统账户和目标文件、文件夹的访问控制读写。不能通过一个统一授权开关保证所有位置都可访问。",
+  "permissionsSystemUnavailable": "无法读取系统权限状态。可重试，或在系统应用设置中查看。",
+  "permissionsGranted": "已允许",
+  "permissionsNotGranted": "未允许",
+  "permissionsInternetDeclared": "安装包声明了网络访问权限。",
+  "permissionsStorageDeclared": "安装包声明了广泛存储访问权限，请在系统设置中核对。",
+  "permissionsOpenSystemSettings": "打开系统应用设置",
+  "permissionsSettingsFailed": "无法打开系统应用设置，请从系统设置中进入书织。",
+  "permissionsImportTitle": "导入文件、封面与字体",
+  "permissionsImportAndroid": "在系统文件选择器中主动选择文件，应用只读取所选项目并复制到自身目录。不扫描其他文件，不覆盖原件；取消选择不会取得访问权。文件提供者的授权失效时，需要重新选择。",
+  "permissionsImportDesktop": "应用只打开你在文件选择器中选定的文件。需要系统账户能够读取该文件；只读检查不会导入书架或修改原件。",
+  "permissionsReadAction": "选择书稿检查读取",
+  "permissionsReadSuccess": "所选文件可以读取，未导入或修改。",
+  "permissionsReadFailure": "无法读取所选文件，请重新选择或检查文件提供者和系统权限。",
+  "permissionsCancelled": "已取消，未取得新的文件访问权。",
+  "permissionsExportTitle": "导出与备份",
+  "permissionsExportAndroid": "由系统“另存为”选择目标，仅向你确认的目标写入成品或备份。无需全盘存储权限。下面的检查会保存一份小型测试 TXT，不包含书稿；可在系统对话框中取消。",
+  "permissionsExportDesktop": "仅写入你选择的保存位置，目标目录需可写。占用、只读、磁盘空间不足等也会导致保存失败。下面的检查会保存一份不含书稿的小型测试 TXT。",
+  "permissionsSaveAction": "选择位置保存测试文件",
+  "permissionsSaveSuccess": "测试文件已保存到所选位置。",
+  "permissionsSaveFailure": "测试文件保存失败，目标访问权尚未确认。",
+  "permissionsShareTitle": "分享与离线处理",
+  "permissionsShareAndroid": "分享时只向你选择的接收应用临时授予该成品的只读访问权，不暴露书架目录。打开分享面板不代表对方已收到文件。本地编辑和转换无需联网；外部网页由系统浏览器打开。",
+  "permissionsShareDesktop": "本地编辑和转换无需联网。导出后由你决定是否使用其他工具传送；打开外部网页时交给系统浏览器，不授予该网页书架访问权。",
+  "permissionsScopeNote": "检查结果仅代表当前应用目录或本次选定的文件、目标；不会自动申请其他权限。",
+  "permissionsRuntimePolicy": "部分系统会额外列出权限项。当前书稿功能不需要下面这些运行时权限，也不会主动申请；保持关闭不影响通过系统选择器导入和保存。",
+  "permissionsRuntimeNotRequired": "非书稿功能所需，不会主动申请，可保持关闭。"
 }

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../design/components/app_mark.dart';
-import '../../design/components/app_surface.dart';
 import '../../design/components/glass_surface.dart';
 import '../../design/theme/app_tokens.dart';
 import '../../design/tokens/app_metrics.dart';
@@ -57,9 +56,9 @@ class AppShell extends ConsumerWidget {
             return Column(
               children: <Widget>[
                 const WindowCaption(),
-                Expanded(child: AppSurface(child: navigationShell)),
+                Expanded(child: navigationShell),
                 _BottomBar(
-                  destinations: destinations,
+                  destinations: destinations.take(3).toList(),
                   currentIndex: navigationShell.currentIndex,
                   onSelect: select,
                 ),
@@ -84,7 +83,7 @@ class AppShell extends ConsumerWidget {
                   child: Column(
                     children: <Widget>[
                       const WindowCaption(),
-                      Expanded(child: AppSurface(child: navigationShell)),
+                      Expanded(child: navigationShell),
                     ],
                   ),
                 ),
@@ -269,18 +268,25 @@ class _BottomBar extends StatelessWidget {
       child: GlassSurface(
         radius: AppRadius.xl,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-        child: NavigationBar(
-          selectedIndex: currentIndex,
-          onDestinationSelected: onSelect,
-          destinations: <Widget>[
-            for (final _Destination destination in destinations)
-              NavigationDestination(
-                icon: Icon(destination.icon),
-                selectedIcon: Icon(destination.selectedIcon),
-                label: destination.label,
-                tooltip: destination.label,
-              ),
-          ],
+        child: MediaQuery.removePadding(
+          context: context,
+          removeTop: true,
+          removeBottom: true,
+          child: NavigationBar(
+            selectedIndex: currentIndex < destinations.length
+                ? currentIndex
+                : destinations.length - 1,
+            onDestinationSelected: onSelect,
+            destinations: <Widget>[
+              for (final _Destination destination in destinations)
+                NavigationDestination(
+                  icon: Icon(destination.icon),
+                  selectedIcon: Icon(destination.selectedIcon),
+                  label: destination.label,
+                  tooltip: destination.label,
+                ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,0 +1,61 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:bookloom/core/errors/app_failure.dart';
+import 'package:bookloom/core/model/layout_options.dart';
+import 'package:bookloom/core/platform/background_jobs.dart';
+import 'package:bookloom/core/platform/files.dart';
+import 'package:bookloom/core/storage/app_database.dart';
+import 'package:bookloom/core/storage/book_repository.dart';
+import 'package:bookloom/features/import/application/import_service.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test(
+    'cancel while defaults load cannot publish a late import preview',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'bookloom-cancel-',
+      );
+      final database = AppDatabase.openAt(
+        File('${directory.path}/test.sqlite'),
+      );
+      final repository = BookRepository(database, directory);
+      final jobs = BackgroundJobs();
+      final entered = Completer<void>();
+      final layout = Completer<LayoutOptions>();
+      final cache = Directory('${directory.path}/cache');
+      final service = ImportService(
+        repository: repository,
+        jobs: jobs,
+        temporaryDirectory: cache,
+        loadDefaultLayout: () {
+          entered.complete();
+          return layout.future;
+        },
+      );
+      try {
+        final pending = service.prepare(
+          PickedInput(
+            name: '取消.txt',
+            size: null,
+            openRead: () => Stream.value(utf8.encode('第一章 风\n风吹来了。')),
+          ),
+        );
+        final rejected = expectLater(pending, throwsA(isA<TaskCancelled>()));
+        await entered.future;
+        service.cancel();
+        layout.complete(LayoutOptions());
+        await rejected;
+        expect(await repository.listSummaries(), isEmpty);
+        expect(await cache.list().toList(), isEmpty);
+        expect(jobs.isBusy, isFalse);
+      } finally {
+        jobs.dispose();
+        await database.close();
+        await directory.delete(recursive: true);
+      }
+    },
+  );
+}

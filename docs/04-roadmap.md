@@ -13,6 +13,8 @@
 
 > 时间是单人全职的粗略估计，不含应用商店审核和签名采购。
 
+下一轮实施统一见 [Web 能力整合与原生工作台开发计划](development/00-native-workbench.md)：在同一份文档中细化 M0 欠项与 M1–M3 业务能力、原生适配及分批验收。下述里程碑保留为产品总路线，不把新计划中的待实施功能视为已完成。
+
 ## 2. M0：基础与验证（先做，不要跳）
 
 ### 交付
@@ -143,14 +145,14 @@
 
 ## 9. 第一轮任务（M0 可直接开工）
 
-> 进度（2026-11-04）：脚手架、设计系统、数据层骨架、CI 已完成，见 [设计系统](07-design-system.md)。
+> 进度（2026-11-05）：核心已扩展到原生导入、编辑、成书、批量与备份；分层验证与平台欠项统一见[实施记录](development/00-native-workbench.md#14-每批实施记录与整轮完成条件)。以下仅标实现清单，不据此宣布 M0–M4 已验收或更改发布版本。
 
 - [x] 1. `flutter create` 并提交初始脚手架（Flutter 3.47.9，`--platforms=android,linux,windows`）。
 - [x] 2. 建立 `lib/core/model/`：`book.dart`、`chapter.dart`、`block.dart`、`metadata.dart`、`cover_options.dart`、`layout_options.dart`。
 - [x] 3. 建 SQLite + Drift 表：books/chapters/blocks/sources/assets/settings，含外键与索引。
-- [ ] 4. 实现 `FilePickerService` 桌面版，Android 版留接口。
-- [ ] 5. 写一个“导入 TXT → 显示章节列表”的竖切。
-- [ ] 6. 写 10 个分章黄金用例（从 txt2book 搬）。
+- [x] 4. 实现 `FileService` 桌面版与 Android SAF 桥接；平台实测状态另记。
+- [x] 5. 写一个“导入 TXT → 显示章节列表”的竖切，并接入真实保存／重开／EPUB 导出。
+- [x] 6. 以 txt2book 行为为依据，新增至少 10 个自编分章／编码回归用例；不复制授权不明的小说夹具。
 - [ ] 7. 在 Linux 和 Windows 上各跑一次，记录输入法问题。
 - [ ] 8. 在 Android 真机/模拟器上跑一次 SAF 选文件。
 - [x] 9. 建立 CI（analyze + test + Linux 构建）。

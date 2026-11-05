@@ -2,18 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/errors/app_failure.dart';
+import '../core/platform/files.dart';
+import '../core/platform/sharing.dart';
+import '../core/settings/workbench_preferences.dart';
+import '../design/components/app_canvas.dart';
 import '../design/components/app_page.dart';
 import '../design/components/app_surface.dart';
 import '../design/components/empty_state.dart';
 import '../design/tokens/app_metrics.dart';
 import '../features/about/presentation/about_page.dart';
 import '../features/design_system/presentation/design_system_page.dart';
+import '../features/editor/presentation/editor_page.dart';
+import '../features/export/presentation/export_options.dart';
+import '../features/import/presentation/batch_page.dart';
 import '../features/import/presentation/import_page.dart';
 import '../features/library/presentation/library_page.dart';
+import '../features/settings/presentation/book_data_page.dart';
+import '../features/settings/presentation/permissions_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../l10n/app_localizations.dart';
+import 'providers.dart';
 import 'shell/app_shell.dart';
 import 'shell/window_caption.dart';
+import 'workbench_providers.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'root',
@@ -76,6 +88,88 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         ],
       ),
       GoRoute(
+        path: '/books/:bookId',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (BuildContext context, GoRouterState state) => _fadePage(
+          EditorPage(
+            bookId: state.pathParameters['bookId']!,
+            onShare: (String bookId) async {
+              final store = ref.read(settingsStoreProvider);
+              final defaults = await WorkbenchPreferences.read(store);
+              final dialogContext = _rootNavigatorKey.currentContext;
+              if (dialogContext == null || !dialogContext.mounted) return;
+              final format = await chooseExportFormat(
+                dialogContext,
+                initialFormat: defaults.exportFormat,
+                forSharing: true,
+              );
+              if (format == null) return;
+              final outcome = await ref
+                  .read(exportServiceProvider)
+                  .withPreparedExport<ShareOutcome>(
+                    bookId,
+                    format: format,
+                    submit: NativeSharingService().sharePreparedFile,
+                  );
+              if (outcome case ShareFailed(:final message)) {
+                throw ExportFailure(message);
+              }
+              if (dialogContext.mounted && outcome is SharePanelOpened) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      AppLocalizations.of(dialogContext).workbenchSharingOpened,
+                    ),
+                  ),
+                );
+              }
+            },
+            onExport: (String bookId) async {
+              final store = ref.read(settingsStoreProvider);
+              final defaults = await WorkbenchPreferences.read(store);
+              final dialogContext = _rootNavigatorKey.currentContext;
+              if (dialogContext == null || !dialogContext.mounted) {
+                return const SaveCancelled();
+              }
+              final format = await chooseExportFormat(
+                dialogContext,
+                initialFormat: defaults.exportFormat,
+              );
+              if (format == null) return const SaveCancelled();
+              await WorkbenchPreferences(
+                layout: defaults.layout,
+                exportFormat: format,
+              ).write(store);
+              return ref
+                  .read(exportServiceProvider)
+                  .exportBook(bookId, format: format);
+            },
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/batch',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) =>
+            _fadePage(BatchPage(service: ref.read(batchServiceProvider))),
+      ),
+      GoRoute(
+        path: '/data',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadePage(const BookDataPage()),
+      ),
+      GoRoute(
+        path: '/permissions',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _fadePage(const PermissionsPage()),
+      ),
+      GoRoute(
+        path: '/about-info',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) =>
+            _fadePage(const AboutPage(showBackButton: true)),
+      ),
+      GoRoute(
         path: '/design',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (BuildContext context, GoRouterState state) =>
@@ -120,14 +214,19 @@ CustomTransitionPage<void> _fadePage(Widget page) {
             curve: AppMotion.enter,
             reverseCurve: AppMotion.exit,
           );
-          return FadeTransition(
-            opacity: curved,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.012),
-                end: Offset.zero,
-              ).animate(curved),
-              child: child,
+          // The outgoing route remains painted while a route animates. Keep
+          // an opaque, stationary canvas above it so transparent page margins
+          // never reveal the previous page's text or navigation.
+          return AppCanvas(
+            child: FadeTransition(
+              opacity: curved,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.012),
+                  end: Offset.zero,
+                ).animate(curved),
+                child: child,
+              ),
             ),
           );
         },

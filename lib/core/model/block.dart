@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// Identity of a content block. Mirrors the `blocks.kind` column.
 enum BlockKind {
   paragraph('paragraph'),
@@ -20,7 +18,6 @@ enum BlockKind {
 ///
 /// Blocks exist from day one so images, footnotes and breaks do not force a
 /// migration away from `List<String> paragraphs` (see docs/03-data-model.md).
-@immutable
 sealed class Block {
   const Block({required this.id, required this.kind});
 

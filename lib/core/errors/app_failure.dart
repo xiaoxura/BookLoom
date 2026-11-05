@@ -68,3 +68,11 @@ final class UnexpectedFailure extends AppFailure {
   @override
   String? get hint => '已记录日志。如果反复出现，请附上日志反馈。';
 }
+
+final class TaskCancelled extends AppFailure {
+  const TaskCancelled() : super('任务已取消。');
+}
+
+final class TaskTimedOut extends AppFailure {
+  const TaskTimedOut() : super('处理超时，任务已停止。请缩小范围或检查输入文件。');
+}

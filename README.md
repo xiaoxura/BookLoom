@@ -7,7 +7,7 @@
 - **一套 Flutter UI + 一套 Dart 核心**，桌面和移动端共享业务逻辑。
 - 项目代号 **Bookloom**，中文名 **书织**。
 
-> 当前状态：**M0 脚手架已就绪**。设计系统、主题、路由、Riverpod、Drift 数据库、日志与错误边界、CI 已经落地；TXT 导入与分章在 M1 开发。
+> 当前状态：**原生工作台核心与本机回归已通过，三端原生实测尚未齐全**。三种输入、原生编辑校对、成书、六种输出、批量与备份已有实现和分层测试；平台实测、性能和外部兼容结果以[本轮实施记录](docs/development/00-native-workbench.md#14-每批实施记录与整轮完成条件)为准。尚未完成三端发布验收。
 
 ![书架 · 浅色](docs/design/home-light.png)
 
@@ -67,7 +67,7 @@ docs/                      # 产品、架构、技术栈、数据、路线图、
 - 客户端框架：**Flutter**（Linux / Windows / Android 一致，后续可扩展 Apple）。
 - 语言：**Dart 3**；重计算/格式处理优先纯 Dart，必要时通过 FFI 接 Rust/C++。
 - 本地存储：**SQLite + Drift**；原始文件、图片、封面存应用数据目录，数据库只存引用。
-- 内容模型：**Chapter → Block**，从第一天支持文字和图片，避免以后为插图重构。
+- 内容模型：**Chapter → Block**，文字编辑已接入，图片等块保留扩展位；本轮不保留 EPUB 插图及 DOCX 图片、表格、脚注，导入时给出丢失提示。
 - 视觉语言：**纸面 + 墨色 + 玻璃浮层**，见 [设计系统](docs/07-design-system.md)。
 - 应用 ID：**`com.xiaoxura.bookloom`**。
 - 官网/文档：**`https://bookloom.xiaoxura.com`**；`https://bl.xiaoxura.com` 作为短链跳转。
@@ -85,6 +85,7 @@ docs/                      # 产品、架构、技术栈、数据、路线图、
 | [平台与发布](docs/05-platform-release.md) | 应用 ID、域名、打包、签名、发布流程 |
 | [开发指南](docs/06-development.md) | 环境、脚手架、规范、测试、CI、移植说明 |
 | [设计系统](docs/07-design-system.md) | 色彩、字体、间距、玻璃策略、组件约定、截图 |
+| [下一轮开发计划](docs/development/00-native-workbench.md) | Web 能力整合、原生优化、数据契约、实施批次与验收 |
 
 ## 开发约定
 

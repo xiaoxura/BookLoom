@@ -17,6 +17,9 @@ class Books extends Table {
   TextColumn get tagsJson => text().withDefault(const Constant('[]'))();
   TextColumn get publishedAt => text().nullable()();
   TextColumn get coverAssetId => text().nullable()();
+  TextColumn get coverMode => text().withDefault(const Constant('template'))();
+  TextColumn get parseOptionsJson => text().withDefault(const Constant('{}'))();
+  IntColumn get revision => integer().withDefault(const Constant(0))();
   IntColumn get chapterCount => integer().withDefault(const Constant(0))();
   IntColumn get wordCount => integer().withDefault(const Constant(0))();
   TextColumn get layoutJson => text().withDefault(const Constant('{}'))();
@@ -32,7 +35,8 @@ class Books extends Table {
 
 class Sources extends Table {
   TextColumn get id => text()();
-  TextColumn get bookId => text().unique()();
+  TextColumn get bookId =>
+      text().unique().references(Books, #id, onDelete: KeyAction.cascade)();
   TextColumn get format => text()();
   TextColumn get originalName => text()();
   TextColumn get storedPath => text()();
@@ -56,6 +60,7 @@ class Chapters extends Table {
   )();
   TextColumn get title => text()();
   IntColumn get level => integer().withDefault(const Constant(2))();
+  BoolColumn get frontMatter => boolean().withDefault(const Constant(false))();
   IntColumn get sortOrder => integer()();
   IntColumn get wordCount => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime()();

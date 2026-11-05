@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
 import '../../core/settings/appearance.dart';
+import 'app_colors.dart';
 
 @immutable
 class GlassTokens {
@@ -38,48 +39,54 @@ class GlassTokens {
 
   bool get isBlurred => quality.isBlurred && blurSigma > 0;
 
-  /// Tint with the quality's alpha applied.
-  Color get fill => tint.withValues(alpha: tintAlpha);
+  /// Tint with the quality's alpha applied. The off state stays opaque even
+  /// while theme extensions interpolate between glass qualities.
+  Color get fill =>
+      tint.withValues(alpha: quality == GlassQuality.off ? 1 : tintAlpha);
 
   static GlassTokens forQuality(GlassQuality quality, {required bool dark}) {
+    final colors = dark ? AppColors.dark : AppColors.light;
     final shadow = BoxShadow(
-      color: (dark ? const Color(0xFF000000) : const Color(0xFF2A241B))
-          .withValues(alpha: dark ? 0.45 : 0.15),
-      blurRadius: 40,
-      spreadRadius: -12,
-      offset: const Offset(0, 16),
+      color: colors.shadow.withValues(alpha: dark ? 0.30 : 0.12),
+      blurRadius: 32,
+      spreadRadius: -10,
+      offset: const Offset(0, 12),
     );
 
     return switch (quality) {
       GlassQuality.off => GlassTokens(
         quality: quality,
         blurSigma: 0,
-        tint: dark ? const Color(0xFF1C1A17) : const Color(0xFFFBF8F2),
-        tintAlpha: dark ? 0.94 : 0.96,
-        border: dark ? const Color(0xFF35302A) : const Color(0xFFDFD7C8),
+        tint: colors.surface,
+        tintAlpha: 1,
+        border: colors.hairline,
         highlight: const Color(0x00000000),
         shadow: [shadow],
       ),
       GlassQuality.soft => GlassTokens(
         quality: quality,
         blurSigma: 12,
-        tint: dark ? const Color(0xFF26221D) : const Color(0xFFFFFDF8),
-        tintAlpha: dark ? 0.70 : 0.74,
-        border: (dark ? const Color(0xFFFFFFFF) : const Color(0xFF1B1916))
-            .withValues(alpha: dark ? 0.08 : 0.08),
-        highlight: (dark ? const Color(0xFFFFFFFF) : const Color(0xFFFFFFFF))
-            .withValues(alpha: dark ? 0.06 : 0.55),
+        tint: colors.surface,
+        tintAlpha: dark ? 0.74 : 0.76,
+        border: (dark ? colors.ink : colors.surfaceRaised).withValues(
+          alpha: dark ? 0.14 : 0.78,
+        ),
+        highlight: (dark ? colors.ink : colors.surfaceRaised).withValues(
+          alpha: dark ? 0.06 : 0.12,
+        ),
         shadow: [shadow],
       ),
       GlassQuality.strong => GlassTokens(
         quality: quality,
         blurSigma: 32,
-        tint: dark ? const Color(0xFF2A2621) : const Color(0xFFFFFDFA),
+        tint: colors.surface,
         tintAlpha: dark ? 0.50 : 0.46,
-        border: (dark ? const Color(0xFFFFFFFF) : const Color(0xFF1B1916))
-            .withValues(alpha: dark ? 0.12 : 0.11),
-        highlight: const Color(0xFFFFFFFF)
-            .withValues(alpha: dark ? 0.12 : 0.78),
+        border: (dark ? colors.ink : colors.surfaceRaised).withValues(
+          alpha: dark ? 0.20 : 0.88,
+        ),
+        highlight: (dark ? colors.ink : colors.surfaceRaised).withValues(
+          alpha: dark ? 0.10 : 0.20,
+        ),
         shadow: [shadow],
       ),
     };

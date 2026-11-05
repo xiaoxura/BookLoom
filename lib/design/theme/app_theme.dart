@@ -167,6 +167,59 @@ abstract final class AppTheme {
           borderSide: BorderSide(color: colors.accent, width: 1.4),
         ),
       ),
+      dropdownMenuTheme: DropdownMenuThemeData(
+        textStyle: textTheme.bodyMedium?.copyWith(color: colors.ink),
+        inputDecorationTheme: InputDecorationThemeData(
+          filled: true,
+          fillColor: colors.surfaceRaised,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: radiusMd,
+            borderSide: BorderSide(color: colors.hairline),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: radiusMd,
+            borderSide: BorderSide(color: colors.hairline),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: radiusMd,
+            borderSide: BorderSide(color: colors.accent, width: 1.4),
+          ),
+        ),
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(colors.surfaceRaised),
+          surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+          elevation: const WidgetStatePropertyAll(0),
+          side: WidgetStatePropertyAll(BorderSide(color: colors.hairline)),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: radiusMd),
+          ),
+          padding: const WidgetStatePropertyAll(EdgeInsets.all(AppSpacing.xs)),
+        ),
+      ),
+      menuButtonTheme: MenuButtonThemeData(
+        style: ButtonStyle(
+          foregroundColor: WidgetStatePropertyAll(colors.ink),
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.focused)
+                ? colors.accentSoft
+                : Colors.transparent,
+          ),
+          overlayColor: WidgetStatePropertyAll(
+            colors.accent.withValues(alpha: 0.07),
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: radiusMd),
+          ),
+          minimumSize: const WidgetStatePropertyAll(Size(0, 44)),
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          ),
+        ),
+      ),
       cardTheme: CardThemeData(
         color: colors.surface,
         surfaceTintColor: Colors.transparent,
@@ -242,7 +295,7 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
         indicatorColor: colors.accentSoft,
         elevation: 0,
-        height: 68,
+        height: AppLayout.bottomBarHeight,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);

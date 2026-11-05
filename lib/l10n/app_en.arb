@@ -12,8 +12,9 @@
     }
   },
   "libraryEmptyTitle": "Your shelf is empty",
+  "libraryEmptyMessage": "Import a manuscript to view and organize your books here.",
   "libraryEmptyAction": "Import a manuscript",
-  "importFormatsTitle": "Planned formats",
+  "importFormatsTitle": "Formats and handling",
   "importFormatTxt": "TXT",
   "importFormatEpub": "EPUB",
   "importFormatDocx": "DOCX",
@@ -75,6 +76,8 @@
   "appTagline": "Weave text into books",
   "aboutHeading": "About Bookloom",
   "aboutVersionLabel": "Version {version}",
+  "appDescription": "A local-first ebook workspace",
+  "aboutLocalNote": "No account needed. Manuscripts and edits stay on your device.",
   "aboutChangelog": "Changelog",
   "aboutTechIntro": "Pure Dart at the core, Flutter for the interface, everything stored in local SQLite.",
   "aboutOpenSource": "Open source",
@@ -95,5 +98,746 @@
   "techRouter": "go_router",
   "techRouterDesc": "Routing and deep links",
   "techWindow": "window_manager",
-  "techWindowDesc": "Desktop window control"
+  "techWindowDesc": "Desktop window control",
+  "commonRetry": "Retry",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "libraryLoadFailed": "Could not load the library",
+  "libraryNoMatch": "No matching books",
+  "librarySearch": "Search titles or authors",
+  "libraryClearSearch": "Clear search",
+  "librarySortRecent": "Recently edited",
+  "librarySortTitle": "Title",
+  "librarySortOpened": "Recently opened",
+  "libraryUnknownAuthor": "Author not set",
+  "libraryBookActions": "Book actions",
+  "libraryRename": "Rename",
+  "libraryDelete": "Delete book",
+  "libraryBookTitle": "Title",
+  "libraryOperationFailed": "The operation failed. Please retry.",
+  "libraryBookStats": "{chapters} chapters · {words} words",
+  "@libraryBookStats": {
+    "placeholders": {
+      "chapters": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryDeleteConfirm": "Delete “{title}”? Its manuscript and local assets will be removed.",
+  "@libraryDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "importSelectTitle": "Select a manuscript",
+  "importTxtReady": "Import TXT, EPUB or DOCX. Review the chapters, text and format-loss notices before adding the book to your library.",
+  "importChooseFile": "Choose a file",
+  "importChooseAnother": "Choose another file",
+  "importFileSize": "Size: {size}",
+  "@importFileSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "importSizeUnknown": "Unknown",
+  "importOptions": "Parsing options",
+  "importEncoding": "Text encoding",
+  "importEncodingAuto": "Auto detect",
+  "importFilterAds": "Filter obvious ads",
+  "importAnalyze": "Parse and preview",
+  "importReviewTitle": "Import preview",
+  "importReviewStats": "{chapters} chapters · {words} words",
+  "@importReviewStats": {
+    "placeholders": {
+      "chapters": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "importActualEncoding": "Detected encoding: {encoding}",
+  "@importActualEncoding": {
+    "placeholders": {
+      "encoding": {
+        "type": "String"
+      }
+    }
+  },
+  "importWarnings": "Please review",
+  "importExcerpt": "Text excerpt",
+  "importWarningEncoding": "Encoding detection is uncertain. Choose an encoding and parse again if needed.",
+  "importWarningNoHeadings": "No chapter headings were found; the text was placed in one chapter.",
+  "importWarningManyChapters": "Many chapters were found. Review the outline.",
+  "importWarningGeneric": "Parsing notice: {code}",
+  "@importWarningGeneric": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "importAddToLibrary": "Add to library and edit",
+  "importSaving": "Saving manuscript…",
+  "importStagePrepare": "Preparing…",
+  "importStageDecode": "Detecting encoding…",
+  "importStageParse": "Organizing chapters…",
+  "importStageReady": "Parsing complete",
+  "importPickFailed": "Could not choose a file. Check permissions and retry.",
+  "importAnalyzeFailed": "Parsing failed. Check the file or try another encoding.",
+  "importSaveFailed": "Saving failed. The preview is still available; retry.",
+  "importDiscardFailed": "Could not clean up the temporary file. Retry.",
+  "importFormatAvailable": "{format} · Available",
+  "@importFormatAvailable": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      }
+    }
+  },
+  "importFormatLater": "{format} · Coming in a later batch",
+  "@importFormatLater": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      }
+    }
+  },
+  "editorOpenFailed": "Could not open the manuscript",
+  "editorBack": "Back to library",
+  "editorChapters": "Chapter outline",
+  "editorBookInfo": "Book information",
+  "editorExport": "Export manuscript",
+  "editorUndo": "Undo",
+  "editorRedo": "Redo",
+  "editorEdit": "Edit",
+  "editorPreview": "Preview",
+  "editorSaving": "Saving…",
+  "editorUnsaved": "Unsaved changes",
+  "editorSaved": "Saved",
+  "editorSaveFailed": "Save failed",
+  "editorSaveFailedStay": "Saving failed. You are still in this manuscript; please retry.",
+  "editorSearchChapters": "Search chapters",
+  "editorNoChapters": "No chapters",
+  "editorEmptyChapter": "This chapter has no body text",
+  "editorChapterActions": "Chapter actions",
+  "editorRenameChapter": "Rename chapter",
+  "editorChapterTitle": "Chapter title",
+  "editorMergePrevious": "Merge into previous chapter",
+  "editorPromote": "Promote to volume",
+  "editorDemote": "Demote to chapter",
+  "editorDeleteChapter": "Delete chapter",
+  "editorDeleteChapterConfirm": "Delete “{title}” and its body text?",
+  "@editorDeleteChapterConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "editorParagraphActions": "Paragraph actions",
+  "editorSplitHere": "Split chapter here",
+  "editorSetAsTitle": "Use as chapter title",
+  "editorImageBlock": "Image block",
+  "editorBookTitle": "Title",
+  "editorBookAuthor": "Author",
+  "editorMoreMetadata": "More information",
+  "editorDescription": "Description",
+  "editorSeries": "Series",
+  "editorPublisher": "Publisher",
+  "editorLanguage": "Language",
+  "editorTags": "Tags (comma separated)",
+  "editorPublishedAt": "Publication date",
+  "editorInvalidDate": "Enter a valid date as YYYY-MM-DD.",
+  "editorTitleRequired": "A title is required.",
+  "editorLanguageRequired": "A language is required.",
+  "editorMetaSavedAutomatically": "Changes save automatically.",
+  "editorActionFailed": "The action did not complete. Check this chapter and retry.",
+  "editorExportSaved": "Export file saved.",
+  "editorExportFailed": "Export failed. Please retry.",
+  "workbenchOpenBatch": "Process multiple books",
+  "workbenchOpenData": "Manage books and backups",
+  "workbenchSharingOpened": "Sharing panel opened. Complete the transfer in the receiving app.",
+  "workbenchCoverUnavailable": "Cover image unavailable",
+  "editorWorkbenchMoreActions": "More manuscript actions",
+  "editorWorkbenchTools": "Manuscript tools",
+  "editorWorkbenchReparse": "Reparse from source file",
+  "editorWorkbenchShare": "Share to another app",
+  "editorWorkbenchCloseLocation": "Dismiss location hint",
+  "editorWorkbenchLocationChanged": "This paragraph has changed. Check it again.",
+  "editorWorkbenchLocationAt": "Located paragraph {index}: {text}",
+  "@editorWorkbenchLocationAt": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "editorWorkbenchDeleteVolumeConfirm": "Delete volume “{title}”? Its chapters and text will be kept as top-level chapters.",
+  "@editorWorkbenchDeleteVolumeConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "editorWorkbenchShareFailed": "Could not open the share panel. Please retry.",
+  "editorWorkbenchToolFailed": "The operation failed. Check the manuscript and retry.",
+  "editorWorkbenchToolsIntro": "Checks and bulk edits apply to this manuscript. Preview changes first; each applied batch can be undone in one step.",
+  "editorWorkbenchPreparingBook": "Preparing manuscript…",
+  "editorWorkbenchCancelTask": "Cancel task",
+  "editorWorkbenchAuditTitle": "Manuscript check",
+  "editorWorkbenchAuditDesc": "Checks numbering, empty chapters, duplicate titles and ad traces; short chapters (<120 characters) and long chapters (>30,000) are heuristic notices.",
+  "editorWorkbenchAuditRun": "Check this manuscript",
+  "editorWorkbenchAuditTotal": "{count} notices in total",
+  "@editorWorkbenchAuditTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchIssueCount": "{label}: {count}",
+  "@editorWorkbenchIssueCount": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchAuditLimit": "Up to 20 examples are shown per type; totals include all notices.",
+  "editorWorkbenchMissedTitle": "Possible missed chapters",
+  "editorWorkbenchMissedDesc": "Locate body paragraphs that resemble chapter headings; use the paragraph menu to split them after checking.",
+  "editorWorkbenchMissedRun": "Find possible missed chapters",
+  "editorWorkbenchMissedCount": "{count} candidates found",
+  "@editorWorkbenchMissedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchMissedLocation": "Outline item {chapter} · paragraph {paragraph}",
+  "@editorWorkbenchMissedLocation": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      },
+      "paragraph": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchMissedLimit": "Only the first 100 candidates are shown.",
+  "editorWorkbenchFindReplace": "Find and replace",
+  "editorWorkbenchFindText": "Find",
+  "editorWorkbenchReplaceWith": "Replace with",
+  "editorWorkbenchScope": "Scope",
+  "editorWorkbenchScopeAll": "Titles and body text",
+  "editorWorkbenchScopeTitle": "Chapter titles only",
+  "editorWorkbenchScopeBody": "Body text only",
+  "editorWorkbenchRegex": "Regular expression",
+  "editorWorkbenchCaseSensitive": "Case-sensitive",
+  "editorWorkbenchPreviewReplace": "Preview replacement",
+  "editorWorkbenchRenumberTitle": "Renumber by volume",
+  "editorWorkbenchRenumberDesc": "Check chapter numbering within each volume and preview title changes. Body text is unchanged.",
+  "editorWorkbenchPreviewRenumber": "Preview renumbering",
+  "editorWorkbenchConvertTitle": "Convert this manuscript",
+  "editorWorkbenchConvertDesc": "Convert chapter titles and body text in this manuscript; the source file is not reparsed.",
+  "editorWorkbenchConvertDirection": "Conversion direction",
+  "editorWorkbenchConvertSimplified": "Traditional to simplified Chinese",
+  "editorWorkbenchConvertTraditional": "Simplified to Taiwan traditional Chinese",
+  "editorWorkbenchPreviewConvert": "Preview conversion",
+  "editorWorkbenchReplaceLabel": "Replacement",
+  "editorWorkbenchRenumberLabel": "Renumbering",
+  "editorWorkbenchConvertLabel": "Chinese character conversion",
+  "editorWorkbenchBatchEdit": "Bulk edit",
+  "editorWorkbenchPreviewTitle": "{operation} preview",
+  "@editorWorkbenchPreviewTitle": {
+    "placeholders": {
+      "operation": {
+        "type": "String"
+      }
+    }
+  },
+  "editorWorkbenchPreviewStats": "{hits} matches; {fields} fields changed.",
+  "@editorWorkbenchPreviewStats": {
+    "placeholders": {
+      "hits": {
+        "type": "int"
+      },
+      "fields": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchBodyParagraph": "Body paragraph",
+  "editorWorkbenchApplyOneUndo": "Apply changes (one undo step)",
+  "editorWorkbenchIssueMissingNumber": "Missing chapter number",
+  "editorWorkbenchIssueDuplicateNumber": "Duplicate chapter number",
+  "editorWorkbenchIssueEmptyChapter": "Empty chapter",
+  "editorWorkbenchIssueDuplicateTitle": "Duplicate title",
+  "editorWorkbenchIssueTooLong": "Long chapter",
+  "editorWorkbenchIssueTooShort": "Short chapter",
+  "editorWorkbenchIssueEmptyVolume": "Empty volume",
+  "editorWorkbenchIssueAdLeftover": "Ad traces",
+  "editorWorkbenchReparseInvalidRuleUtf8": "The rules JSON is not valid UTF-8 text.",
+  "editorWorkbenchReparseFailed": "Reparsing failed. Check the source text and rules, then retry.",
+  "editorWorkbenchOriginalCacheFailed": "Could not clean up the selected source file. Retry later.",
+  "editorWorkbenchRuleCacheFailed": "Could not clean up the temporary rules file. Retry later.",
+  "editorWorkbenchRuleTooLarge": "Rules JSON exceeds 16 KiB",
+  "editorWorkbenchRuleExported": "Rules JSON exported.",
+  "editorWorkbenchReparseChanged": "The manuscript changed. Prepare the reparse preview again.",
+  "editorWorkbenchReparseConfirmTitle": "Replace all current chapters?",
+  "editorWorkbenchReparseConfirmBody": "Replace every chapter and its body text with the {count} outline items just recognized. This clears the current undo history. Title, author, cover and layout settings are kept; edited chapter text is not.",
+  "@editorWorkbenchReparseConfirmBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchReparseConfirmAction": "Replace chapters",
+  "editorWorkbenchPreparedCacheFailed": "Could not clean up the temporary reparse result. Retry later.",
+  "editorWorkbenchReparseIntro": "Only TXT manuscripts with their original source retained can be reparsed. Prepare a preview, then confirm replacing all chapters. Use Manuscript tools to convert the current manuscript.",
+  "editorWorkbenchSelectOriginal": "Choose the same TXT if the source is missing",
+  "editorWorkbenchForgetOriginal": "Stop using selected source",
+  "editorWorkbenchSourceEncoding": "Source encoding",
+  "editorWorkbenchAutoDetect": "Auto detect",
+  "editorWorkbenchFilterAds": "Filter ads",
+  "editorWorkbenchRules": "Parsing rules",
+  "editorWorkbenchCustomRules": "Custom rules",
+  "editorWorkbenchImportRulesJson": "Import rules JSON",
+  "editorWorkbenchExportRulesJson": "Export current rules JSON",
+  "editorWorkbenchRulesJsonFields": "Rules JSON (name / chapter / volume / drop / inlineJunk)",
+  "editorWorkbenchRulesOnlyReparse": "Rules only apply when reparsing the source. Use Manuscript tools for ordinary bulk replacement.",
+  "editorWorkbenchPrepareReparse": "Prepare reparse preview",
+  "editorWorkbenchPreparing": "Preparing…",
+  "editorWorkbenchReparseAppliedUnsaved": "Chapters were replaced but not saved. Use Retry at the top.",
+  "editorWorkbenchReparseAppliedSaved": "Current chapters replaced and saved.",
+  "editorWorkbenchReparsePreview": "Reparse result preview",
+  "editorWorkbenchReparseStats": "{chapters} outline items · {words} words",
+  "@editorWorkbenchReparseStats": {
+    "placeholders": {
+      "chapters": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "editorWorkbenchSourceEncodingSelected": "Encoding: selected setting",
+  "editorWorkbenchSourceEncodingActual": "Actual encoding: {encoding}",
+  "@editorWorkbenchSourceEncodingActual": {
+    "placeholders": {
+      "encoding": {
+        "type": "String"
+      }
+    }
+  },
+  "editorWorkbenchReparseWarningsLimit": "Only the first 20 notices are shown.",
+  "editorWorkbenchReparseApply": "Replace all current chapters…",
+  "editorWorkbenchOptionsFileEncoding": "File encoding",
+  "editorWorkbenchOptionsAuto": "Auto",
+  "editorWorkbenchOptionsChapterRules": "Chapter rules",
+  "editorWorkbenchOptionsFilterAds": "Filter common ads",
+  "editorWorkbenchOptionsEditRules": "Edit JSON rules",
+  "editorWorkbenchOptionsImportRules": "Import rules",
+  "editorWorkbenchOptionsExportRules": "Export rules",
+  "editorWorkbenchOptionsRemoveRules": "Remove custom rules",
+  "editorWorkbenchOptionsCurrentRules": "Current rules: {name}",
+  "@editorWorkbenchOptionsCurrentRules": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "editorWorkbenchOptionsConvertAtImport": "Convert imported text",
+  "editorWorkbenchOptionsKeepOriginal": "Keep original",
+  "editorWorkbenchOptionsToSimplified": "Simplified Chinese",
+  "editorWorkbenchOptionsToTaiwan": "Taiwan traditional Chinese",
+  "editorWorkbenchOptionsRulesTitle": "JSON chapter rules",
+  "editorWorkbenchOptionsRulesHelp": "Fields: name, chapter, volume, drop, inlineJunk. Rules are independent of the ad filter; unsafe or unsupported regex is rejected.",
+  "editorWorkbenchOptionsValidateApply": "Validate and apply",
+  "editorWorkbenchRulePresetIxdzs": "ixdzs",
+  "editorWorkbenchRulePresetBiquge": "Biquge",
+  "editorWorkbenchRulePresetNumbered": "Numbered titles",
+  "editorWorkbenchRulePresetBareNumber": "Bare numbers",
+  "editorWorkbenchRulePresetEnglish": "English headings",
+  "bookWorkbenchSettings": "Book settings",
+  "bookWorkbenchMetadata": "Metadata",
+  "bookWorkbenchLayoutFonts": "Layout and fonts",
+  "bookWorkbenchCover": "Cover",
+  "bookWorkbenchReadingPreview": "Reading preview",
+  "bookWorkbenchTitleRequired": "Title is required",
+  "bookWorkbenchMoreInformation": "More information",
+  "bookWorkbenchLanguageCodeHint": "Use a language code like en-US",
+  "bookWorkbenchPublicationDate": "Publication date (YYYY-MM-DD)",
+  "bookWorkbenchInvalidDate": "Enter a valid date",
+  "bookWorkbenchLineHeight": "Line height {value}",
+  "@bookWorkbenchLineHeight": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bookWorkbenchParagraphSpacing": "Paragraph space {value} em",
+  "@bookWorkbenchParagraphSpacing": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bookWorkbenchTwoCharacterIndent": "Two-character first-line indent",
+  "bookWorkbenchJustify": "Justify text",
+  "bookWorkbenchSeparateChapterNumber": "Separate chapter number",
+  "bookWorkbenchBodyFontStyle": "Body font style",
+  "bookWorkbenchSerif": "Serif",
+  "bookWorkbenchSans": "Sans serif",
+  "bookWorkbenchKai": "Kai",
+  "bookWorkbenchEmbeddedFontInfo": "Embedded fonts affect supported exports and may increase file size.",
+  "bookWorkbenchImportFont": "Import font",
+  "bookWorkbenchRemoveFont": "Remove font",
+  "bookWorkbenchCustomCssLabel": "Additional CSS (EPUB / HTML only)",
+  "bookWorkbenchUnsafeCss": "CSS cannot contain links, scripts, or unsafe characters",
+  "bookWorkbenchCssNativeNote": "Native preview does not execute additional CSS.",
+  "bookWorkbenchTemplate": "Template",
+  "bookWorkbenchImage": "Image",
+  "bookWorkbenchChooseCoverFirst": "Choose a cover image first.",
+  "bookWorkbenchChooseCoverImage": "Choose cover image",
+  "bookWorkbenchCoverLimits": "JPEG, PNG, WebP; images over 12 megapixels are rejected before decoding.",
+  "bookWorkbenchVertical": "Vertical",
+  "bookWorkbenchBlocks": "Blocks",
+  "bookWorkbenchPalette": "Palette",
+  "bookWorkbenchAuto": "Auto",
+  "bookWorkbenchSand": "Sand",
+  "bookWorkbenchInk": "Ink",
+  "bookWorkbenchSea": "Sea",
+  "bookWorkbenchWine": "Wine",
+  "bookWorkbenchForest": "Forest",
+  "bookWorkbenchTitleScale": "Title scale {value}",
+  "@bookWorkbenchTitleScale": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bookWorkbenchAuthorPosition": "Author position",
+  "bookWorkbenchTop": "Top",
+  "bookWorkbenchBottom": "Bottom",
+  "bookWorkbenchHidden": "Hidden",
+  "bookWorkbenchImageModeNote": "Template changes do not replace the selected image until you switch modes.",
+  "bookWorkbenchPreviewCss": "Additional CSS affects EPUB / HTML exports only; native preview does not execute it.",
+  "bookWorkbenchPreviewWoff": "WOFF fonts are embedded in EPUB; native preview cannot load them.",
+  "bookWorkbenchPreviewFontMissing": "The font asset is unavailable; native preview uses a system font.",
+  "bookWorkbenchPreviewFontFailed": "The font could not load in native preview; it remains available for export.",
+  "bookWorkbenchPreviewFontUnsupported": "This font format is unsupported in native preview.",
+  "bookWorkbenchPreviewFontLoaded": "Embedded font loaded in native preview.",
+  "bookWorkbenchPreviewLimits": "Native preview shows basic layout; reader pagination and font substitution may differ. TXT / Markdown do not retain visual layout.",
+  "bookWorkbenchPreviewIllustration": "Illustration (caption only in this preview): {caption}",
+  "@bookWorkbenchPreviewIllustration": {
+    "placeholders": {
+      "caption": {
+        "type": "String"
+      }
+    }
+  },
+  "bookWorkbenchNewBookDefaults": "New book defaults",
+  "bookWorkbenchDefaultsScope": "Applies to future imports. Existing books keep their own layout.",
+  "bookWorkbenchDefaultExportFormat": "Default export format",
+  "bookWorkbenchDefaultFontRole": "Default font role",
+  "bookWorkbenchDefaultsLineHeight": "Line height: {value}",
+  "bookWorkbenchDefaultsIndent": "Indent first line",
+  "bookWorkbenchSelectedFont": "Selected font: {mime}",
+  "bookWorkbenchLoading": "loading",
+  "bookWorkbenchCoverSemantics": "{title} cover",
+  "bookWorkbenchCoverUnavailable": "Cover image unavailable",
+  "@bookWorkbenchSelectedFont": {
+    "placeholders": {
+      "mime": {
+        "type": "String"
+      }
+    }
+  },
+  "@bookWorkbenchCoverSemantics": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@bookWorkbenchDefaultsLineHeight": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "dataWorkbenchBatchTitle": "Batch tasks",
+  "dataWorkbenchBatchSubtitle": "Process files one at a time. Converted files leave the app only when you save the ZIP.",
+  "dataWorkbenchBatchSettings": "Task settings",
+  "dataWorkbenchBatchAction": "Action",
+  "dataWorkbenchBatchAddToLibrary": "Add to library",
+  "dataWorkbenchBatchConvertFiles": "Convert files",
+  "dataWorkbenchOutputFormat": "Output format",
+  "dataWorkbenchBatchTxtEncoding": "TXT encoding",
+  "dataWorkbenchBatchChineseConversion": "Chinese conversion",
+  "dataWorkbenchBatchNoConversion": "None",
+  "dataWorkbenchBatchSimplified": "Simplified",
+  "dataWorkbenchBatchTaiwanTraditional": "Taiwan Traditional",
+  "dataWorkbenchBatchFilterAds": "Filter ads",
+  "dataWorkbenchBatchChooseFiles": "Choose TXT / EPUB / DOCX",
+  "dataWorkbenchBatchStart": "Start",
+  "dataWorkbenchBatchCancelAfterSave": "Cancel remaining after save",
+  "dataWorkbenchBatchCancelRemaining": "Cancel remaining",
+  "dataWorkbenchBatchQueue": "Queue",
+  "dataWorkbenchRetryFailedOnly": "Retry failed only",
+  "dataWorkbenchBatchSaveZip": "Save ZIP",
+  "dataWorkbenchZipSaved": "ZIP saved.",
+  "dataWorkbenchBatchSaveCancelled": "Save cancelled. You can save the results again.",
+  "dataWorkbenchBatchRetryEncoding": "Retry encoding",
+  "dataWorkbenchBatchAuto": "Auto",
+  "dataWorkbenchStatusWaiting": "Waiting",
+  "dataWorkbenchStatusProcessing": "Processing",
+  "dataWorkbenchStatusSuccess": "Success",
+  "dataWorkbenchStatusFailed": "Failed",
+  "dataWorkbenchStatusCancelled": "Cancelled",
+  "dataWorkbenchBatchPickFailed": "Could not select or release files.",
+  "dataWorkbenchBatchStartFailed": "Could not start the batch.",
+  "dataWorkbenchZipSaveFailed": "Could not save ZIP. Please retry.",
+  "dataWorkbenchLibraryTitle": "Export selected books",
+  "dataWorkbenchLibraryExportSelected": "Export selected",
+  "dataWorkbenchLibraryFinishingSave": "Finishing save",
+  "dataWorkbenchLibraryCancelRemaining": "Cancel remaining",
+  "dataWorkbenchLibrarySaveSuccessfulZip": "Save successful ZIP",
+  "dataWorkbenchLibrarySaveCancelled": "Save cancelled. Results are still available.",
+  "dataWorkbenchLibraryStartFailed": "Could not start export.",
+  "dataWorkbenchBackupTitle": "Books and backups",
+  "dataWorkbenchBackupBack": "Back",
+  "dataWorkbenchBackupCurrentBooks": "Back up current books",
+  "dataWorkbenchBackupIncludes": "Includes current text, contents, metadata, cover, fonts, layout and rules. Undo history is excluded.",
+  "dataWorkbenchBackupIncludeSources": "Include source files",
+  "dataWorkbenchBackupWithoutSources": "Without source files you can still edit, but cannot reparse the original.",
+  "dataWorkbenchBackupSaveFile": "Save .bookloom backup",
+  "dataWorkbenchBackupRestore": "Restore backup",
+  "dataWorkbenchBackupMaxData": "Maximum restored data (MiB)",
+  "dataWorkbenchBackupMaxDataHelp": "Counts actual extracted data. Backup copies, temporary databases and committed files need extra space.",
+  "dataWorkbenchBackupChooseInspect": "Choose and inspect backup",
+  "dataWorkbenchBackupConflictPolicy": "Books with the same ID",
+  "dataWorkbenchBackupKeepBoth": "Keep both",
+  "dataWorkbenchBackupSkipConflicts": "Skip conflicting books",
+  "dataWorkbenchBackupOverwriteConflicts": "Overwrite conflicting books",
+  "dataWorkbenchBackupCommitHelp": "Commits one book at a time. Earlier successes remain if another fails. Unrelated books are preserved.",
+  "dataWorkbenchBackupConfirmRestore": "Restore books",
+  "dataWorkbenchBackupDiscardPreview": "Discard preview",
+  "dataWorkbenchBackupCancelAfterCommit": "Finish current commit and cancel remaining books",
+  "dataWorkbenchBackupCancelTask": "Cancel task",
+  "dataWorkbenchBackupSaved": "Backup saved.",
+  "dataWorkbenchBackupOverwriteTitle": "Overwrite conflicting books?",
+  "dataWorkbenchBackupOverwriteBody": "Backup content will replace books with matching IDs. This is not a session undo action.",
+  "dataWorkbenchBackupOverwriteRestore": "Overwrite and restore",
+  "dataWorkbenchBackupTaskCancelled": "Task cancelled.",
+  "dataWorkbenchBatchSelectedFiles": "{count} files selected",
+  "@dataWorkbenchBatchSelectedFiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBatchSummary": "{success} succeeded · {failed} failed · {total} total",
+  "@dataWorkbenchBatchSummary": {
+    "placeholders": {
+      "success": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchLibrarySelected": "{count} selected; up to 40 per batch.",
+  "@dataWorkbenchLibrarySelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchLibrarySummary": "This queue: {success} succeeded · {failed} failed · {total} total",
+  "@dataWorkbenchLibrarySummary": {
+    "placeholders": {
+      "success": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBackupStorage": "Application data: {support}; cache: {cache}",
+  "@dataWorkbenchBackupStorage": {
+    "placeholders": {
+      "support": {
+        "type": "String"
+      },
+      "cache": {
+        "type": "String"
+      }
+    }
+  },
+  "dataWorkbenchBackupValidated": "Validated {count} books; data {size}",
+  "@dataWorkbenchBackupValidated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "dataWorkbenchBackupEstimatedSpace": "Estimated required space: {size}",
+  "@dataWorkbenchBackupEstimatedSpace": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "dataWorkbenchBackupPreviewBook": "{title} · {chapters} chapters · {words}",
+  "@dataWorkbenchBackupPreviewBook": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "words": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBackupRestored": "Restored {count}",
+  "@dataWorkbenchBackupRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBackupSkipped": "Skipped {count}",
+  "@dataWorkbenchBackupSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBackupCancelled": "Cancelled {count}",
+  "@dataWorkbenchBackupCancelled": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportWorkbenchShareTitle": "Share book",
+  "exportWorkbenchExportTitle": "Export book",
+  "exportWorkbenchFormatLabel": "Format",
+  "exportWorkbenchEpubDescription": "Includes cover, contents, metadata, layout and embedded fonts. Reader pagination may differ.",
+  "exportWorkbenchDocxDescription": "Editable headings and paragraphs with basic layout. Cover, illustrations and extended metadata are omitted.",
+  "exportWorkbenchHtmlDescription": "One offline HTML file with contents and inline styles. Cover, images and external resources are omitted.",
+  "exportWorkbenchTextDescription": "Text and chapter structure. Fonts, cover, CSS and visual layout do not apply.",
+  "exportWorkbenchDeviceHelpAction": "Transfer to a reading device",
+  "exportWorkbenchShareAction": "Open sharing panel",
+  "exportWorkbenchSaveAction": "Choose save location",
+  "exportWorkbenchDeviceHelpTitle": "Move a book to a reader",
+  "exportWorkbenchDeviceHelpIntro": "Export and save a file first, then transfer it using your reader’s import method. Formats and menus vary by model and firmware; check your device guide. Open the file on the reader to check its contents and layout.",
+  "exportWorkbenchOfficialInfoAction": "Open official information",
+  "exportWorkbenchKindleName": "Kindle",
+  "exportWorkbenchKindleSteps": "Amazon Send to Kindle accepts EPUB. After saving the file, open its web page and upload it, then look for the personal document on your Kindle. This service needs an internet connection; check the book on the device.",
+  "exportWorkbenchKoboName": "Kobo",
+  "exportWorkbenchKoboSteps": "Kobo documents USB transfer of non-DRM EPUB files: connect the reader, confirm the connection on it, copy the file to its drive, eject the drive, then check My Books.",
+  "exportWorkbenchBooxName": "BOOX / 文石",
+  "exportWorkbenchBooxSteps": "Some firmware versions include BooxDrop. If your device has it, use the address shown on the reader to transfer a file from a computer on the same Wi-Fi network. Check menus and formats for your model.",
+  "exportWorkbenchHanvonName": "汉王 / Hanvon",
+  "exportWorkbenchHanvonSteps": "Check the manual for your exact model to confirm formats and its USB, transfer or local-import method. Open the file on the reader after transfer. The linked product page describes only its listed model.",
+  "exportWorkbenchIreaderName": "掌阅 / iReader",
+  "exportWorkbenchIreaderSteps": "Check help for your exact device or app version to confirm formats and the local-import or transfer option. Select the exported file and check it on the bookshelf. iReader devices and app versions may differ.",
+  "dataWorkbenchBackupAnotherTaskRunning": "Another task is running.",
+  "dataWorkbenchBackupInvalidBudget": "Enter a restore budget from 1 to 1048576 MiB.",
+  "dataWorkbenchBackupFileTooLarge": "The backup file exceeds this restore budget.",
+  "dataWorkbenchBackupActualSizeTooLarge": "The backup file exceeds this budget while reading.",
+  "editorWorkbenchReparsePresetBiquge": "Biquge-style",
+  "editorWorkbenchReparsePresetBareNumber": "Bare-number headings",
+  "editorWorkbenchReparsePresetEnglish": "English Chapter / Section",
+  "settingsPermissions": "Permissions and access",
+  "permissionsIntro": "Access is limited to what each action needs. This page checks app-owned folders. Access to external files and destinations is confirmed by the system when you select them.",
+  "permissionsRefresh": "Check again",
+  "permissionsStorageTitle": "App data and cache",
+  "permissionsStorageHelp": "Your library, edits, covers and fonts live in app-owned folders. Checks create and remove a small temporary marker without reading or changing manuscripts. A system path alias or damaged file is not the same as a missing storage permission.",
+  "permissionsSupport": "App data",
+  "permissionsBooks": "Manuscripts and assets",
+  "permissionsCache": "Temporary cache",
+  "permissionsReadReady": "Read: available",
+  "permissionsReadFailed": "Read: unavailable",
+  "permissionsWriteReady": "Write: available",
+  "permissionsWriteFailed": "Write: unavailable",
+  "permissionsCheckFailed": "The check did not complete. Try again; access has not been confirmed.",
+  "permissionsSystemTitle": "System permissions",
+  "permissionsNoRuntime": "This installed build declares no runtime permissions. Manuscript features do not require all-files storage, photo-library, camera, microphone, contacts or location access.",
+  "permissionsDesktopSystem": "On desktop, your system account and each file or folder’s access controls determine access. A single permission switch cannot make every location accessible.",
+  "permissionsSystemUnavailable": "The system permission status could not be read. Try again or check the app’s system settings.",
+  "permissionsGranted": "Allowed",
+  "permissionsNotGranted": "Not allowed",
+  "permissionsInternetDeclared": "This build declares network access.",
+  "permissionsStorageDeclared": "This build declares broad storage access. Review it in system settings.",
+  "permissionsOpenSystemSettings": "Open app system settings",
+  "permissionsSettingsFailed": "Could not open app settings. Open Bookloom from your system settings.",
+  "permissionsImportTitle": "Import files, covers and fonts",
+  "permissionsImportAndroid": "Choose files in the system picker. Only selected items are read and copied into app storage. Other files are not scanned and originals are not overwritten. Cancelling grants no access. Select again if a provider’s grant expires.",
+  "permissionsImportDesktop": "Only files you select in the picker are opened. Your system account must be able to read them. The read check does not import them into your library or modify originals.",
+  "permissionsReadAction": "Choose a manuscript to check reading",
+  "permissionsReadSuccess": "The selected file is readable. It was not imported or modified.",
+  "permissionsReadFailure": "The selected file could not be read. Select it again or check its provider and system access controls.",
+  "permissionsCancelled": "Cancelled. No new file access was granted.",
+  "permissionsExportTitle": "Export and backup",
+  "permissionsExportAndroid": "Choose a destination in the system Save as dialog. Output or backup data is written only to the destination you confirm; all-files access is not required. The check below saves a small test TXT without manuscript content. You can cancel in the system dialog.",
+  "permissionsExportDesktop": "Only your chosen destination is written. The target folder must be writable. Locked files, read-only locations and low disk space can also prevent saving. The check below saves a small test TXT without manuscript content.",
+  "permissionsSaveAction": "Choose a destination for a test file",
+  "permissionsSaveSuccess": "The test file was saved to your chosen destination.",
+  "permissionsSaveFailure": "The test file could not be saved. Access to that destination has not been confirmed.",
+  "permissionsShareTitle": "Sharing and offline processing",
+  "permissionsShareAndroid": "Sharing grants your chosen receiving app temporary read access to that output file only, without exposing your library folder. Opening the share sheet does not confirm delivery. Local editing and conversion work offline; external links open in your browser.",
+  "permissionsShareDesktop": "Local editing and conversion work offline. You decide whether to transfer exported files with other tools. External links open in your browser and do not grant a website access to your library.",
+  "permissionsScopeNote": "Results apply only to current app folders or the file and destination selected for this check. Other permissions are not requested automatically.",
+  "permissionsRuntimePolicy": "Some systems list additional permissions. Current manuscript features do not need or request the runtime permissions below. They can remain off while you import and save through system pickers.",
+  "permissionsRuntimeNotRequired": "Not needed by manuscript features. It is not requested and can remain off."
 }

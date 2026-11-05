@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 
 import '../core/errors/app_failure.dart';
@@ -27,6 +29,22 @@ final Logger _logger = Logger('bootstrap');
 /// Throws [AppFailure] with a user-facing message when startup cannot continue.
 Future<BootstrapResult> bootstrap() async {
   try {
+    LicenseRegistry.addLicense(() async* {
+      yield LicenseEntryWithLineBreaks(const <String>[
+        'WHATWG Encoding indexes',
+      ], await rootBundle.loadString('licenses/whatwg/LICENSE'));
+    });
+    LicenseRegistry.addLicense(() async* {
+      final String notice = await rootBundle.loadString(
+        'licenses/opencc/NOTICE',
+      );
+      final String license = await rootBundle.loadString(
+        'licenses/opencc/LICENSE',
+      );
+      yield LicenseEntryWithLineBreaks(const <String>[
+        'Open Chinese Convert (OpenCC) dictionaries',
+      ], '$notice\n\n$license');
+    });
     final AppPaths paths = await AppPaths.resolve();
     await AppLogging.init(directory: paths.logs);
     final AppDatabase database = AppDatabase.openAt(paths.databaseFile);

@@ -61,11 +61,14 @@ class GlassSurface extends StatelessWidget {
         : GlassTokens.forQuality(quality!, dark: dark);
     final BorderRadius shape =
         borderRadius ?? BorderRadius.circular(radius ?? AppRadius.lg);
-    final double sigma = blurSigma ?? glass.blurSigma;
-    final Color fill = tintAlpha == null
+    final bool opaque = glass.quality == GlassQuality.off;
+    final double sigma = opaque ? 0 : (blurSigma ?? glass.blurSigma);
+    final Color fill = opaque
+        ? glass.fill
+        : tintAlpha == null
         ? glass.fill
         : glass.tint.withValues(alpha: tintAlpha!);
-    final bool blurred = glass.isBlurred && sigma > 0;
+    final bool blurred = !opaque && glass.isBlurred && sigma > 0;
 
     // Decorative layers, painted once and cached independently of the content.
     Widget backdrop = ColoredBox(color: fill);

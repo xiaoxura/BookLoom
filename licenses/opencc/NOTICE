@@ -1,0 +1,26 @@
+Bookloom bundles Open Chinese Convert (OpenCC) dictionary data for offline
+Traditional/Simplified Chinese conversion.
+
+Upstream: https://github.com/BYVoid/OpenCC
+Release tag: ver.1.4.2
+Tag object: d5e960a8f60aa62fb252f48a23a577acb242f3f0
+Source commit: 025f371dc76b598d77384fbdab90c937471844d8
+Copyright 2010-2026 Carbo Kuo and OpenCC contributors.
+License: Apache License, Version 2.0. See LICENSE in this directory.
+
+The unmodified upstream files in assets/opencc/ are:
+  data/config/t2s.json, data/config/s2twp.json
+  data/dictionary/CJK_Compatibility_Ideographs.txt
+  data/dictionary/TSPhrases.txt, TSCharacters.txt
+  data/dictionary/STPhrases.txt, STCharacters.txt
+  data/dictionary/TWPhrases.txt, TWVariantsPhrases.txt, TWVariants.txt
+
+TSCharactersExt.txt was generated from the tagged TSCharacters.txt using
+upstream data/scripts/extract_tofu_risk.py.
+STPhrases_GeneratedFromRegionalPhrases.txt was generated from the tagged
+HKPhrases.txt and TWPhrases.txt keys using the tagged t2s.json conversion
+chain, following upstream data/scripts/generate_st_phrases_from_regional_phrases.py.
+The generated resource includes the upstream attribution header.
+
+CJK_Compatibility_Ideographs.txt identifies UnicodeData.txt as its source
+in its upstream header; that header is preserved in the bundled file.

@@ -38,19 +38,24 @@ class EmptyState extends StatelessWidget {
             children: <Widget>[
               if (illustration != null) ...<Widget>[
                 illustration!,
-                const SizedBox(height: AppSpacing.xl + 4),
+                const SizedBox(height: AppSpacing.lg),
               ],
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: theme.textTheme.headlineMedium,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                  letterSpacing: 0,
+                ),
               ),
               if (message != null) ...<Widget>[
-                const SizedBox(height: AppSpacing.md - 2),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   message!,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyLarge?.copyWith(
+                  style: theme.textTheme.bodyMedium?.copyWith(
                     color: colors.inkSecondary,
                     height: 1.75,
                   ),

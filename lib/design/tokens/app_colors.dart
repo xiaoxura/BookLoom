@@ -11,6 +11,8 @@ class AppColors {
   const AppColors({
     required this.canvas,
     required this.canvasAlt,
+    required this.canvasMist,
+    required this.canvasBloom,
     required this.surface,
     required this.surfaceRaised,
     required this.surfaceSunken,
@@ -27,11 +29,17 @@ class AppColors {
     required this.shadow,
   });
 
-  /// Page background, bottom of the paper gradient.
+  /// Page background, bottom of the canvas gradient.
   final Color canvas;
 
-  /// Page background, top of the paper gradient.
+  /// Page background, top of the canvas gradient.
   final Color canvasAlt;
+
+  /// Cool atmospheric shade behind floating chrome.
+  final Color canvasMist;
+
+  /// Soft bloom in the canvas background.
+  final Color canvasBloom;
 
   /// Opaque base for cards and panels sitting on [canvas].
   final Color surface;
@@ -42,7 +50,7 @@ class AppColors {
   /// Recessed areas (track, code blocks, wells).
   final Color surfaceSunken;
 
-  /// Primary text: near-black warm ink.
+  /// Primary text: near-black ink.
   final Color ink;
 
   /// Secondary text: captions, meta lines.
@@ -71,34 +79,38 @@ class AppColors {
   final Color shadow;
 
   static const AppColors light = AppColors(
-    canvas: Color(0xFFF1EBDF),
-    canvasAlt: Color(0xFFFBF7EF),
-    surface: Color(0xFFFBF8F2),
+    canvas: Color(0xFFEEF2F6),
+    canvasAlt: Color(0xFFFAFBFC),
+    canvasMist: Color(0xFFB7CDE0),
+    canvasBloom: Color(0xFFD8E5E4),
+    surface: Color(0xFFF9FAFB),
     surfaceRaised: Color(0xFFFFFFFF),
-    surfaceSunken: Color(0xFFEDE7DB),
-    ink: Color(0xFF1B1916),
-    inkSecondary: Color(0xFF5B554B),
-    inkMuted: Color(0xFF6E675C),
-    hairline: Color(0xFFDFD7C8),
+    surfaceSunken: Color(0xFFE7EDF2),
+    ink: Color(0xFF1B2530),
+    inkSecondary: Color(0xFF495B6C),
+    inkMuted: Color(0xFF526170),
+    hairline: Color(0xFFD9E0E7),
     accent: Color(0xFF2F4E66),
     accentContrast: Color(0xFFF7FAFC),
     accentSoft: Color(0xFFDDE6EC),
     success: Color(0xFF3B6F55),
     warning: Color(0xFF94641C),
     danger: Color(0xFFA13C33),
-    shadow: Color(0xFF2A241B),
+    shadow: Color(0xFF243748),
   );
 
   static const AppColors dark = AppColors(
-    canvas: Color(0xFF121110),
-    canvasAlt: Color(0xFF1A1815),
-    surface: Color(0xFF1C1A17),
-    surfaceRaised: Color(0xFF242019),
-    surfaceSunken: Color(0xFF0E0D0C),
-    ink: Color(0xFFF3EEE4),
-    inkSecondary: Color(0xFFC4BCAD),
-    inkMuted: Color(0xFF9A9285),
-    hairline: Color(0xFF35302A),
+    canvas: Color(0xFF111820),
+    canvasAlt: Color(0xFF1A232D),
+    canvasMist: Color(0xFF2B455C),
+    canvasBloom: Color(0xFF233E40),
+    surface: Color(0xFF1C252F),
+    surfaceRaised: Color(0xFF25303C),
+    surfaceSunken: Color(0xFF0F161D),
+    ink: Color(0xFFEDF2F7),
+    inkSecondary: Color(0xFFBDC8D2),
+    inkMuted: Color(0xFF96A7B7),
+    hairline: Color(0xFF33414F),
     accent: Color(0xFF9CBBD1),
     accentContrast: Color(0xFF10202B),
     accentSoft: Color(0xFF22323D),
@@ -111,6 +123,8 @@ class AppColors {
   static AppColors lerp(AppColors a, AppColors b, double t) => AppColors(
     canvas: Color.lerp(a.canvas, b.canvas, t)!,
     canvasAlt: Color.lerp(a.canvasAlt, b.canvasAlt, t)!,
+    canvasMist: Color.lerp(a.canvasMist, b.canvasMist, t)!,
+    canvasBloom: Color.lerp(a.canvasBloom, b.canvasBloom, t)!,
     surface: Color.lerp(a.surface, b.surface, t)!,
     surfaceRaised: Color.lerp(a.surfaceRaised, b.surfaceRaised, t)!,
     surfaceSunken: Color.lerp(a.surfaceSunken, b.surfaceSunken, t)!,

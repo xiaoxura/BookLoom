@@ -22,6 +22,12 @@ void main() {
 
     test('counts surrogate pairs as one character', () {
       expect(WordCount.ofText('𠮷'), 1);
+      expect(WordCount.ofText('😀'), 1);
+    });
+
+    test('matches ECMAScript whitespace including Unicode spaces and BOM', () {
+      expect(WordCount.ofText('a\u00a0\u2003\u3000\ufeffb'), 2);
+      expect(WordCount.ofText('x\u2028\u2029\u1680\u205f\u200ay'), 2);
     });
 
     test('sums text blocks only', () {
