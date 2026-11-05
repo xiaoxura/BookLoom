@@ -425,7 +425,13 @@ Future<void> _pumpUntil(WidgetTester tester, bool Function() condition) async {
   // Repository/import work runs on the real async event loop. Advancing only
   // FakeAsync's clock can leave a loading route spinning forever, so poll with
   // a bounded real delay and pump frames until the observable UI is present.
-  for (var attempt = 0; attempt < 150; attempt++) {
+  //
+  // The budget is wall-clock rather than a fixed number of attempts: importing
+  // a book and opening the editor takes noticeably longer on Windows (debug VM,
+  // temp-dir I/O, background database isolate) and a fixed attempt count made
+  // the test flaky across hosts instead of reporting a real regression.
+  final DateTime deadline = DateTime.now().add(const Duration(seconds: 20));
+  while (DateTime.now().isBefore(deadline)) {
     if (condition()) {
       await tester.pumpAndSettle();
       return;
