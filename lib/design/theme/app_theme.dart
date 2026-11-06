@@ -136,7 +136,12 @@ abstract final class AppTheme {
       ),
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
-          foregroundColor: WidgetStatePropertyAll(colors.inkSecondary),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return colors.inkMuted.withValues(alpha: 0.38);
+            }
+            return colors.inkSecondary;
+          }),
           overlayColor: WidgetStatePropertyAll(
             colors.ink.withValues(alpha: 0.05),
           ),

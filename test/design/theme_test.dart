@@ -62,6 +62,22 @@ void main() {
       }
     });
 
+    test('disabled icon buttons are muted in both themes', () {
+      for (final theme in [AppTheme.light(), AppTheme.dark()]) {
+        final colors = theme.extension<AppTokens>()!.colors;
+        final foreground = theme.iconButtonTheme.style!.foregroundColor!;
+        expect(foreground.resolve({}), colors.inkSecondary);
+        expect(
+          foreground.resolve({WidgetState.disabled}),
+          colors.inkMuted.withValues(alpha: 0.38),
+        );
+        expect(
+          foreground.resolve({WidgetState.disabled, WidgetState.hovered}),
+          foreground.resolve({WidgetState.disabled}),
+        );
+      }
+    });
+
     test('canvas atmosphere colors interpolate with the theme', () {
       final AppColors midpoint = AppColors.lerp(
         AppColors.light,

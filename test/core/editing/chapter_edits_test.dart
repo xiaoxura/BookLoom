@@ -110,4 +110,258 @@ void main() {
       'three',
     ]);
   });
+
+  test('new volume and chapters normalize contiguous reading order', () {
+    final source = <Chapter>[chapter('a'), chapter('b')];
+    final withVolume = ChapterEdits.createVolume(
+      source,
+      chapter('v', level: 1),
+    );
+    expect(withVolume.map((item) => item.id), <String>['a', 'b', 'v']);
+    expect(withVolume.last.blocks, isEmpty);
+
+    final first = ChapterEdits.createChapter(
+      withVolume,
+      chapter(
+        'c',
+        parentId: 'v',
+        blocks: const <Block>[TextBlock(id: 'p3', text: '')],
+      ),
+    );
+    final before = ChapterEdits.createChapter(
+      first,
+      chapter(
+        'd',
+        parentId: 'v',
+        blocks: const <Block>[TextBlock(id: 'p4', text: '')],
+      ),
+      beforeChapterId: 'c',
+    );
+    final after = ChapterEdits.createChapter(
+      before,
+      chapter(
+        'e',
+        blocks: const <Block>[TextBlock(id: 'p5', text: '')],
+      ),
+      afterChapterId: 'a',
+    );
+    expect(after.map((item) => item.id), <String>[
+      'a',
+      'e',
+      'b',
+      'v',
+      'd',
+      'c',
+    ]);
+    expect(after.map((item) => item.order), <int>[0, 1, 2, 3, 0, 1]);
+    expect(after.last.parentId, 'v');
+  });
+
+  test('top-level chapters can be placed around whole volumes', () {
+    final source = <Chapter>[
+      chapter('v1', level: 1),
+      chapter('a', parentId: 'v1'),
+      chapter('b', parentId: 'v1'),
+      chapter('v2', level: 1),
+      chapter('c', parentId: 'v2'),
+      chapter('v3', level: 1),
+    ];
+    Chapter fresh(String id) => chapter(
+      id,
+      blocks: <Block>[TextBlock(id: 'block-$id', text: '')],
+    );
+
+    final beforeFirst = ChapterEdits.createChapter(
+      source,
+      fresh('before'),
+      beforeChapterId: 'v1',
+    );
+    expect(beforeFirst.map((item) => item.id), <String>[
+      'before',
+      'v1',
+      'a',
+      'b',
+      'v2',
+      'c',
+      'v3',
+    ]);
+
+    final between = ChapterEdits.createChapter(
+      source,
+      fresh('between'),
+      afterChapterId: 'v1',
+    );
+    expect(between.map((item) => item.id), <String>[
+      'v1',
+      'a',
+      'b',
+      'between',
+      'v2',
+      'c',
+      'v3',
+    ]);
+    expect(between[3].parentId, isNull);
+    expect(between[1].parentId, 'v1');
+    expect(between[2].parentId, 'v1');
+
+    final beforeSecond = ChapterEdits.createChapter(
+      source,
+      fresh('before'),
+      beforeChapterId: 'v2',
+    );
+    expect(beforeSecond.map((item) => item.id), <String>[
+      'v1',
+      'a',
+      'b',
+      'before',
+      'v2',
+      'c',
+      'v3',
+    ]);
+
+    final afterEmpty = ChapterEdits.createChapter(
+      source,
+      fresh('after'),
+      afterChapterId: 'v3',
+    );
+    expect(afterEmpty.map((item) => item.id), <String>[
+      'v1',
+      'a',
+      'b',
+      'v2',
+      'c',
+      'v3',
+      'after',
+    ]);
+  });
+
+  test('batch move appends in source order and preserves blocks and IDs', () {
+    final source = <Chapter>[
+      chapter(
+        'a',
+        blocks: const <Block>[ImageBlock(id: 'img', assetId: 'asset')],
+      ),
+      chapter('v1', level: 1),
+      chapter('b', parentId: 'v1'),
+      chapter('c', parentId: 'v1'),
+      chapter('v2', level: 1),
+      chapter('d', parentId: 'v2'),
+      chapter('e'),
+    ];
+    final moved = ChapterEdits.moveChaptersToVolume(source, <String>{
+      'c',
+      'a',
+      'e',
+    }, volumeId: 'v2');
+    expect(moved.map((item) => item.id), <String>[
+      'v1',
+      'b',
+      'v2',
+      'd',
+      'a',
+      'c',
+      'e',
+    ]);
+    expect(moved.skip(4).every((item) => item.parentId == 'v2'), isTrue);
+    expect(moved[4].blocks.single, same(source.first.blocks.single));
+    final root = ChapterEdits.moveChaptersToVolume(moved, <String>{
+      'b',
+      'd',
+    }, volumeId: null);
+    expect(root.map((item) => item.id), <String>[
+      'v1',
+      'v2',
+      'a',
+      'c',
+      'e',
+      'b',
+      'd',
+    ]);
+    expect(root.last.parentId, isNull);
+    expect(ChapterEdits.normalize(root), hasLength(7));
+  });
+
+  test('invalid creation and move arguments fail before changing input', () {
+    final source = <Chapter>[
+      chapter('v', level: 1),
+      chapter('a', parentId: 'v'),
+      chapter('b'),
+    ];
+    Chapter fresh(String id, {String? parentId, String title = 'new'}) =>
+        Chapter(
+          id: id,
+          bookId: 'book',
+          title: title,
+          parentId: parentId,
+          blocks: const <Block>[TextBlock(id: 'new-block', text: '')],
+        );
+
+    expect(
+      () => ChapterEdits.createVolume(source, chapter('v', level: 1)),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(
+      () => ChapterEdits.createVolume(
+        source,
+        const Chapter(id: '../bad', bookId: 'book', title: '卷', level: 1),
+      ),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(
+      () => ChapterEdits.createChapter(source, fresh('c', title: '  ')),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(
+      () => ChapterEdits.createChapter(source, fresh('c', parentId: 'missing')),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(
+      () => ChapterEdits.createChapter(
+        source,
+        fresh('c', parentId: 'v'),
+        beforeChapterId: 'b',
+      ),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(
+      () => ChapterEdits.createChapter(
+        source,
+        fresh('c', parentId: 'v'),
+        beforeChapterId: 'v',
+      ),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(
+      () => ChapterEdits.createChapter(
+        source,
+        fresh('c', parentId: 'v'),
+        afterChapterId: 'v',
+      ),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(
+      () => ChapterEdits.createChapter(
+        source,
+        fresh('c'),
+        beforeChapterId: 'a',
+        afterChapterId: 'b',
+      ),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(
+      () => ChapterEdits.moveChaptersToVolume(source, <String>{
+        'v',
+      }, volumeId: null),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(
+      () => ChapterEdits.moveChaptersToVolume(source, <String>{
+        'a',
+        'missing',
+      }, volumeId: 'v'),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(source.map((item) => item.id), <String>['v', 'a', 'b']);
+    expect(source[1].parentId, 'v');
+  });
 }

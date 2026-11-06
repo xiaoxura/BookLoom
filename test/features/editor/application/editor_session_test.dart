@@ -122,6 +122,172 @@ void main() {
     },
   );
 
+  test('created chapter is editable and survives save and reopen', () async {
+    await session.open('book');
+    final volumeId = await session.createVolume('  第一卷  ');
+    final chapterId = await session.createChapter('  新章  ', volumeId: volumeId);
+    final created = session.activeChapter!;
+    expect(session.activeChapterId, chapterId);
+    expect(created.title, '新章');
+    expect(created.parentId, volumeId);
+    expect(created.blocks, hasLength(1));
+    expect(created.blocks.single, isA<TextBlock>());
+    expect(created.blocks.single.plainText, isEmpty);
+    session.editBlockText(created.blocks.single.id, '新正文');
+    await session.flush();
+    expect(store.savedDirtyIds.single, <String>{volumeId, chapterId});
+    expect(store._bodies[volumeId]!.blocks, isEmpty);
+    expect(store._bodies[chapterId]!.blocks.single.plainText, '新正文');
+
+    await session.open('book', chapterId: chapterId);
+    expect(session.activeChapter!.blocks.single.plainText, '新正文');
+    expect(session.book!.chapters.last.parentId, volumeId);
+    expect(session.book!.chapters.last.order, 0);
+  });
+
+  test('new chapter is autosaved without an explicit flush', () async {
+    await session.open('book');
+    final chapterId = await session.createChapter('新章');
+    await Future<void>.delayed(const Duration(milliseconds: 950));
+    expect(store.saveCalls, 1);
+    expect(store._bodies[chapterId]!.blocks.single.plainText, isEmpty);
+    expect(session.dirty, isFalse);
+  });
+
+  test(
+    'batch move keeps unloaded bodies and undo/redo as one command',
+    () async {
+      await session.open('book');
+      final volumeId = await session.createVolume('第一卷');
+      await session.flush();
+      expect(store.loadedChapterIds, <String>['a']);
+
+      await session.moveChaptersToVolume(<String>{
+        'b',
+        'a',
+      }, volumeId: volumeId);
+      expect(session.book!.chapters.map((chapter) => chapter.id), <String>[
+        volumeId,
+        'a',
+        'b',
+      ]);
+      expect(session.book!.chapters.last.parentId, volumeId);
+      expect(session.activeChapterId, 'a');
+      expect(session.activeChapter!.isVolume, isFalse);
+      expect(store.loadedChapterIds, <String>['a']);
+      await session.flush();
+      expect(store.savedDirtyIds.last, isEmpty);
+      expect(store._bodies['b']!.blocks.single.plainText, '后文');
+
+      await session.undo();
+      expect(session.book!.chapters.map((chapter) => chapter.id), <String>[
+        'a',
+        'b',
+        volumeId,
+      ]);
+      expect(session.book!.chapters[1].parentId, isNull);
+      expect(session.activeChapterId, 'a');
+      expect(session.activeChapter!.isVolume, isFalse);
+      await session.flush();
+      await session.redo();
+      expect(session.book!.chapters.last.parentId, volumeId);
+      expect(session.activeChapterId, 'a');
+      expect(session.activeChapter!.isVolume, isFalse);
+      await session.flush();
+      await session.selectChapter('b');
+      expect(session.activeChapter!.blocks.single.plainText, '后文');
+      expect(store._bodies['a']!.blocks.single.plainText, '原文');
+    },
+  );
+
+  test(
+    'invalid structure arguments leave state and history untouched',
+    () async {
+      await session.open('book');
+      final volumeId = await session.createVolume('第一卷');
+      final nestedId = await session.createChapter('卷内章', volumeId: volumeId);
+      await session.flush();
+      final before = session.book!.chapters;
+      final seq = session.saveSeq;
+      final loaded = List<String>.of(store.loadedChapterIds);
+
+      await expectLater(
+        session.createVolume('  '),
+        throwsA(isA<ValidationFailure>()),
+      );
+      await expectLater(
+        session.createChapter('新章', volumeId: 'missing'),
+        throwsA(isA<ValidationFailure>()),
+      );
+      await expectLater(
+        session.createChapter('新章', beforeChapterId: nestedId),
+        throwsA(isA<ValidationFailure>()),
+      );
+      await expectLater(
+        session.createChapter('新章', beforeChapterId: 'a', afterChapterId: 'b'),
+        throwsA(isA<ValidationFailure>()),
+      );
+      await expectLater(
+        session.moveChaptersToVolume(<String>{'b', volumeId}, volumeId: null),
+        throwsA(isA<ValidationFailure>()),
+      );
+      await expectLater(
+        session.moveChaptersToVolume(<String>{'missing'}, volumeId: volumeId),
+        throwsA(isA<ValidationFailure>()),
+      );
+      expect(session.book!.chapters, same(before));
+      expect(session.saveSeq, seq);
+      expect(session.dirty, isFalse);
+      expect(store.loadedChapterIds, loaded);
+      expect(session.activeChapterId, nestedId);
+    },
+  );
+
+  test(
+    'volume-only book never activates a volume on open, undo or delete',
+    () async {
+      store._book = store._book.copyWith(
+        chapters: const <Chapter>[
+          Chapter(id: 'v', bookId: 'book', title: '卷', level: 1),
+        ],
+      );
+      store._bodies
+        ..clear()
+        ..['v'] = const Chapter(id: 'v', bookId: 'book', title: '卷', level: 1);
+      await session.open('book');
+      expect(session.activeChapterId, isNull);
+      expect(store.loadedChapterIds, isEmpty);
+      await expectLater(
+        session.selectChapter('v'),
+        throwsA(isA<ValidationFailure>()),
+      );
+
+      final chapterId = await session.createChapter('第一章', volumeId: 'v');
+      expect(session.activeChapterId, chapterId);
+      await session.undo();
+      expect(session.activeChapterId, isNull);
+      await session.redo();
+      expect(session.activeChapterId, chapterId);
+      await session.deleteChapter(chapterId);
+      expect(session.activeChapterId, isNull);
+      expect(session.book!.chapters.single.id, 'v');
+    },
+  );
+
+  test('deleting chapters beside an unsaved volume never selects it', () async {
+    await session.open('book');
+    final volumeId = await session.createVolume('空卷');
+    await session.deleteChapter('b');
+    expect(session.activeChapterId, 'a');
+    await session.deleteChapter('a');
+    expect(session.activeChapterId, isNull);
+    expect(session.book!.chapters.single.id, volumeId);
+    await session.deleteChapter(volumeId);
+    expect(session.activeChapterId, isNull);
+    expect(session.book!.chapters, isEmpty);
+    expect(store.loadedChapterIds, isNot(contains(volumeId)));
+  });
+
   test('text edits coalesce; new branch clears redo', () async {
     await session.open('book');
     session.editBlockText('p1', '甲');

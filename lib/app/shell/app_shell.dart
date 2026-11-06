@@ -652,6 +652,14 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double safeBottom = MediaQuery.paddingOf(context).bottom;
+    final labelStyle = Theme.of(context).textTheme.labelSmall!;
+    final labelSize = labelStyle.fontSize!;
+    final extraLabelHeight =
+        (MediaQuery.textScalerOf(context).scale(labelSize) - labelSize).clamp(
+          0.0,
+          double.infinity,
+        ) *
+        labelStyle.height!;
     final int index = currentIndex < destinations.length
         ? currentIndex
         : destinations.length - 1;
@@ -663,23 +671,31 @@ class _BottomBar extends StatelessWidget {
         AppSpacing.md,
         AppSpacing.md + safeBottom,
       ),
-      child: GlassSurface(
-        radius: AppRadius.xl,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-        child: SizedBox(
-          key: const Key('bottom-navigation'),
-          height: AppLayout.bottomBarHeight,
-          child: Row(
-            children: <Widget>[
-              for (int i = 0; i < destinations.length; i++)
-                Expanded(
-                  child: _BottomNavItem(
-                    destination: destinations[i],
-                    selected: i == index,
-                    onTap: () => onSelect(i),
-                  ),
-                ),
-            ],
+      child: Center(
+        heightFactor: 1,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: AppLayout.bottomBarMaxWidth,
+          ),
+          child: GlassSurface(
+            radius: AppRadius.xl,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+            child: SizedBox(
+              key: const Key('bottom-navigation'),
+              height: AppLayout.bottomBarHeight + extraLabelHeight,
+              child: Row(
+                children: <Widget>[
+                  for (int i = 0; i < destinations.length; i++)
+                    Expanded(
+                      child: _BottomNavItem(
+                        destination: destinations[i],
+                        selected: i == index,
+                        onTap: () => onSelect(i),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -756,6 +772,7 @@ class _BottomNavItemState extends State<_BottomNavItem>
           onTap: widget.onTap,
           borderRadius: shape,
           child: Stack(
+            fit: StackFit.expand,
             children: <Widget>[
               // The fill spans icon *and* label; the previous Material bar only
               // tinted the icon, which read as an unfinished selection. Inset a
@@ -792,7 +809,7 @@ class _BottomNavItemState extends State<_BottomNavItem>
                       selected
                           ? widget.destination.selectedIcon
                           : widget.destination.icon,
-                      size: 22,
+                      size: AppLayout.bottomBarIconSize,
                       color: foreground,
                     ),
                     const SizedBox(height: 2),

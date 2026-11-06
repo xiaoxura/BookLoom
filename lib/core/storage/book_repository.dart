@@ -172,8 +172,7 @@ class BookRepository {
         (input.id != null && input.id != source.id)) {
       throw ArgumentError('Selected source format or ID does not match');
     }
-    final bookRelative = files.bookRelativePath(bookId);
-    final relative = p.relative(source.storedPath, from: bookRelative);
+    final relative = files.relativeFromStoredPath(bookId, source.storedPath);
     if (p.dirname(relative) != '.' ||
         !RegExp(r'^source(?:-[A-Za-z0-9_-]+)?\.(?:txt|epub|docx)$')
             .hasMatch(relative) ||
@@ -650,10 +649,7 @@ class BookRepository {
               ))
               .getSingleOrNull();
       if (asset == null) return null;
-      final relative = p.relative(
-        asset.storedPath,
-        from: files.bookRelativePath(bookId),
-      );
+      final relative = files.relativeFromStoredPath(bookId, asset.storedPath);
       await files.resolveStoredPath(bookId, asset.storedPath);
       if (p.dirname(relative) != 'assets' ||
           !p.basename(relative).startsWith('$assetId.')) {
@@ -720,96 +716,80 @@ class BookRepository {
           // Only staging was touched; no final asset move occurred yet.
         } else if (kind == 'reattach_source') {
           final sourceId = marker['assetId'];
-          final relative = marker['relativePath'];
+          final markedRelative = marker['relativePath'];
           final digest = marker['sha256'];
           if (sourceId is! String ||
-              relative is! String ||
-              digest is! String ||
-              p.dirname(relative) != '.' ||
+              markedRelative is! String ||
+              digest is! String) {
+            continue;
+          }
+          final relative = files.normalizeBookRelativePath(
+            bookId,
+            markedRelative,
+          );
+          if (p.posix.dirname(relative) != '.' ||
               !RegExp(r'^source(?:-[A-Za-z0-9_-]+)?\.(?:txt|epub|docx)$')
                   .hasMatch(relative)) {
             continue;
           }
           files.checkId(sourceId);
-          final storedPath = files.storedPathFor(bookId, relative);
-          final currentSource =
-              await (db.select(db.sources)
-                    ..where((table) => table.storedPath.equals(storedPath))
-                    ..limit(1))
-                  .getSingleOrNull();
-          final currentAsset =
-              await (db.select(db.assets)
-                    ..where((table) => table.storedPath.equals(storedPath))
-                    ..limit(1))
-                  .getSingleOrNull();
-          if (currentSource == null && currentAsset == null) {
+          if (!await isStoredPathReferenced(bookId, relative)) {
             await files.deleteAssetFile(bookId, relative);
           }
         } else if (kind == 'asset') {
           final assetId = marker['assetId'];
-          final relative = marker['relativePath'];
+          final markedRelative = marker['relativePath'];
           final digest = marker['sha256'];
-          if (assetId is! String || relative is! String || digest is! String) {
+          if (assetId is! String ||
+              markedRelative is! String ||
+              digest is! String) {
             // Retain an old/incomplete marker rather than guessing a path.
             continue;
           }
           files.checkId(assetId);
-          if (p.dirname(relative) != 'assets' ||
-              !p.basename(relative).startsWith('$assetId.')) {
+          final relative = files.normalizeBookRelativePath(
+            bookId,
+            markedRelative,
+          );
+          if (p.posix.dirname(relative) != 'assets' ||
+              !p.posix.basename(relative).startsWith('$assetId.')) {
             continue;
           }
-          final asset = await (db.select(
-            db.assets,
-          )..where((table) => table.id.equals(assetId))).getSingleOrNull();
-          final storedPath = files.storedPathFor(bookId, relative);
-          if (asset == null ||
-              asset.bookId != bookId ||
-              asset.storedPath != storedPath ||
-              asset.sha256 != digest) {
+          if (!await isStoredPathReferenced(bookId, relative)) {
             await files.deleteAssetFile(bookId, relative);
           }
         } else if (kind == 'delete_asset') {
           final assetId = marker['assetId'];
-          final relative = marker['relativePath'];
-          if (assetId is! String || relative is! String) continue;
+          final markedRelative = marker['relativePath'];
+          if (assetId is! String || markedRelative is! String) continue;
           files.checkId(assetId);
-          if (p.dirname(relative) != 'assets' ||
-              !p.basename(relative).startsWith('$assetId.')) {
+          final relative = files.normalizeBookRelativePath(
+            bookId,
+            markedRelative,
+          );
+          if (p.posix.dirname(relative) != 'assets' ||
+              !p.posix.basename(relative).startsWith('$assetId.')) {
             continue;
           }
-          final asset =
-              await (db.select(db.assets)..where(
-                    (table) =>
-                        table.id.equals(assetId) & table.bookId.equals(bookId),
-                  ))
-                  .getSingleOrNull();
-          final oldPath = files.storedPathFor(bookId, relative);
           // A reused ID may now point to a different filename. Keep a file
           // whenever a current row points at this exact path, even if its hash
           // changed, to avoid removing the replacement's content.
-          if (asset == null || asset.storedPath != oldPath) {
+          if (!await isStoredPathReferenced(bookId, relative)) {
             await files.deleteAssetFile(bookId, relative);
           }
         } else if (kind == 'restore') {
           final paths = marker['paths'];
           if (paths is! List || paths.length > 100000) continue;
           for (final value in paths) {
-            if (value is! String || !_restoreManagedPath(value)) {
+            if (value is! String) {
               throw const FormatException('Unsafe restore marker path');
             }
-            final storedPath = files.storedPathFor(bookId, value);
-            final source =
-                await (db.select(db.sources)
-                      ..where((table) => table.storedPath.equals(storedPath))
-                      ..limit(1))
-                    .getSingleOrNull();
-            final asset =
-                await (db.select(db.assets)
-                      ..where((table) => table.storedPath.equals(storedPath))
-                      ..limit(1))
-                    .getSingleOrNull();
-            if (source == null && asset == null) {
-              await files.deleteAssetFile(bookId, value);
+            final relative = files.normalizeBookRelativePath(bookId, value);
+            if (!_restoreManagedPath(relative)) {
+              throw const FormatException('Unsafe restore marker path');
+            }
+            if (!await isStoredPathReferenced(bookId, relative)) {
+              await files.deleteAssetFile(bookId, relative);
             }
           }
           final book = await (db.select(
@@ -831,21 +811,43 @@ class BookRepository {
     }
   }
 
+  Future<bool> isStoredPathReferenced(String bookId, String relative) async {
+    final storedPath = files.storedPathFor(bookId, relative);
+    final rows = await db
+        .customSelect(
+          '''
+      SELECT 1 FROM sources
+      WHERE replace(stored_path, char(92), '/') = ?
+      UNION ALL
+      SELECT 1 FROM assets
+      WHERE replace(stored_path, char(92), '/') = ?
+      LIMIT 1
+      ''',
+          variables: <drift.Variable<Object>>[
+            drift.Variable<String>(storedPath),
+            drift.Variable<String>(storedPath),
+          ],
+        )
+        .get();
+    return rows.isNotEmpty;
+  }
+
   static String _escapeLike(String text) => text
       .replaceAll(r'\', r'\\')
       .replaceAll('%', r'\%')
       .replaceAll('_', r'\_');
 
   static bool _restoreManagedPath(String relative) {
-    if (p.isAbsolute(relative) || p.split(relative).contains('..')) {
+    if (p.posix.isAbsolute(relative) ||
+        p.posix.split(relative).contains('..')) {
       return false;
     }
-    final name = p.basename(relative);
-    if (p.dirname(relative) == 'assets' &&
+    final name = p.posix.basename(relative);
+    if (p.posix.dirname(relative) == 'assets' &&
         RegExp(r'^[A-Za-z0-9_-]+\.[a-z0-9]{1,8}$').hasMatch(name)) {
       return true;
     }
-    return p.dirname(relative) == '.' &&
+    return p.posix.dirname(relative) == '.' &&
         RegExp(r'^source(?:-[A-Za-z0-9_-]+)?\.(?:txt|epub|docx)$')
             .hasMatch(name);
   }

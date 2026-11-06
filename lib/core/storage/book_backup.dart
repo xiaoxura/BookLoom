@@ -1343,9 +1343,9 @@ class BookBackup {
         target.sources,
       )..where((table) => table.bookId.equals(targetBookId))).getSingleOrNull();
       if (oldSourceSnapshot != null) {
-        final relative = p.relative(
+        final relative = files.relativeFromStoredPath(
+          targetBookId,
           oldSourceSnapshot.storedPath,
-          from: bookRelative,
         );
         if (_managedRelative(relative)) oldPaths.add(relative);
       }
@@ -1353,7 +1353,10 @@ class BookBackup {
         target.assets,
       )..where((table) => table.bookId.equals(targetBookId))).get();
       for (final asset in oldAssetsSnapshot) {
-        final relative = p.relative(asset.storedPath, from: bookRelative);
+        final relative = files.relativeFromStoredPath(
+          targetBookId,
+          asset.storedPath,
+        );
         if (_managedRelative(relative)) oldPaths.add(relative);
       }
     }
@@ -1623,18 +1626,7 @@ class BookBackup {
   Future<void> _cleanupRestorePaths(String bookId, List<String> paths) async {
     for (final relative in paths) {
       if (!_managedRelative(relative)) continue;
-      final storedPath = repository.files.storedPathFor(bookId, relative);
-      final source =
-          await (repository.db.select(repository.db.sources)
-                ..where((table) => table.storedPath.equals(storedPath))
-                ..limit(1))
-              .getSingleOrNull();
-      final asset =
-          await (repository.db.select(repository.db.assets)
-                ..where((table) => table.storedPath.equals(storedPath))
-                ..limit(1))
-              .getSingleOrNull();
-      if (source == null && asset == null) {
+      if (!await repository.isStoredPathReferenced(bookId, relative)) {
         await repository.files.deleteAssetFile(bookId, relative);
       }
     }

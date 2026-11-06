@@ -248,6 +248,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsDataLocationDesc => '书籍、封面和备份都保存在这里，可以直接拷贝带走。';
 
   @override
+  String get settingsDataLocationMobileDesc =>
+      '书籍保存在应用私有目录，文件管理器无法直接打开。卸载应用可能删除这些数据；导出书籍或备份时，可自行选择保存位置。';
+
+  @override
   String get windowMinimize => '最小化';
 
   @override
@@ -365,6 +369,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get libraryClearSearch => '清除搜索';
+
+  @override
+  String get librarySortBy => '排序';
 
   @override
   String get librarySortRecent => '最近修改';
@@ -530,6 +537,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get editorUndo => '撤销';
 
   @override
+  String get editorUndoDone => '已撤销';
+
+  @override
+  String get editorRedoDone => '已重做';
+
+  @override
   String get editorRedo => '重做';
 
   @override
@@ -566,6 +579,53 @@ class AppLocalizationsZh extends AppLocalizations {
   String get editorChapterActions => '章节操作';
 
   @override
+  String get editorNewVolume => '新建卷';
+
+  @override
+  String get editorNewChapter => '新建章节';
+
+  @override
+  String get editorMoveChapters => '批量移动章节';
+
+  @override
+  String get editorVolumeTitle => '卷名';
+
+  @override
+  String get editorTargetVolume => '所属卷';
+
+  @override
+  String get editorUnassigned => '未分卷';
+
+  @override
+  String get editorInsertPosition => '插入位置';
+
+  @override
+  String get editorBeforeFirst => '首章之前';
+
+  @override
+  String editorAfterChapter(String title) {
+    return '在“$title”之后';
+  }
+
+  @override
+  String get editorSelectChapters => '选择要移动的章节';
+
+  @override
+  String get editorCreate => '创建';
+
+  @override
+  String get editorMove => '移动';
+
+  @override
+  String get editorSelectAll => '全选';
+
+  @override
+  String get editorClearSelection => '清空选择';
+
+  @override
+  String get editorRenameVolume => '重命名卷';
+
+  @override
   String get editorRenameChapter => '重命名章节';
 
   @override
@@ -582,6 +642,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get editorDeleteChapter => '删除章节';
+
+  @override
+  String get editorDeleteVolume => '删除卷';
 
   @override
   String editorDeleteChapterConfirm(String title) {

@@ -572,6 +572,12 @@ abstract class AppLocalizations {
   /// **'书籍、封面和备份都保存在这里，可以直接拷贝带走。'**
   String get settingsDataLocationDesc;
 
+  /// No description provided for @settingsDataLocationMobileDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'书籍保存在应用私有目录，文件管理器无法直接打开。卸载应用可能删除这些数据；导出书籍或备份时，可自行选择保存位置。'**
+  String get settingsDataLocationMobileDesc;
+
   /// No description provided for @windowMinimize.
   ///
   /// In zh, this message translates to:
@@ -805,6 +811,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'清除搜索'**
   String get libraryClearSearch;
+
+  /// No description provided for @librarySortBy.
+  ///
+  /// In zh, this message translates to:
+  /// **'排序'**
+  String get librarySortBy;
 
   /// No description provided for @librarySortRecent.
   ///
@@ -1100,6 +1112,18 @@ abstract class AppLocalizations {
   /// **'撤销'**
   String get editorUndo;
 
+  /// No description provided for @editorUndoDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'已撤销'**
+  String get editorUndoDone;
+
+  /// No description provided for @editorRedoDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'已重做'**
+  String get editorRedoDone;
+
   /// No description provided for @editorRedo.
   ///
   /// In zh, this message translates to:
@@ -1172,6 +1196,96 @@ abstract class AppLocalizations {
   /// **'章节操作'**
   String get editorChapterActions;
 
+  /// No description provided for @editorNewVolume.
+  ///
+  /// In zh, this message translates to:
+  /// **'新建卷'**
+  String get editorNewVolume;
+
+  /// No description provided for @editorNewChapter.
+  ///
+  /// In zh, this message translates to:
+  /// **'新建章节'**
+  String get editorNewChapter;
+
+  /// No description provided for @editorMoveChapters.
+  ///
+  /// In zh, this message translates to:
+  /// **'批量移动章节'**
+  String get editorMoveChapters;
+
+  /// No description provided for @editorVolumeTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'卷名'**
+  String get editorVolumeTitle;
+
+  /// No description provided for @editorTargetVolume.
+  ///
+  /// In zh, this message translates to:
+  /// **'所属卷'**
+  String get editorTargetVolume;
+
+  /// No description provided for @editorUnassigned.
+  ///
+  /// In zh, this message translates to:
+  /// **'未分卷'**
+  String get editorUnassigned;
+
+  /// No description provided for @editorInsertPosition.
+  ///
+  /// In zh, this message translates to:
+  /// **'插入位置'**
+  String get editorInsertPosition;
+
+  /// No description provided for @editorBeforeFirst.
+  ///
+  /// In zh, this message translates to:
+  /// **'首章之前'**
+  String get editorBeforeFirst;
+
+  /// No description provided for @editorAfterChapter.
+  ///
+  /// In zh, this message translates to:
+  /// **'在“{title}”之后'**
+  String editorAfterChapter(String title);
+
+  /// No description provided for @editorSelectChapters.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择要移动的章节'**
+  String get editorSelectChapters;
+
+  /// No description provided for @editorCreate.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建'**
+  String get editorCreate;
+
+  /// No description provided for @editorMove.
+  ///
+  /// In zh, this message translates to:
+  /// **'移动'**
+  String get editorMove;
+
+  /// No description provided for @editorSelectAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全选'**
+  String get editorSelectAll;
+
+  /// No description provided for @editorClearSelection.
+  ///
+  /// In zh, this message translates to:
+  /// **'清空选择'**
+  String get editorClearSelection;
+
+  /// No description provided for @editorRenameVolume.
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名卷'**
+  String get editorRenameVolume;
+
   /// No description provided for @editorRenameChapter.
   ///
   /// In zh, this message translates to:
@@ -1207,6 +1321,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'删除章节'**
   String get editorDeleteChapter;
+
+  /// No description provided for @editorDeleteVolume.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除卷'**
+  String get editorDeleteVolume;
 
   /// No description provided for @editorDeleteChapterConfirm.
   ///

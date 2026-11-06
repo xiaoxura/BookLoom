@@ -5,6 +5,112 @@ import 'package:bookloom/core/model/chapter.dart';
 /// Pure structural edits. The input list is in reading order; [order] is
 /// normalized within each parent after every structural change.
 abstract final class ChapterEdits {
+  static final RegExp _safeId = RegExp(r'^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$');
+
+  static List<Chapter> createVolume(List<Chapter> chapters, Chapter volume) {
+    _validateNewChapter(chapters, volume);
+    if (!volume.isVolume ||
+        volume.parentId != null ||
+        volume.blocks.isNotEmpty) {
+      throw const ValidationFailure('新卷只能作为不含正文的顶层容器。');
+    }
+    return normalize(<Chapter>[...chapters, volume]);
+  }
+
+  static List<Chapter> createChapter(
+    List<Chapter> chapters,
+    Chapter chapter, {
+    String? beforeChapterId,
+    String? afterChapterId,
+  }) {
+    _validateNewChapter(chapters, chapter);
+    if (chapter.level != 2 ||
+        chapter.blocks.length != 1 ||
+        chapter.blocks.single is! TextBlock ||
+        chapter.blocks.single.plainText.isNotEmpty) {
+      throw const ValidationFailure('新章节必须包含一个空正文段落。');
+    }
+    _validateId(chapter.blocks.single.id);
+    if (chapters.any(
+      (item) =>
+          item.blocks.any((block) => block.id == chapter.blocks.single.id),
+    )) {
+      throw const ValidationFailure('正文段落标识已存在，请重试。');
+    }
+    if (beforeChapterId != null && afterChapterId != null) {
+      throw const ValidationFailure('不能同时指定插入位置的前后章节。');
+    }
+    final parentId = chapter.parentId;
+    final volumeIndex = parentId == null
+        ? null
+        : _volumeIndex(chapters, parentId);
+    int index;
+    final anchorId = beforeChapterId ?? afterChapterId;
+    if (anchorId != null) {
+      _validateId(anchorId);
+      final anchorIndex = _index(chapters, anchorId);
+      final anchor = chapters[anchorIndex];
+      if (anchor.parentId != parentId ||
+          (anchor.isVolume && parentId != null)) {
+        throw const ValidationFailure('插入位置必须是同一卷内的章节。');
+      }
+      index = anchorIndex + (afterChapterId == null ? 0 : 1);
+      if (anchor.isVolume && afterChapterId != null) {
+        while (index < chapters.length &&
+            chapters[index].parentId == anchor.id) {
+          index++;
+        }
+      }
+    } else if (volumeIndex == null) {
+      index = chapters.length;
+    } else {
+      index = volumeIndex + 1;
+      while (index < chapters.length && chapters[index].parentId == parentId) {
+        index++;
+      }
+    }
+    final next = List<Chapter>.of(chapters)..insert(index, chapter);
+    return normalize(next);
+  }
+
+  static List<Chapter> moveChaptersToVolume(
+    List<Chapter> chapters,
+    Set<String> chapterIds, {
+    required String? volumeId,
+  }) {
+    if (chapterIds.isEmpty) {
+      throw const ValidationFailure('请选择要移动的章节。');
+    }
+    if (volumeId != null) _volumeIndex(chapters, volumeId);
+    for (final id in chapterIds) {
+      _validateId(id);
+      if (chapters[_index(chapters, id)].isVolume) {
+        throw const ValidationFailure('只能移动章节，不能移动卷。');
+      }
+    }
+    final selected = chapters
+        .where((chapter) => chapterIds.contains(chapter.id))
+        .map(
+          (chapter) => chapter.copyWith(
+            parentId: volumeId,
+            clearParent: volumeId == null,
+          ),
+        )
+        .toList();
+    final next = chapters
+        .where((chapter) => !chapterIds.contains(chapter.id))
+        .toList();
+    var index = next.length;
+    if (volumeId != null) {
+      index = _volumeIndex(next, volumeId) + 1;
+      while (index < next.length && next[index].parentId == volumeId) {
+        index++;
+      }
+    }
+    next.insertAll(index, selected);
+    return normalize(next);
+  }
+
   static List<Chapter> rename(List<Chapter> chapters, String id, String title) {
     final index = _index(chapters, id);
     final next = List<Chapter>.of(chapters);
@@ -209,5 +315,33 @@ abstract final class ChapterEdits {
       throw const ValidationFailure('章节不存在，请刷新书稿后重试。');
     }
     return index;
+  }
+
+  static int _volumeIndex(List<Chapter> chapters, String id) {
+    _validateId(id);
+    final index = chapters.indexWhere((chapter) => chapter.id == id);
+    if (index < 0 || !chapters[index].isVolume) {
+      throw const ValidationFailure('目标卷不存在，请刷新目录后重试。');
+    }
+    return index;
+  }
+
+  static void _validateNewChapter(List<Chapter> chapters, Chapter chapter) {
+    _validateId(chapter.id);
+    if (chapter.title.trim().isEmpty) {
+      throw const ValidationFailure('标题不能为空。');
+    }
+    if (chapters.any((item) => item.id == chapter.id)) {
+      throw const ValidationFailure('章节标识已存在，请重试。');
+    }
+    if (chapters.isNotEmpty && chapters.first.bookId != chapter.bookId) {
+      throw const ValidationFailure('目录包含其他书籍的章节。');
+    }
+  }
+
+  static void _validateId(String id) {
+    if (!_safeId.hasMatch(id)) {
+      throw const ValidationFailure('章节或段落标识无效，请刷新后重试。');
+    }
   }
 }

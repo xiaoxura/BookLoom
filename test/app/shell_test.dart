@@ -342,6 +342,60 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final width in <double>[320, 363, 520]) {
+    for (final textScale in <double>[1, 2]) {
+      testBookloomWidgets(
+        'phone navigation centers compact items at ${width}px ${textScale}x',
+        (WidgetTester tester) async {
+          tester.platformDispatcher.textScaleFactorTestValue = textScale;
+          addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+          await pumpMobileShell(tester, size: Size(width, 800));
+
+          final bar = find.byKey(const Key('bottom-navigation'));
+          final glass = find.ancestor(
+            of: bar,
+            matching: find.byType(GlassSurface),
+          );
+          expect(tester.getCenter(glass).dx, closeTo(width / 2, 0.01));
+          expect(
+            tester.getSize(glass).width,
+            lessThanOrEqualTo(AppLayout.bottomBarMaxWidth),
+          );
+          if (textScale == 1) {
+            expect(tester.getSize(bar).height, 56);
+          } else {
+            expect(tester.getSize(bar).height, greaterThan(56));
+          }
+
+          final items = find.descendant(
+            of: bar,
+            matching: find.byType(InkWell),
+          );
+          expect(items, findsNWidgets(3));
+          for (var index = 0; index < 3; index++) {
+            final item = items.at(index);
+            final icon = find.descendant(of: item, matching: find.byType(Icon));
+            final label = find.descendant(
+              of: item,
+              matching: find.byType(Text),
+            );
+            final target = tester.getRect(item);
+            expect(target.width, greaterThanOrEqualTo(48));
+            expect(target.height, greaterThanOrEqualTo(48));
+            expect(tester.getCenter(icon).dx, closeTo(target.center.dx, 0.01));
+            expect(tester.getCenter(label).dx, closeTo(target.center.dx, 0.01));
+            expect(target.contains(tester.getTopLeft(icon)), isTrue);
+            expect(target.contains(tester.getBottomRight(label)), isTrue);
+          }
+          await tester.tap(items.at(1));
+          await tester.pumpAndSettle();
+          expect(find.text(zh.importChooseFile), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
+
   testBookloomWidgets('settings opens permission checks and returns', (
     WidgetTester tester,
   ) async {
@@ -396,12 +450,16 @@ void main() {
       await tester.ensureVisible(find.text(zh.workbenchOpenBatch));
       await tester.pumpAndSettle();
 
-      // The stripe lies inside the glass bar but outside AppPage's 20px
-      // content inset. On a pushed page it should show only the paper canvas.
+      // Sample the selected navigation surface inside the centered bar.
       final Rect bar = tester.getRect(
         find.byKey(const Key('bottom-navigation')),
       );
-      final Rect stripe = Rect.fromLTWH(16, bar.top + 12, 4, bar.height - 24);
+      final Rect stripe = Rect.fromLTWH(
+        bar.center.dx - bar.width / 6 + AppSpacing.sm,
+        bar.top + AppSpacing.md,
+        AppSpacing.xs,
+        bar.height - AppSpacing.xl,
+      );
       final Uint8List shell = await _capturePixels(tester, stripe);
 
       await tester.tap(find.text(zh.workbenchOpenBatch));
@@ -431,6 +489,44 @@ void main() {
       expect(_meanRgbDifference(returningStart, pushed), lessThan(1));
       expect(_meanRgbDifference(returningMiddle, pushed), lessThan(1));
       expect(_meanRgbDifference(restoredShell, shell), lessThan(1));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testBookloomWidgets(
+    'settings subpage canvas hides index during both transition halves',
+    (WidgetTester tester) async {
+      await pumpBookloom(tester);
+      await tester.tap(find.text(zh.navSettings).first);
+      await tester.pumpAndSettle();
+
+      final Rect stripe = tester.getRect(find.text(zh.settingsHelp));
+      final Uint8List index = await _capturePixels(tester, stripe);
+
+      await tester.tap(find.text(zh.settingsAppearance));
+      await tester.pump();
+      await tester.pump();
+      final Uint8List enteringStart = await _capturePixels(tester, stripe);
+      await tester.pump(const Duration(milliseconds: 120));
+      final Uint8List enteringMiddle = await _capturePixels(tester, stripe);
+      await tester.pumpAndSettle();
+      final Uint8List subpage = await _capturePixels(tester, stripe);
+
+      expect(_meanRgbDifference(index, subpage), greaterThan(1));
+      expect(_meanRgbDifference(enteringStart, subpage), lessThan(1));
+      expect(_meanRgbDifference(enteringMiddle, subpage), lessThan(1));
+
+      await tester.tap(find.byType(BackButton));
+      await tester.pump();
+      final Uint8List returningStart = await _capturePixels(tester, stripe);
+      await tester.pump(const Duration(milliseconds: 120));
+      final Uint8List returningMiddle = await _capturePixels(tester, stripe);
+      await tester.pumpAndSettle();
+      final Uint8List restoredIndex = await _capturePixels(tester, stripe);
+
+      expect(_meanRgbDifference(returningStart, subpage), lessThan(1));
+      expect(_meanRgbDifference(returningMiddle, subpage), lessThan(1));
+      expect(_meanRgbDifference(restoredIndex, index), lessThan(1));
       expect(tester.takeException(), isNull);
     },
   );

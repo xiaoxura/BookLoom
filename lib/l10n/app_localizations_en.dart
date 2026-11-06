@@ -264,6 +264,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Books, covers and backups live here. Copy the folder to take everything with you.';
 
   @override
+  String get settingsDataLocationMobileDesc =>
+      'Books are stored in the app\'s private folder, which file managers cannot open directly. Uninstalling the app may delete this data. Choose where to save exported books and backups.';
+
+  @override
   String get windowMinimize => 'Minimize';
 
   @override
@@ -383,6 +387,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryClearSearch => 'Clear search';
+
+  @override
+  String get librarySortBy => 'Sort by';
 
   @override
   String get librarySortRecent => 'Recently edited';
@@ -556,6 +563,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorUndo => 'Undo';
 
   @override
+  String get editorUndoDone => 'Undone';
+
+  @override
+  String get editorRedoDone => 'Redone';
+
+  @override
   String get editorRedo => 'Redo';
 
   @override
@@ -593,6 +606,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorChapterActions => 'Chapter actions';
 
   @override
+  String get editorNewVolume => 'New volume';
+
+  @override
+  String get editorNewChapter => 'New chapter';
+
+  @override
+  String get editorMoveChapters => 'Move chapters';
+
+  @override
+  String get editorVolumeTitle => 'Volume title';
+
+  @override
+  String get editorTargetVolume => 'Volume';
+
+  @override
+  String get editorUnassigned => 'Unassigned';
+
+  @override
+  String get editorInsertPosition => 'Insert position';
+
+  @override
+  String get editorBeforeFirst => 'Before the first chapter';
+
+  @override
+  String editorAfterChapter(String title) {
+    return 'After “$title”';
+  }
+
+  @override
+  String get editorSelectChapters => 'Select chapters to move';
+
+  @override
+  String get editorCreate => 'Create';
+
+  @override
+  String get editorMove => 'Move';
+
+  @override
+  String get editorSelectAll => 'Select all';
+
+  @override
+  String get editorClearSelection => 'Clear selection';
+
+  @override
+  String get editorRenameVolume => 'Rename volume';
+
+  @override
   String get editorRenameChapter => 'Rename chapter';
 
   @override
@@ -609,6 +669,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editorDeleteChapter => 'Delete chapter';
+
+  @override
+  String get editorDeleteVolume => 'Delete volume';
 
   @override
   String editorDeleteChapterConfirm(String title) {

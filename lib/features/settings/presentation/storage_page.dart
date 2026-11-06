@@ -17,6 +17,9 @@ class StoragePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final platform = Theme.of(context).platform;
+    final mobile =
+        platform == TargetPlatform.android || platform == TargetPlatform.iOS;
     final String dataPath = ref.watch(appPathsProvider).support.path;
 
     return AppPage(
@@ -27,36 +30,61 @@ class StoragePage extends ConsumerWidget {
         children: <Widget>[
           SettingsCard(
             children: <Widget>[
-              SettingsRow(
-                title: l10n.settingsDataLocation,
-                description: l10n.settingsDataLocationDesc,
-                stack: true,
-                control: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: SelectableText(
-                        dataPath,
+              if (mobile)
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        l10n.settingsDataLocation,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.xxs + 2),
+                      Text(
+                        l10n.settingsDataLocationMobileDesc,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: context.colors.inkSecondary,
                           height: 1.6,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    TextButton.icon(
-                      onPressed: () async {
-                        await Clipboard.setData(ClipboardData(text: dataPath));
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(l10n.settingsCopied)),
-                        );
-                      },
-                      icon: const Icon(Icons.copy_rounded, size: 15),
-                      label: Text(l10n.settingsCopyPath),
-                    ),
-                  ],
+                    ],
+                  ),
+                )
+              else
+                SettingsRow(
+                  title: l10n.settingsDataLocation,
+                  description: l10n.settingsDataLocationDesc,
+                  stack: true,
+                  control: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: SelectableText(
+                          dataPath,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: context.colors.inkSecondary,
+                                height: 1.6,
+                              ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      TextButton.icon(
+                        onPressed: () async {
+                          await Clipboard.setData(
+                            ClipboardData(text: dataPath),
+                          );
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(l10n.settingsCopied)),
+                          );
+                        },
+                        icon: const Icon(Icons.copy_rounded, size: 15),
+                        label: Text(l10n.settingsCopyPath),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),

@@ -82,22 +82,54 @@ class BookFiles {
 
   /// Book-relative path, always in `/` form.
   ///
-  /// This value is persisted (SQLite columns and operation markers) and is
-  /// compared for equality during recovery, so it must not depend on the host
-  /// separator: a support directory copied between Windows and POSIX has to
-  /// keep resolving to the same rows. Filesystem access normalizes it through
-  /// [_inside].
+  /// This value is persisted in SQLite and operation markers. Recovery also
+  /// recognizes paths previously stored with Windows separators.
   String bookRelativePath(String bookId) {
     checkId(bookId);
     return 'books/$bookId';
   }
 
   /// Canonical form of a stored path: `books/<id>/<relative>`, `/`-separated.
-  String storedPathFor(String bookId, String relative) => p.posix.normalize(
-    p.posix.join(bookRelativePath(bookId), _posixSeparators(relative)),
+  String storedPathFor(String bookId, String relative) => p.posix.join(
+    bookRelativePath(bookId),
+    normalizeBookRelativePath(bookId, relative),
   );
 
   static String _posixSeparators(String value) => value.replaceAll(r'\', '/');
+
+  String normalizeStoredPath(String bookId, String storedPath) {
+    final bookPath = bookRelativePath(bookId);
+    final converted = _posixSeparators(storedPath);
+    if (p.posix.isAbsolute(converted) ||
+        p.windows.isAbsolute(storedPath) ||
+        p.posix.split(converted).contains('..')) {
+      throw ArgumentError.value(storedPath, 'storedPath', 'path traversal');
+    }
+    final normalized = p.posix.normalize(converted);
+    if (!p.posix.isWithin(bookPath, normalized)) {
+      throw ArgumentError.value(storedPath, 'storedPath', 'wrong book');
+    }
+    return normalized;
+  }
+
+  String relativeFromStoredPath(String bookId, String storedPath) =>
+      p.posix.relative(
+        normalizeStoredPath(bookId, storedPath),
+        from: bookRelativePath(bookId),
+      );
+
+  String normalizeBookRelativePath(String bookId, String relative) {
+    final converted = _posixSeparators(relative);
+    if (p.posix.isAbsolute(converted) ||
+        p.windows.isAbsolute(relative) ||
+        p.posix.split(converted).contains('..')) {
+      throw ArgumentError.value(relative, 'relative', 'path traversal');
+    }
+    return relativeFromStoredPath(
+      bookId,
+      p.posix.join(bookRelativePath(bookId), converted),
+    );
+  }
 
   String _inside(String relative) {
     if (p.isAbsolute(relative)) throw ArgumentError.value(relative, 'path');
@@ -146,15 +178,8 @@ class BookFiles {
   }
 
   Future<File> resolveStoredPath(String bookId, String relative) async {
-    final bookPath = bookRelativePath(bookId);
-    if (p.isAbsolute(relative) || p.split(relative).contains('..')) {
-      throw ArgumentError.value(relative, 'storedPath', 'path traversal');
-    }
-    final normalized = p.normalize(relative);
-    if (!p.isWithin(bookPath, normalized)) {
-      throw ArgumentError.value(relative, 'storedPath', 'wrong book');
-    }
-    final path = _inside(normalized);
+    final normalized = normalizeStoredPath(bookId, relative);
+    final path = _inside(p.joinAll(p.posix.split(normalized)));
     await _rejectLinks(path);
     return File(path);
   }
@@ -298,7 +323,7 @@ class BookFiles {
   Future<void> deleteAssetFile(String bookId, String relative) async {
     final file = await resolveStoredPath(
       bookId,
-      p.join(bookRelativePath(bookId), relative),
+      storedPathFor(bookId, relative),
     );
     if (await file.exists()) await file.delete();
   }

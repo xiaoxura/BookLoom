@@ -255,6 +255,28 @@ void main() {
         createdAt: now,
         updatedAt: now,
       ),
+      source: SourceImport(
+        format: 'txt',
+        originalName: 'old.txt',
+        openRead: () => Stream<List<int>>.value(<int>[4]),
+      ),
+      assets: <AssetImport>[
+        AssetImport(
+          id: 'old-id',
+          kind: 'image',
+          mime: 'image/png',
+          extension: 'png',
+          openRead: () => Stream<List<int>>.value(<int>[5]),
+        ),
+      ],
+    );
+    await destinationDb.customStatement(
+      'UPDATE sources SET stored_path = ? WHERE book_id = ?',
+      <Object>[r'books\marker-book\source.txt', 'marker-book'],
+    );
+    await destinationDb.customStatement(
+      'UPDATE assets SET stored_path = ? WHERE book_id = ?',
+      <Object>[r'books\marker-book\assets\old-id.png', 'marker-book'],
     );
     final bookDir = Directory('${root.path}/destination/books/marker-book');
     await Directory('${bookDir.path}/assets').create(recursive: true);
@@ -265,7 +287,11 @@ void main() {
           jsonEncode(<String, Object?>{
             'kind': 'restore',
             'bookId': 'marker-book',
-            'paths': <String>['assets/new-id.png'],
+            'paths': <String>[
+              'source.txt',
+              r'assets\old-id.png',
+              r'assets\new-id.png',
+            ],
           }),
         );
     final restarted = BookRepository(
@@ -274,7 +300,60 @@ void main() {
     );
     await restarted.listSummaries();
     expect(await pending.exists(), isFalse);
+    expect(await File('${bookDir.path}/source.txt').exists(), isTrue);
+    expect(await File('${bookDir.path}/assets/old-id.png').exists(), isTrue);
     expect((await restarted.loadBook('marker-book'))!.meta.title, '旧书');
+  });
+
+  test('overwrite collects old resources with Windows stored paths', () async {
+    await _createOriginal(original);
+    final now = DateTime.utc(2026, 11, 5);
+    await destination.createBook(
+      model.Book(
+        id: 'source-book',
+        meta: BookMeta(title: '旧书'),
+        createdAt: now,
+        updatedAt: now,
+      ),
+      source: SourceImport(
+        format: 'txt',
+        originalName: 'old.txt',
+        openRead: () => Stream<List<int>>.value(<int>[4]),
+      ),
+      assets: <AssetImport>[
+        AssetImport(
+          id: 'old-id',
+          kind: 'image',
+          mime: 'image/png',
+          extension: 'png',
+          openRead: () => Stream<List<int>>.value(<int>[5]),
+        ),
+      ],
+    );
+    await destinationDb.customStatement(
+      'UPDATE sources SET stored_path = ? WHERE book_id = ?',
+      <Object>[r'books\source-book\source.txt', 'source-book'],
+    );
+    await destinationDb.customStatement(
+      'UPDATE assets SET stored_path = ? WHERE book_id = ?',
+      <Object>[r'books\source-book\assets\old-id.png', 'source-book'],
+    );
+    final output = await exporter.exportBooks(<String>[
+      'source-book',
+    ], '${root.path}/legacy-overwrite.bookloom');
+    final result = await importer.applyRestore(
+      await importer.prepareRestore(
+        output.path,
+        maxOutputBytes: 16 * 1024 * 1024,
+      ),
+      policy: RestoreConflictPolicy.overwrite,
+    );
+    expect(result.failures, isEmpty);
+    expect(result.restoredIds, <String>['source-book']);
+    final bookDir = Directory('${root.path}/destination/books/source-book');
+    expect(await File('${bookDir.path}/source.txt').exists(), isFalse);
+    expect(await File('${bookDir.path}/assets/old-id.png').exists(), isFalse);
+    expect((await destination.loadBook('source-book'))!.meta.title, '原书');
   });
 
   test('tampered staged resource fails before overwrite commits', () async {

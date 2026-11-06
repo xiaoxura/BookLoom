@@ -214,10 +214,7 @@ NoTransitionPage<void> _tabPage(Widget page) =>
 /// whole window and leaving empty margins on both sides.
 CustomTransitionPage<void> _shellPage(Widget page) {
   return CustomTransitionPage<void>(
-    // Opaque canvas behind the page: without it the incoming page fades in over
-    // the previous one and its text shows through, which read as the old page
-    // lingering after a section switch.
-    child: AppCanvas(child: AppSurface(child: page)),
+    child: AppSurface(child: page),
     transitionDuration: AppMotion.page,
     reverseTransitionDuration: AppMotion.page,
     transitionsBuilder:
@@ -232,14 +229,16 @@ CustomTransitionPage<void> _shellPage(Widget page) {
             curve: AppMotion.enter,
             reverseCurve: AppMotion.exit,
           );
-          return FadeTransition(
-            opacity: curved,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.012),
-                end: Offset.zero,
-              ).animate(curved),
-              child: child,
+          return AppCanvas(
+            child: FadeTransition(
+              opacity: curved,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.012),
+                  end: Offset.zero,
+                ).animate(curved),
+                child: child,
+              ),
             ),
           );
         },

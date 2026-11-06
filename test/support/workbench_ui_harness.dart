@@ -17,6 +17,8 @@ import 'package:bookloom/core/storage/app_database.dart';
 import 'package:bookloom/core/storage/book_repository.dart';
 import 'package:bookloom/core/storage/settings_store.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart'
+    show debugDefaultTargetPlatformOverride;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -63,12 +65,15 @@ class WorkbenchUiHarness {
   static Future<WorkbenchUiHarness> pump(
     WidgetTester tester, {
     Size size = const Size(1280, 900),
+    TargetPlatform platform = TargetPlatform.linux,
     Appearance appearance = const Appearance(
       themeMode: AppThemeMode.dark,
       glass: GlassQuality.off,
     ),
     SettingsStore Function(AppDatabase database)? settingsStoreFactory,
   }) async {
+    debugDefaultTargetPlatformOverride = platform;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);

@@ -86,6 +86,7 @@
   "importPendingMessage": "M1 starts with TXT: encoding detection, chapter scoring, then manual review. This build only proves the interface language and data model.",
   "settingsGlassDesc": "Used only for sidebar, overlays and dialogs. Body text always sits on opaque paper.",
   "settingsDataLocationDesc": "Books, covers and backups live here. Copy the folder to take everything with you.",
+  "settingsDataLocationMobileDesc": "Books are stored in the app's private folder, which file managers cannot open directly. Uninstalling the app may delete this data. Choose where to save exported books and backups.",
   "windowMinimize": "Minimize",
   "windowMaximize": "Maximize",
   "windowClose": "Close",
@@ -125,6 +126,7 @@
   "libraryNoMatch": "No matching books",
   "librarySearch": "Search titles or authors",
   "libraryClearSearch": "Clear search",
+  "librarySortBy": "Sort by",
   "librarySortRecent": "Recently edited",
   "librarySortTitle": "Title",
   "librarySortOpened": "Recently opened",
@@ -236,6 +238,8 @@
   "editorBookInfo": "Book information",
   "editorExport": "Export manuscript",
   "editorUndo": "Undo",
+  "editorUndoDone": "Undone",
+  "editorRedoDone": "Redone",
   "editorRedo": "Redo",
   "editorEdit": "Edit",
   "editorPreview": "Preview",
@@ -248,12 +252,35 @@
   "editorNoChapters": "No chapters",
   "editorEmptyChapter": "This chapter has no body text",
   "editorChapterActions": "Chapter actions",
+  "editorNewVolume": "New volume",
+  "editorNewChapter": "New chapter",
+  "editorMoveChapters": "Move chapters",
+  "editorVolumeTitle": "Volume title",
+  "editorTargetVolume": "Volume",
+  "editorUnassigned": "Unassigned",
+  "editorInsertPosition": "Insert position",
+  "editorBeforeFirst": "Before the first chapter",
+  "editorAfterChapter": "After “{title}”",
+  "@editorAfterChapter": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "editorSelectChapters": "Select chapters to move",
+  "editorCreate": "Create",
+  "editorMove": "Move",
+  "editorSelectAll": "Select all",
+  "editorClearSelection": "Clear selection",
+  "editorRenameVolume": "Rename volume",
   "editorRenameChapter": "Rename chapter",
   "editorChapterTitle": "Chapter title",
   "editorMergePrevious": "Merge into previous chapter",
   "editorPromote": "Promote to volume",
   "editorDemote": "Demote to chapter",
   "editorDeleteChapter": "Delete chapter",
+  "editorDeleteVolume": "Delete volume",
   "editorDeleteChapterConfirm": "Delete “{title}” and its body text?",
   "@editorDeleteChapterConfirm": {
     "placeholders": {

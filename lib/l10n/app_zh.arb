@@ -89,6 +89,7 @@
   "importPendingMessage": "M1 会先打通 TXT：编码探测、分章评分、目录校对。当前版本先确认界面语言与数据结构。",
   "settingsGlassDesc": "只用于侧栏、浮层与对话框；正文始终落在不透明的纸面上。",
   "settingsDataLocationDesc": "书籍、封面和备份都保存在这里，可以直接拷贝带走。",
+  "settingsDataLocationMobileDesc": "书籍保存在应用私有目录，文件管理器无法直接打开。卸载应用可能删除这些数据；导出书籍或备份时，可自行选择保存位置。",
   "windowMinimize": "最小化",
   "windowMaximize": "最大化",
   "windowClose": "关闭",
@@ -135,6 +136,7 @@
   "libraryNoMatch": "没有找到匹配的书稿",
   "librarySearch": "搜索书名或作者",
   "libraryClearSearch": "清除搜索",
+  "librarySortBy": "排序",
   "librarySortRecent": "最近修改",
   "librarySortTitle": "书名",
   "librarySortOpened": "最近打开",
@@ -246,6 +248,8 @@
   "editorBookInfo": "书籍信息",
   "editorExport": "导出书稿",
   "editorUndo": "撤销",
+  "editorUndoDone": "已撤销",
+  "editorRedoDone": "已重做",
   "editorRedo": "重做",
   "editorEdit": "编辑",
   "editorPreview": "预览",
@@ -258,12 +262,35 @@
   "editorNoChapters": "暂无章节",
   "editorEmptyChapter": "本章没有正文",
   "editorChapterActions": "章节操作",
+  "editorNewVolume": "新建卷",
+  "editorNewChapter": "新建章节",
+  "editorMoveChapters": "批量移动章节",
+  "editorVolumeTitle": "卷名",
+  "editorTargetVolume": "所属卷",
+  "editorUnassigned": "未分卷",
+  "editorInsertPosition": "插入位置",
+  "editorBeforeFirst": "首章之前",
+  "editorAfterChapter": "在“{title}”之后",
+  "@editorAfterChapter": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "editorSelectChapters": "选择要移动的章节",
+  "editorCreate": "创建",
+  "editorMove": "移动",
+  "editorSelectAll": "全选",
+  "editorClearSelection": "清空选择",
+  "editorRenameVolume": "重命名卷",
   "editorRenameChapter": "重命名章节",
   "editorChapterTitle": "章节标题",
   "editorMergePrevious": "并入上一章",
   "editorPromote": "升为卷",
   "editorDemote": "降为章",
   "editorDeleteChapter": "删除章节",
+  "editorDeleteVolume": "删除卷",
   "editorDeleteChapterConfirm": "确定删除“{title}”吗？其正文也会删除。",
   "@editorDeleteChapterConfirm": {
     "placeholders": {

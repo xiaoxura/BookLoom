@@ -33,9 +33,9 @@ abstract final class AppTypography {
   static const String serif = 'Noto Serif CJK SC';
 
   /// Reading/editor body: roomy leading, slight tracking for CJK mixed text.
-  static TextStyle reading(AppColors c) => _sans(
-    size: 16.5,
-    height: 1.9,
+  static TextStyle reading(AppColors c, {bool compact = false}) => _sans(
+    size: compact ? 15.5 : 16.5,
+    height: compact ? 1.75 : 1.9,
     weight: FontWeight.w400,
     color: c.ink,
     tracking: 0.15,

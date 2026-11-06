@@ -12,6 +12,7 @@ import 'package:bookloom/core/storage/book_repository.dart';
 import 'package:drift/drift.dart' show MigrationStrategy;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 
 void main() {
   late Directory support;
@@ -449,71 +450,220 @@ void main() {
     );
   });
 
+  test('asset ID conflict removes this book file and recovery keeps the owner path', () async {
+    final now = DateTime.utc(2026, 11, 4);
+    await repository.createBook(
+      _book('asset-owner', now, const <Chapter>[]),
+      assets: <AssetImport>[
+        AssetImport(
+          id: 'shared-id',
+          kind: 'image',
+          mime: 'image/png',
+          extension: 'png',
+          openRead: () => Stream<List<int>>.value(<int>[1]),
+        ),
+      ],
+    );
+    await repository.createBook(_book('asset-other', now, const <Chapter>[]));
+    await expectLater(
+      repository.addAsset(
+        'asset-other',
+        AssetImport(
+          id: 'shared-id',
+          kind: 'image',
+          mime: 'image/jpeg',
+          extension: 'jpg',
+          openRead: () => Stream<List<int>>.value(<int>[2]),
+        ),
+      ),
+      throwsA(anything),
+    );
+    final orphan = File(
+      '${support.path}/books/asset-other/assets/shared-id.jpg',
+    );
+    expect(await orphan.exists(), isFalse);
+    await orphan.parent.create(recursive: true);
+    await orphan.writeAsBytes(<int>[2]);
+    await repository.files.writeMarker(
+      'foreign-asset-recovery',
+      kind: 'asset',
+      bookId: 'asset-other',
+      assetId: 'shared-id',
+      relativePath: 'assets/shared-id.jpg',
+      sha256: 'wrong-hash',
+    );
+    final committedAsset = (await repository.loadAssets('asset-owner')).single;
+    await repository.files.writeMarker(
+      'committed-asset-recovery',
+      kind: 'asset',
+      bookId: 'asset-owner',
+      assetId: committedAsset.id,
+      relativePath: 'assets/shared-id.png',
+      sha256: committedAsset.sha256,
+    );
+    final restarted = BookRepository(db, support);
+    await restarted.listSummaries();
+    expect(await orphan.exists(), isFalse);
+    expect(await repository.loadAssets('asset-owner'), hasLength(1));
+    expect(
+      await File('${support.path}/books/asset-owner/assets/shared-id.png')
+          .exists(),
+      isTrue,
+    );
+  });
+
   test(
-    'asset ID conflict removes this book file and recovery uses owner and hash',
+    'legacy Windows asset markers preserve references and remove orphans',
     () async {
       final now = DateTime.utc(2026, 11, 4);
       await repository.createBook(
-        _book('asset-owner', now, const <Chapter>[]),
+        _book('legacy-assets', now, const <Chapter>[]),
         assets: <AssetImport>[
           AssetImport(
-            id: 'shared-id',
+            id: 'kept',
             kind: 'image',
             mime: 'image/png',
             extension: 'png',
-            openRead: () => Stream<List<int>>.value(<int>[1]),
+            openRead: () => Stream<List<int>>.value(<int>[1, 2, 3]),
           ),
         ],
       );
-      await repository.createBook(_book('asset-other', now, const <Chapter>[]));
-      await expectLater(
-        repository.addAsset(
-          'asset-other',
-          AssetImport(
-            id: 'shared-id',
-            kind: 'image',
-            mime: 'image/jpeg',
-            extension: 'jpg',
-            openRead: () => Stream<List<int>>.value(<int>[2]),
-          ),
-        ),
-        throwsA(anything),
+      final asset = (await repository.loadAssets('legacy-assets')).single;
+      await db.customStatement(
+        'UPDATE assets SET stored_path = ? WHERE id = ?',
+        <Object>[r'books\legacy-assets\assets\kept.png', asset.id],
+      );
+      await repository.files.writeMarker(
+        'legacy-asset',
+        kind: 'asset',
+        bookId: 'legacy-assets',
+        assetId: asset.id,
+        relativePath: r'assets\kept.png',
+        sha256: 'stale-hash',
       );
       final orphan = File(
-        '${support.path}/books/asset-other/assets/shared-id.jpg',
+        '${support.path}/books/legacy-assets/assets/orphan.png',
       );
-      expect(await orphan.exists(), isFalse);
-      await orphan.parent.create(recursive: true);
-      await orphan.writeAsBytes(<int>[2]);
+      await orphan.writeAsBytes(<int>[9]);
       await repository.files.writeMarker(
-        'foreign-asset-recovery',
+        'legacy-orphan',
         kind: 'asset',
-        bookId: 'asset-other',
-        assetId: 'shared-id',
-        relativePath: 'assets/shared-id.jpg',
-        sha256: 'wrong-hash',
-      );
-      final committedAsset = (await repository.loadAssets('asset-owner'))
-          .single;
-      await repository.files.writeMarker(
-        'committed-asset-recovery',
-        kind: 'asset',
-        bookId: 'asset-owner',
-        assetId: committedAsset.id,
-        relativePath: 'assets/shared-id.png',
-        sha256: committedAsset.sha256,
+        bookId: 'legacy-assets',
+        assetId: 'orphan',
+        relativePath: r'assets\orphan.png',
+        sha256: 'orphan-hash',
       );
       final restarted = BookRepository(db, support);
       await restarted.listSummaries();
-      expect(await orphan.exists(), isFalse);
-      expect(await repository.loadAssets('asset-owner'), hasLength(1));
+      final legacyAsset = (await restarted.loadAssets('legacy-assets')).single;
       expect(
-        await File('${support.path}/books/asset-owner/assets/shared-id.png')
-            .exists(),
+        await (await restarted.resolveAsset(legacyAsset)).readAsBytes(),
+        <int>[1, 2, 3],
+      );
+      expect(await orphan.exists(), isFalse);
+      expect(legacyAsset.storedPath, r'books\legacy-assets\assets\kept.png');
+      expect(
+        await restarted.removeUnusedAsset('legacy-assets', 'kept'),
         isTrue,
+      );
+      expect(
+        await File('${support.path}/books/legacy-assets/assets/kept.png')
+            .exists(),
+        isFalse,
       );
     },
   );
+
+  test(
+    'legacy Windows delete marker keeps a reused path until unreferenced',
+    () async {
+      final now = DateTime.utc(2026, 11, 4);
+      await repository.createBook(
+        _book('legacy-delete', now, const <Chapter>[]),
+        assets: <AssetImport>[
+          AssetImport(
+            id: 'reused',
+            kind: 'image',
+            mime: 'image/png',
+            extension: 'png',
+            openRead: () => Stream<List<int>>.value(<int>[4]),
+          ),
+        ],
+      );
+      await db.customStatement(
+        'UPDATE assets SET stored_path = ?, sha256 = ? WHERE id = ?',
+        <Object>[
+          r'books\legacy-delete\assets\reused.png',
+          'new-hash',
+          'reused',
+        ],
+      );
+      await repository.files.writeMarker(
+        'legacy-delete-before',
+        kind: 'delete_asset',
+        bookId: 'legacy-delete',
+        assetId: 'reused',
+        relativePath: r'assets\reused.png',
+        sha256: 'old-hash',
+      );
+      await BookRepository(db, support).listSummaries();
+      final file = File(
+        '${support.path}/books/legacy-delete/assets/reused.png',
+      );
+      expect(await file.exists(), isTrue);
+      await db.customStatement('DELETE FROM assets WHERE id = ?', <Object>[
+        'reused',
+      ]);
+      await repository.files.writeMarker(
+        'legacy-delete-after',
+        kind: 'delete_asset',
+        bookId: 'legacy-delete',
+        assetId: 'reused',
+        relativePath: r'assets\reused.png',
+        sha256: 'new-hash',
+      );
+      await BookRepository(db, support).listSummaries();
+      expect(await file.exists(), isFalse);
+    },
+  );
+
+  test('legacy Windows source path reattaches and survives recovery', () async {
+    final now = DateTime.utc(2026, 11, 4);
+    await repository.createBook(
+      _book('legacy-source', now, const <Chapter>[]),
+      source: SourceImport(
+        format: 'txt',
+        originalName: 'original.txt',
+        openRead: () => Stream<List<int>>.value(utf8.encode('原文')),
+      ),
+    );
+    final source = (await repository.loadSource('legacy-source'))!;
+    await db.customStatement(
+      'UPDATE sources SET stored_path = ? WHERE id = ?',
+      <Object>[r'books\legacy-source\source.txt', source.id],
+    );
+    final file = await repository.resolveSource(source);
+    await file.delete();
+    final repaired = await repository.reattachMissingSource(
+      'legacy-source',
+      SourceImport(
+        format: 'txt',
+        originalName: 'replacement.txt',
+        openRead: () => Stream<List<int>>.value(utf8.encode('原文')),
+      ),
+    );
+    expect(repaired.storedPath, r'books\legacy-source\source.txt');
+    await repository.files.writeMarker(
+      'legacy-reattach',
+      kind: 'reattach_source',
+      bookId: 'legacy-source',
+      assetId: source.id,
+      relativePath: 'source.txt',
+      sha256: source.sha256,
+    );
+    await BookRepository(db, support).listSummaries();
+    expect(await file.readAsString(), '原文');
+  });
 
   test(
     'old cover file is collected only after its reference changes',
@@ -578,10 +728,35 @@ void main() {
   test('rejects path traversal and symlinked book data', () async {
     final now = DateTime.utc(2026, 11, 4);
     await repository.createBook(_book('safe', now, const <Chapter>[]));
+    expect(
+      (await repository.files.resolveStoredPath(
+        'safe',
+        r'books\safe\source.txt',
+      )).path,
+      p.join(support.path, 'books', 'safe', 'source.txt'),
+    );
     await expectLater(
       repository.files.resolveStoredPath(
         'safe',
         'books/safe/../other/source.txt',
+      ),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.files.resolveStoredPath(
+        'safe',
+        r'books\safe\..\other\source.txt',
+      ),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.files.resolveStoredPath('safe', r'C:\books\safe\source.txt'),
+      throwsArgumentError,
+    );
+    expect(
+      () => repository.files.normalizeBookRelativePath(
+        'safe',
+        r'assets\..\source.txt',
       ),
       throwsArgumentError,
     );

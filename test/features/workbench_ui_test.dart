@@ -98,12 +98,8 @@ void main() {
     expect(_paragraphFieldWithText('门边放着一封信。'), findsOneWidget);
     expect(await harness.listSummaries(), hasLength(1));
 
-    await tester.tap(find.text(zh.editorPreview));
-    await tester.pumpAndSettle();
-    expect(_paragraphFieldWithText('门边放着一封信。'), findsNothing);
-    expect(find.text('门边放着一封信。'), findsOneWidget);
-    await tester.tap(find.text(zh.editorEdit));
-    await tester.pumpAndSettle();
+    expect(find.text(zh.editorPreview), findsNothing);
+    expect(find.text(zh.editorEdit), findsNothing);
     expect(_paragraphFieldWithText('门边放着一封信。'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

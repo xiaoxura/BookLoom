@@ -6,6 +6,8 @@ import 'package:bookloom/app/workbench_providers.dart';
 import 'package:bookloom/core/platform/app_paths.dart';
 import 'package:bookloom/core/storage/app_database.dart';
 import 'package:bookloom/core/storage/book_repository.dart';
+import 'package:flutter/foundation.dart'
+    show debugDefaultTargetPlatformOverride;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,6 +25,7 @@ void testBookloomWidgets(
     } finally {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(Duration.zero);
+      debugDefaultTargetPlatformOverride = null;
     }
   }, timeout: timeout);
 }

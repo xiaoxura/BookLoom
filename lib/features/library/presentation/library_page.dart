@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/workbench_providers.dart';
 import '../../../core/storage/book_repository.dart';
 import '../../../design/components/app_page.dart';
+import '../../../design/components/app_select_field.dart';
 import '../../../design/components/book_plate.dart';
 import '../../../design/components/empty_state.dart';
 import '../../../design/theme/app_tokens.dart';
@@ -123,54 +124,97 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
   );
 
   Widget _toolbar(AppLocalizations l10n) => LayoutBuilder(
-    builder: (_, constraints) => Wrap(
-      spacing: AppSpacing.md,
-      runSpacing: AppSpacing.sm,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        SizedBox(
-          width: constraints.maxWidth < 520 ? constraints.maxWidth : 280,
-          child: TextField(
-            controller: _search,
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              hintText: l10n.librarySearch,
-              prefixIcon: const Icon(Icons.search_outlined),
-              suffixIcon: _search.text.isEmpty
-                  ? null
-                  : IconButton(
-                      tooltip: l10n.libraryClearSearch,
-                      onPressed: () => setState(_search.clear),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-            ),
-          ),
+    builder: (context, constraints) {
+      final search = TextField(
+        controller: _search,
+        onChanged: (_) => setState(() {}),
+        onTapOutside: (_) => FocusScope.of(context).unfocus(),
+        decoration: InputDecoration(
+          hintText: l10n.librarySearch,
+          prefixIcon: const Icon(Icons.search_outlined),
+          suffixIcon: _search.text.isEmpty
+              ? null
+              : IconButton(
+                  tooltip: l10n.libraryClearSearch,
+                  onPressed: () => setState(_search.clear),
+                  icon: const Icon(Icons.close_rounded),
+                ),
         ),
-        DropdownButton<_Sort>(
-          value: _sort,
-          items: [
-            DropdownMenuItem(
-              value: _Sort.recent,
-              child: Text(l10n.librarySortRecent),
-            ),
-            DropdownMenuItem(
-              value: _Sort.title,
-              child: Text(l10n.librarySortTitle),
-            ),
-            DropdownMenuItem(
-              value: _Sort.opened,
-              child: Text(l10n.librarySortOpened),
-            ),
-          ],
-          onChanged: (value) => setState(() => _sort = value ?? _sort),
-        ),
-        FilledButton.icon(
+      );
+      final sort = AppSelectField<_Sort>(
+        label: l10n.librarySortBy,
+        compact: true,
+        initialSelection: _sort,
+        entries: [
+          DropdownMenuEntry(value: _Sort.recent, label: l10n.librarySortRecent),
+          DropdownMenuEntry(value: _Sort.title, label: l10n.librarySortTitle),
+          DropdownMenuEntry(value: _Sort.opened, label: l10n.librarySortOpened),
+        ],
+        onSelected: (value) {
+          if (value != null) setState(() => _sort = value);
+        },
+      );
+      final import = ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: FilledButton.icon(
           onPressed: () => context.go('/import'),
           icon: const Icon(Icons.add_rounded),
-          label: Text(l10n.libraryEmptyAction),
+          label: Text(l10n.navImport),
         ),
-      ],
-    ),
+      );
+
+      if (constraints.maxWidth < 700) {
+        final narrow =
+            constraints.maxWidth < 280 ||
+            MediaQuery.textScalerOf(context).scale(1) > 1.5;
+        final sortWidth = narrow ? 220.0 : 168.0;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            search,
+            const SizedBox(height: AppSpacing.sm),
+            if (narrow) ...[
+              Align(
+                alignment: Alignment.centerLeft,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: sortWidth),
+                  child: sort,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Align(alignment: Alignment.centerRight, child: import),
+            ] else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: sortWidth),
+                        child: sort,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  import,
+                ],
+              ),
+          ],
+        );
+      }
+
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          SizedBox(width: 280, child: search),
+          const SizedBox(width: AppSpacing.md),
+          SizedBox(width: 220, child: sort),
+          const Spacer(),
+          import,
+        ],
+      );
+    },
   );
 
   Widget _tile(BookSummary book, AppLocalizations l10n) {

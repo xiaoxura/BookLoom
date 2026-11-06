@@ -65,7 +65,13 @@ abstract final class AppLayout {
   static const double pagePadding = 32;
 
   /// The glass navigation pane excludes the device's system insets.
-  static const double bottomBarHeight = 68;
+  static const double bottomBarHeight = 56;
+
+  static const double bottomBarMaxWidth = 320;
+
+  static const double bottomBarIconSize = 20;
+
+  static const double editorCompactBreakpoint = 600;
 
   /// Below this width, segmented theme labels take priority over their icons.
   static const double themeControlIconBreakpoint = 400;

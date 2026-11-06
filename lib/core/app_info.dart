@@ -10,8 +10,14 @@ abstract final class AppInfo {
 
   static String get displayVersion => 'v$version';
 
-  /// When this process started. Captured once per isolate, so the runtime page
-  /// keeps counting across navigations instead of restarting at zero every time
-  /// the page is rebuilt.
-  static final DateTime startedAt = DateTime.now();
+  static DateTime? _startedAt;
+
+  static void initialize() {
+    _startedAt ??= DateTime.now();
+  }
+
+  static DateTime get startedAt {
+    initialize();
+    return _startedAt!;
+  }
 }

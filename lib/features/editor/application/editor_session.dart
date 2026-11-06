@@ -143,13 +143,11 @@ class EditorSession extends ChangeNotifier {
     }
     final selected =
         chapterId ??
-        (loaded.chapters
-                .where((chapter) => !chapter.isVolume)
-                .firstOrNull
-                ?.id ??
-            loaded.chapters.firstOrNull?.id);
+        loaded.chapters.where((chapter) => !chapter.isVolume).firstOrNull?.id;
     if (selected != null &&
-        !loaded.chapters.any((chapter) => chapter.id == selected)) {
+        !loaded.chapters.any(
+          (chapter) => chapter.id == selected && !chapter.isVolume,
+        )) {
       throw const ValidationFailure('章节不存在，请从目录重新选择。');
     }
     Chapter? body;
@@ -187,7 +185,9 @@ class EditorSession extends ChangeNotifier {
   Future<void> selectChapter(String chapterId) async {
     _requireBook();
     if (_activeChapterId == chapterId) return;
-    if (!_book!.chapters.any((chapter) => chapter.id == chapterId)) {
+    if (!_book!.chapters.any(
+      (chapter) => chapter.id == chapterId && !chapter.isVolume,
+    )) {
       throw const ValidationFailure('章节不存在，请刷新书稿后重试。');
     }
     await flush();
@@ -199,6 +199,53 @@ class EditorSession extends ChangeNotifier {
     final next = ChapterEdits.rename(book.chapters, chapterId, title);
     _commitStructure(next);
   }
+
+  Future<String> createVolume(String title) => _runStructure(() async {
+    final book = _requireBook();
+    final id = _uuid.v4();
+    final next = ChapterEdits.createVolume(
+      book.chapters,
+      Chapter(id: id, bookId: book.id, title: title.trim(), level: 1),
+    );
+    _commitStructure(next);
+    return id;
+  });
+
+  Future<String> createChapter(
+    String title, {
+    String? volumeId,
+    String? beforeChapterId,
+    String? afterChapterId,
+  }) => _runStructure(() async {
+    final book = _requireBook();
+    final id = _uuid.v4();
+    final next = ChapterEdits.createChapter(
+      book.chapters,
+      Chapter(
+        id: id,
+        bookId: book.id,
+        title: title.trim(),
+        parentId: volumeId,
+        blocks: <Block>[TextBlock(id: _uuid.v4(), text: '')],
+      ),
+      beforeChapterId: beforeChapterId,
+      afterChapterId: afterChapterId,
+    );
+    _commitStructure(next, preferredChapterId: id);
+    return id;
+  });
+
+  Future<void> moveChaptersToVolume(
+    Set<String> chapterIds, {
+    required String? volumeId,
+  }) => _runStructure(() async {
+    final next = ChapterEdits.moveChaptersToVolume(
+      _requireBook().chapters,
+      chapterIds,
+      volumeId: volumeId,
+    );
+    _commitStructure(next);
+  });
 
   void editBookMeta(BookMeta meta) {
     final book = _requireBook();
@@ -297,13 +344,22 @@ class EditorSession extends ChangeNotifier {
   });
 
   Future<void> deleteChapter(String chapterId) => _runStructure(() async {
-    await _ensureLoaded(chapterId);
     final chapters = _requireBook().chapters;
     final index = chapters.indexWhere((chapter) => chapter.id == chapterId);
+    if (index < 0) {
+      throw const ValidationFailure('章节不存在，请刷新书稿。');
+    }
+    if (!chapters[index].isVolume || _persistedIds.contains(chapterId)) {
+      await _ensureLoaded(chapterId);
+    }
     final next = ChapterEdits.delete(chapters, chapterId);
-    final fallback = next.isEmpty
-        ? null
-        : next[index.clamp(0, next.length - 1)].id;
+    final fallback =
+        next
+            .skip(index)
+            .where((chapter) => !chapter.isVolume)
+            .firstOrNull
+            ?.id ??
+        next.take(index).where((chapter) => !chapter.isVolume).lastOrNull?.id;
     _commitStructure(next, preferredChapterId: fallback);
     if (fallback != null && !_loadedIds.contains(fallback)) {
       await _activate(fallback);
@@ -536,9 +592,10 @@ class EditorSession extends ChangeNotifier {
     _loadedIds
       ..clear()
       ..addAll(ids);
-    _activeChapterId =
-        normalized.where((chapter) => !chapter.isVolume).firstOrNull?.id ??
-        normalized.firstOrNull?.id;
+    _activeChapterId = normalized
+        .where((chapter) => !chapter.isVolume)
+        .firstOrNull
+        ?.id;
     _markChange(blockDirty: ids, affected: <String>{...removedIds, ...ids});
   }
 
@@ -638,11 +695,9 @@ class EditorSession extends ChangeNotifier {
     );
     _markChange(blockDirty: blockDirty, affected: affected);
     final preferred = redo ? patch.afterSelection : patch.beforeSelection;
-    if (preferred != null && next.any((chapter) => chapter.id == preferred)) {
-      _activeChapterId = preferred;
-      if (blockDirty.contains(preferred)) _loadedIds.add(preferred);
-    } else {
-      _activeChapterId = next.firstOrNull?.id;
+    _activeChapterId = _selectableChapterId(next, preferred);
+    if (_activeChapterId != null && blockDirty.contains(_activeChapterId)) {
+      _loadedIds.add(_activeChapterId!);
     }
     _loadedIds.removeWhere((id) => !next.any((chapter) => chapter.id == id));
     final selected = _activeChapterId;
@@ -760,6 +815,9 @@ class EditorSession extends ChangeNotifier {
   }
 
   Future<void> _activate(String id) async {
+    if (_chapter(id)?.isVolume ?? false) {
+      throw const ValidationFailure('卷没有可编辑的正文。');
+    }
     await _ensureLoaded(id);
     final previous = _activeChapterId;
     _activeChapterId = id;
@@ -913,12 +971,7 @@ class EditorSession extends ChangeNotifier {
       wordCount: book.wordCount + wordDelta,
     );
     _markChange(blockDirty: redoBlockDirty, affected: ids);
-    if (nextSelection != null &&
-        next.any((chapter) => chapter.id == nextSelection)) {
-      _activeChapterId = nextSelection;
-    } else {
-      _activeChapterId = next.firstOrNull?.id;
-    }
+    _activeChapterId = _selectableChapterId(next, nextSelection);
     for (final id in redoBlockDirty) {
       _loadedIds.add(id);
     }
@@ -988,6 +1041,16 @@ class EditorSession extends ChangeNotifier {
       if (chapter.id == id) return chapter;
     }
     return null;
+  }
+
+  String? _selectableChapterId(List<Chapter> chapters, String? preferred) {
+    if (preferred != null &&
+        chapters.any(
+          (chapter) => chapter.id == preferred && !chapter.isVolume,
+        )) {
+      return preferred;
+    }
+    return chapters.where((chapter) => !chapter.isVolume).firstOrNull?.id;
   }
 
   Book _requireBook() {

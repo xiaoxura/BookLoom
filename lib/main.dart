@@ -6,8 +6,10 @@ import 'app/bootstrap.dart';
 import 'app/error_handling.dart';
 import 'app/providers.dart';
 import 'app/window/window_controls.dart';
+import 'core/app_info.dart';
 
 Future<void> main() async {
+  AppInfo.initialize();
   WidgetsFlutterBinding.ensureInitialized();
   installErrorHandlers();
   WindowControls.configure();

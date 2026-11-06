@@ -11,12 +11,14 @@ class AppSelectField<T> extends StatefulWidget {
     required this.initialSelection,
     required this.entries,
     required this.onSelected,
+    this.compact = false,
   });
 
   final String label;
   final T initialSelection;
   final List<DropdownMenuEntry<T>> entries;
   final ValueChanged<T?> onSelected;
+  final bool compact;
 
   @override
   State<AppSelectField<T>> createState() => _AppSelectFieldState<T>();
@@ -63,12 +65,14 @@ class _AppSelectFieldState<T> extends State<AppSelectField<T>> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Text(
-          widget.label,
-          style: Theme.of(context).textTheme.titleSmall
-              ?.copyWith(color: colors.ink, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: AppSpacing.sm),
+        if (!widget.compact) ...<Widget>[
+          Text(
+            widget.label,
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(color: colors.ink, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
         PopScope<Object?>(
           canPop: !_menuOpen,
           onPopInvokedWithResult: (bool didPop, Object? result) {
@@ -83,6 +87,23 @@ class _AppSelectFieldState<T> extends State<AppSelectField<T>> {
                 menuController: _menuController,
                 initialSelection: widget.initialSelection,
                 expandedInsets: EdgeInsets.zero,
+                inputDecorationTheme: widget.compact
+                    ? (DropdownMenuTheme.of(context).inputDecorationTheme ??
+                              const InputDecorationThemeData())
+                          .copyWith(
+                            isDense: true,
+                            isCollapsed: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.sm,
+                            ),
+                            constraints: const BoxConstraints(minHeight: 48),
+                            suffixIconConstraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
+                            ),
+                          )
+                    : null,
                 selectOnly: true,
                 enableSearch: false,
                 trailingIcon: _chevron(Icons.expand_more, chevronColor),
