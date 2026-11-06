@@ -149,8 +149,11 @@ abstract final class WindowControls {
 
 /// Invisible resize grips around the window edge.
 ///
-/// A frameless window loses the OS-provided resize border, so we put a few
-/// pixels of hot zone on each edge and hand the drag back to GTK/Win32.
+/// Only platforms whose frame is really gone need them: Windows keeps its
+/// native sizing border when just the title bar is hidden, and that border
+/// already answers `HTLEFT`/`HTRIGHT`/`HTTOP`/`HTBOTTOM` on the outer pixels,
+/// so the OS owns the edge there and a second hot zone would only take clicks
+/// away from the page.
 class DesktopWindowFrame extends StatelessWidget {
   const DesktopWindowFrame({super.key, required this.child});
 
@@ -162,6 +165,7 @@ class DesktopWindowFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!WindowControls.supported) return child;
+    if (Platform.isWindows) return child;
 
     Widget grip({
       required ResizeEdge edge,

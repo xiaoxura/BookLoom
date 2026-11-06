@@ -1,3 +1,4 @@
+import 'package:bookloom/app/shell/app_shell.dart' show debugForceMobileShell;
 import 'package:bookloom/core/formatting/document_export.dart';
 import 'package:bookloom/core/settings/appearance.dart';
 import 'package:bookloom/design/components/app_select_field.dart';
@@ -182,8 +183,13 @@ void main() {
   testBookloomWidgets(
     '363px settings show all theme choices without scrolling',
     (WidgetTester tester) async {
+      debugForceMobileShell = true;
+      addTearDown(() => debugForceMobileShell = false);
       await pumpBookloom(tester, size: const Size(363, 800));
       await tester.tap(find.text(zh.navSettings).last);
+      await tester.pumpAndSettle();
+      // Theme controls live on their own page behind the settings index.
+      await tester.tap(find.text(zh.settingsAppearance));
       await tester.pumpAndSettle();
 
       final Finder themeControl = find.byWidgetPredicate(
@@ -222,11 +228,16 @@ void main() {
   ) async {
     tester.platformDispatcher.textScaleFactorTestValue = 2;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    debugForceMobileShell = true;
+    addTearDown(() => debugForceMobileShell = false);
     await pumpBookloom(tester, size: const Size(320, 900));
 
     await tester.tap(find.text(zh.navSettings).last);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text(zh.settingsAppearance));
+    await tester.pumpAndSettle();
 
     final Finder systemLabel = find.text(zh.themeSystem);
     final RenderParagraph systemText = tester.renderObject(systemLabel);
@@ -255,6 +266,11 @@ void main() {
     final Finder formatMenu = find.byWidgetPredicate(
       (widget) => widget is DropdownMenu<ExportFormat>,
     );
+    // Leave the appearance page and open the defaults page instead.
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(zh.settingsDefaultsTitle));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(formatMenu);
     await tester.pumpAndSettle();
     final Finder input = find.descendant(
@@ -267,7 +283,9 @@ void main() {
     expect(find.text('EPUB 2'), findsOneWidget);
     expect(await tester.binding.handlePopRoute(), isTrue);
     await tester.pumpAndSettle();
-    expect(find.text(zh.settingsThemeMode), findsOneWidget);
+    // The settings index stays mounted under the pushed page, so the section
+    // title is present more than once.
+    expect(find.text(zh.settingsDefaultsTitle), findsWidgets);
     expect(find.text('EPUB 2'), findsNothing);
     expect(tester.widget<TextField>(input).controller?.text, 'EPUB 3');
 

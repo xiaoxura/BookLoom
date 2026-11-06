@@ -10,6 +10,11 @@ import '../../../design/tokens/app_metrics.dart';
 import '../../../design/tokens/app_typography.dart';
 import '../../../l10n/app_localizations.dart';
 
+/// Inner width below which the tech grid drops to a single column. Two items
+/// need the 36px icon, its gap and a readable description side by side; the
+/// number is measured inside the card, not on the page.
+const double _techTwoColumnWidth = 400;
+
 /// Product information at a readable width inside the standard page frame.
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key, this.showBackButton = false});
@@ -22,22 +27,35 @@ class AboutPage extends StatelessWidget {
     final colors = context.colors;
 
     return AppPage(
-      leading: showBackButton
-          ? BackButton(onPressed: () => context.pop())
-          : null,
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 960),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              const _Hero(),
+              _Hero(showBackButton: showBackButton),
               const SizedBox(height: AppSpacing.xl),
               const _RepoCard(),
               const SizedBox(height: AppSpacing.lg),
               LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
+                  final double pageWidth = constraints.maxWidth;
+                  // Width the tech card gets when the two cards share a row.
+                  final double rowTechWidth =
+                      (pageWidth - AppSpacing.lg) * 3 / 5;
+                  // Keep the row only while its tech card still fits a pair;
+                  // otherwise the cards stack and the full width goes to the
+                  // grid. This keeps the grid from collapsing to one column
+                  // while the (non-row) card obviously has room for two.
+                  final bool stacked =
+                      rowTechWidth - AppSpacing.xl * 2 < _techTwoColumnWidth;
+                  final double techWidth = stacked ? pageWidth : rowTechWidth;
+                  final int techColumns =
+                      techWidth - AppSpacing.xl * 2 >= _techTwoColumnWidth
+                      ? 2
+                      : 1;
                   final Widget tech = _TechCard(
+                    columns: techColumns,
                     items: <_TechItem>[
                       _TechItem(
                         icon: Icons.flutter_dash,
@@ -71,7 +89,7 @@ class AboutPage extends StatelessWidget {
                       ),
                     ],
                   );
-                  if (constraints.maxWidth < 760) {
+                  if (stacked) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
@@ -81,13 +99,18 @@ class AboutPage extends StatelessWidget {
                       ],
                     );
                   }
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Expanded(flex: 3, child: tech),
-                      const SizedBox(width: AppSpacing.lg),
-                      const Expanded(flex: 2, child: _AuthorCard()),
-                    ],
+                  // Equal card heights: the shorter card stretches to the tech
+                  // card's height. Safe here because the tech card no longer
+                  // contains a LayoutBuilder (intrinsics cannot probe one).
+                  return IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Expanded(flex: 3, child: tech),
+                        const SizedBox(width: AppSpacing.lg),
+                        const Expanded(flex: 2, child: _AuthorCard()),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -104,7 +127,12 @@ class AboutPage extends StatelessWidget {
 }
 
 class _Hero extends StatelessWidget {
-  const _Hero();
+  const _Hero({this.showBackButton = false});
+
+  /// Pushed About pages carry their own back control. It floats over the
+  /// top-left corner instead of taking a row, so the centred stack starts right
+  /// under the page padding.
+  final bool showBackButton;
 
   @override
   Widget build(BuildContext context) {
@@ -112,76 +140,117 @@ class _Hero extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = context.colors;
 
-    final Widget copy = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          l10n.aboutHeading,
-          style: theme.textTheme.headlineLarge?.copyWith(
-            fontFamily: AppTypography.sans,
-            fontFamilyFallback: AppTypography.sansFallback,
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          l10n.appDescription,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: colors.inkSecondary,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xxs),
-        Text(
-          l10n.aboutLocalNote,
-          style: theme.textTheme.bodySmall?.copyWith(color: colors.inkMuted),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
-          ),
-          decoration: BoxDecoration(
-            color: colors.surfaceSunken,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-          ),
-          child: Text(
-            l10n.aboutVersionLabel(AppInfo.version),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colors.inkSecondary,
-            ),
-          ),
-        ),
-      ],
-    );
-
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        if (constraints.maxWidth < 600) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        final bool narrow = constraints.maxWidth < 600;
+        final double logoSize = narrow ? 64 : 72;
+
+        return Stack(
+          children: <Widget>[
+            SizedBox(
+              width: double.infinity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  const AppMark(size: 64),
-                  const SizedBox(width: AppSpacing.lg),
-                  Expanded(child: copy),
+                  AppMark(size: logoSize),
+                  const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
+                  Text(
+                    l10n.aboutHeading,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineLarge?.copyWith(
+                      fontFamily: AppTypography.sans,
+                      fontFamilyFallback: AppTypography.sansFallback,
+                      fontSize: narrow ? 22 : 24,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm + AppSpacing.xxs),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: <Widget>[
+                      _MetaPill(
+                        label: l10n.aboutVersionLabel(AppInfo.version),
+                        background: colors.accent,
+                        foreground: colors.accentContrast,
+                      ),
+                      _MetaPill(
+                        label: AppInfo.license,
+                        background: colors.surfaceSunken,
+                        foreground: colors.inkSecondary,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Column(
+                      children: <Widget>[
+                        Text(
+                          l10n.appDescription,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colors.inkSecondary,
+                            height: 1.6,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          l10n.aboutLocalNote,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colors.inkMuted,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ],
-          );
-        }
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const AppMark(size: 72),
-            const SizedBox(width: AppSpacing.lg),
-            Expanded(child: copy),
+            ),
+            if (showBackButton)
+              Positioned(
+                left: 0,
+                top: 0,
+                child: BackButton(onPressed: () => context.pop()),
+              ),
           ],
         );
       },
+    );
+  }
+}
+
+/// Small rounded label used by the hero (version, licence).
+class _MetaPill extends StatelessWidget {
+  const _MetaPill({
+    required this.label,
+    required this.background,
+    required this.foreground,
+  });
+
+  final String label;
+  final Color background;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: foreground, fontWeight: FontWeight.w600),
+      ),
     );
   }
 }
@@ -282,35 +351,51 @@ class _RepoCard extends StatelessWidget {
 }
 
 class _TechCard extends StatelessWidget {
-  const _TechCard({required this.items});
+  const _TechCard({required this.items, required this.columns});
 
   final List<_TechItem> items;
+
+  /// 2 on a wide page, 1 when the card is too narrow for a pair. Computed by
+  /// the page from the width the card will get, not by a LayoutBuilder here,
+  /// so the card can participate in IntrinsicHeight.
+  final int columns;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final List<Widget> rows = <Widget>[];
+    for (int start = 0; start < items.length; start += columns) {
+      final List<_TechItem> slice = items.sublist(
+        start,
+        (start + columns).clamp(0, items.length),
+      );
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              for (int column = 0; column < columns; column++) ...<Widget>[
+                if (column > 0) const SizedBox(width: AppSpacing.lg),
+                Expanded(
+                  child: column < slice.length
+                      ? slice[column]
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+
     return _InfoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           _SectionHeading(l10n.aboutTech),
           const SizedBox(height: AppSpacing.xl),
-          LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              final int columns = constraints.maxWidth < 440 ? 1 : 2;
-              final double gap = AppSpacing.lg;
-              final double itemWidth =
-                  (constraints.maxWidth - gap * (columns - 1)) / columns;
-              return Wrap(
-                spacing: gap,
-                runSpacing: AppSpacing.xl,
-                children: <Widget>[
-                  for (final _TechItem item in items)
-                    SizedBox(width: itemWidth, child: item),
-                ],
-              );
-            },
-          ),
+          ...rows,
         ],
       ),
     );

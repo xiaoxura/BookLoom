@@ -19,6 +19,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   flutter::DartProject project(L"data");
 
+  // Impeller is the default desktop renderer since Flutter 3.47, but on this
+  // UI it is not shippable: at 200% DPI it holds ~1.8 GB of GPU textures and
+  // every window resize allocates more (measured 1762 MB -> 2814 MB over eight
+  // resizes, 8.2 GB over thirty), and the freshly exposed area draws black
+  // until the next frame. Skia sits at ~250 MB with no artifacts. Same call,
+  // same reason as FlClash (chen08209/FlClash, windows/runner/main.cpp), which
+  // hit flutter/flutter#193504 on identical hardware (Windows 11 + Intel Arc).
+  // Remove this when a stable Flutter fixes #193504: build with Impeller on
+  // that SDK and drag every window edge for a minute at 200% DPI; the window
+  // must keep repainting and memory must stay flat.
+  project.set_impeller_switch(flutter::ImpellerSwitch::Disabled);
+
   std::vector<std::string> command_line_arguments =
       GetCommandLineArguments();
 

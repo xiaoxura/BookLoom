@@ -38,11 +38,22 @@ abstract final class AppMotion {
 
 /// Layout constants shared by the shell and pages.
 abstract final class AppLayout {
-  /// Below this width the sidebar collapses into a bottom bar.
+  /// Below this width the sidebar auto-collapses to its icon rail.
   static const double railBreakpoint = 960;
+
+  /// Narrower than this the rail collapses; a little wider than
+  /// [railBreakpoint] it expands again, so dragging the window edge does not
+  /// flap between the two states.
+  static const double railAutoCollapseWidth = 1040;
+
+  /// At or above this width the rail auto-expands.
+  static const double railAutoExpandWidth = 1120;
 
   /// Sidebar width on desktop.
   static const double sidebarWidth = 220;
+
+  /// Sidebar width once collapsed; icons only, the rail keeps its identity.
+  static const double sidebarCollapsedWidth = 56;
 
   /// Content column maximum width; keeps prose readable on wide monitors.
   static const double contentMaxWidth = 1080;

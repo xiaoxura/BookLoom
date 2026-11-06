@@ -29,7 +29,11 @@ class WindowCaption extends StatelessWidget {
           // desktop window.
           Expanded(
             child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
+              // Opaque, not translucent: an empty caption press must stop at
+              // the page surface instead of falling through to the route's
+              // non-dismissible ModalBarrier, which plays the system alert
+              // sound on Windows.
+              behavior: HitTestBehavior.opaque,
               onPanStart: (DragStartDetails _) =>
                   WindowControls.startDragging(),
               onDoubleTap: WindowControls.toggleMaximize,
@@ -122,12 +126,14 @@ class _CaptionButtonState extends State<_CaptionButton> {
               onTap: widget.onPressed,
               borderRadius: BorderRadius.circular(AppRadius.xs),
               child: Container(
-                width: 34,
-                height: 26,
+                // Square hit target: a 34x26 box read as a stretched pill next
+                // to the round icons.
+                width: 30,
+                height: 30,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: background,
-                  borderRadius: BorderRadius.circular(AppRadius.xs),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(widget.icon, size: 15, color: foreground),
               ),

@@ -248,17 +248,34 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
       ),
+      // Tooltips follow the paper language: a surface chip with a hairline and
+      // the app's small type. The default dark bubble read as a black blob.
       tooltipTheme: TooltipThemeData(
         decoration: BoxDecoration(
-          color: colors.ink,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(AppRadius.sm),
+          border: Border.all(color: colors.hairline),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: colors.ink.withValues(alpha: 0.10),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        textStyle: textTheme.bodySmall?.copyWith(color: colors.canvas),
+        textStyle: textTheme.bodySmall?.copyWith(
+          color: colors.ink,
+          fontSize: 12,
+          height: 1.35,
+        ),
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm + 2,
-          vertical: AppSpacing.xs + 2,
+          vertical: 5,
         ),
-        waitDuration: const Duration(milliseconds: 500),
+        margin: const EdgeInsets.all(8),
+        verticalOffset: 18,
+        waitDuration: const Duration(milliseconds: 400),
+        showDuration: const Duration(seconds: 5),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: Colors.transparent,

@@ -79,6 +79,63 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsData => '数据';
 
   @override
+  String get settingsPreferences => '偏好设置';
+
+  @override
+  String get settingsMaintenance => '数据与维护';
+
+  @override
+  String get settingsHelp => '帮助';
+
+  @override
+  String get settingsAppearanceDesc => '主题与磨砂玻璃。';
+
+  @override
+  String get settingsDefaultsTitle => '新书默认设置';
+
+  @override
+  String get settingsDefaultsDesc => '只影响以后导入的新书。';
+
+  @override
+  String get settingsStorageTitle => '数据与备份';
+
+  @override
+  String get settingsStorageDesc => '数据目录、批量处理与备份位置。';
+
+  @override
+  String get settingsDiagnostics => '运行状态';
+
+  @override
+  String get settingsDiagnosticsDesc => '内存、运行时长与最近一分钟走势。';
+
+  @override
+  String get settingsRuntimeMemory => '常驻内存';
+
+  @override
+  String get settingsRuntimePeak => '峰值内存';
+
+  @override
+  String get settingsRuntimeUptime => '运行时长';
+
+  @override
+  String get settingsRuntimePid => '进程 ID';
+
+  @override
+  String get settingsRuntimePlatform => '平台';
+
+  @override
+  String get settingsRuntimeRefresh => '每秒刷新一次，仅在本机读取。';
+
+  @override
+  String get settingsRuntimeUnavailable => '当前平台不提供该数据';
+
+  @override
+  String get settingsCollapseSidebar => '收起侧栏';
+
+  @override
+  String get settingsExpandSidebar => '展开侧栏';
+
+  @override
   String get settingsDataLocation => '数据目录';
 
   @override

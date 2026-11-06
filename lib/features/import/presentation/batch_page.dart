@@ -13,6 +13,7 @@ import 'package:bookloom/features/import/application/batch_service.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 /// The shell owns [service]; leaving this page does not discard a running job.
@@ -105,6 +106,9 @@ class _BatchPageState extends ConsumerState<BatchPage> {
     return AppPage(
       title: AppLocalizations.of(context).dataWorkbenchBatchTitle,
       subtitle: AppLocalizations.of(context).dataWorkbenchBatchSubtitle,
+      // Pushed above the shell, so it carries its own way back — same header
+      // affordance as the other pushed pages.
+      leading: BackButton(onPressed: () => context.pop()),
       scrollable: false,
       child: ListView(
         children: [

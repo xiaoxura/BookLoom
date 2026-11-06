@@ -36,6 +36,30 @@ sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
 flutter build windows --release   # 产物在 build/windows/x64/runner/Release/
 ```
 
+#### 渲染后端固定为 Skia
+
+Flutter 3.47 起 Windows embedder 默认启用 Impeller，但本项目的界面在 Impeller 下不可发布：
+
+| 指标（Windows 11 26H2 · 200% DPI · Intel Arc 核显） | Impeller | Skia |
+| --- | --- | --- |
+| 空闲常驻内存 | 1855 MB | 249 MB |
+| GPU 纹理 | 1762 MB | 241 MB |
+| 连续 resize 后（8 次） | 2960 MB | 378 MB |
+| 连续 resize 后（30 次） | 8.2 GB | 平稳 |
+| resize 时新暴露区域 | 黑边 | 正常重绘 |
+
+根因是 Impeller 的 OpenGLES/SDF 后端在窗口尺寸变化时持续申请 GPU 表面而不回收，核显把纹理计入系统内存，于是表现为内存暴涨；同一现象在 [FlClash](https://github.com/chen08209/FlClash) 上是窗口冻结，即 [flutter/flutter#193504](https://github.com/flutter/flutter/issues/193504)，其复现机型与本项目一致。
+
+因此 `windows/runner/main.cpp` 在创建 `DartProject` 后固定回退 Skia：
+
+```cpp
+project.set_impeller_switch(flutter::ImpellerSwitch::Disabled);
+```
+
+`flutter run -h` 里「`--enable-impeller` 在其他平台会被忽略」的说法对 Windows 不成立；release 构建同样忽略 `FLUTTER_ENGINE_SWITCHES`，用户无法自行关闭，所以必须在 embedder 里设置。
+
+**移除条件**：某个 stable Flutter 修掉 #193504 后，用该 SDK 以 Impeller 构建，在 200% DPI 的 Arc 核显机器上拖拽窗口边缘一分钟，要求窗口持续重绘且内存平稳。仅当两条都满足才删掉这行。
+
 ### Android
 
 - Android Studio（含 SDK、platform-tools、emulator）

@@ -78,7 +78,7 @@ void main() {
         book.id,
       );
       debugPrint('[backup-panel] backup:ready');
-      await _openSettings(tester);
+      await _openSettings(tester, section: _zh.settingsStorageTitle);
       final Finder manageData = find.text(_zh.workbenchOpenData);
       await tester.ensureVisible(manageData);
       await tester.tap(manageData);
@@ -190,7 +190,7 @@ void main() {
     (WidgetTester tester) async {
       final WorkbenchUiHarness harness = await WorkbenchUiHarness.pump(tester);
       await harness.seedBook();
-      await _openSettings(tester);
+      await _openSettings(tester, section: _zh.settingsDefaultsTitle);
 
       final Finder defaultFormat = find.text(
         _zh.bookWorkbenchDefaultExportFormat,
@@ -206,6 +206,10 @@ void main() {
       );
       expect(savedDefaults?.exportFormat, ExportFormat.markdown);
 
+      // The defaults page is pushed over the shell; go back before switching
+      // tabs, otherwise the shell's tab strip is not on screen.
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
       await _selectShellTab(tester, _zh.navImport);
       await _openBatch(tester);
       await _chooseDropdown(
@@ -227,6 +231,13 @@ void main() {
         () => find.text(_zh.navImport).hitTestable().evaluate().isNotEmpty,
       );
       await _selectShellTab(tester, _zh.navSettings);
+      final Finder storage = find.text(_zh.settingsStorageTitle);
+      await tester.ensureVisible(storage);
+      await tester.tap(storage);
+      await _pumpUntil(
+        tester,
+        () => find.text(_zh.workbenchOpenData).evaluate().isNotEmpty,
+      );
       final Finder manageData = find.text(_zh.workbenchOpenData);
       await tester.ensureVisible(manageData);
       await tester.tap(manageData);
@@ -301,7 +312,7 @@ void main() {
       tester.platformDispatcher.textScaleFactorTestValue = 2;
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       await _pumpUiFrames(tester);
-      await _openSettings(tester);
+      await _openSettings(tester, section: _zh.settingsDefaultsTitle);
       await tester.runAsync(
         () => gatedStore.readStarted.future.timeout(const Duration(seconds: 5)),
       );
@@ -674,12 +685,21 @@ class _GatedSettingsStore extends SettingsStore {
   }
 }
 
-Future<void> _openSettings(WidgetTester tester) async {
+Future<void> _openSettings(WidgetTester tester, {String? section}) async {
   await _selectShellTab(tester, _zh.navSettings);
   await _pumpUntil(
     tester,
-    () => find.text(_zh.workbenchOpenData).evaluate().isNotEmpty,
+    () => find.text(_zh.settingsPreferences).evaluate().isNotEmpty,
   );
+  if (section != null) {
+    final Finder entry = find.text(section);
+    await tester.ensureVisible(entry);
+    await tester.tap(entry);
+    await _pumpUntil(
+      tester,
+      () => find.text(_zh.settingsPreferences).evaluate().isEmpty,
+    );
+  }
 }
 
 Future<void> _openBatch(WidgetTester tester) async {

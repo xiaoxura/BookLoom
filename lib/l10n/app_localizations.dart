@@ -236,6 +236,120 @@ abstract class AppLocalizations {
   /// **'数据'**
   String get settingsData;
 
+  /// No description provided for @settingsPreferences.
+  ///
+  /// In zh, this message translates to:
+  /// **'偏好设置'**
+  String get settingsPreferences;
+
+  /// No description provided for @settingsMaintenance.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据与维护'**
+  String get settingsMaintenance;
+
+  /// No description provided for @settingsHelp.
+  ///
+  /// In zh, this message translates to:
+  /// **'帮助'**
+  String get settingsHelp;
+
+  /// No description provided for @settingsAppearanceDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'主题与磨砂玻璃。'**
+  String get settingsAppearanceDesc;
+
+  /// No description provided for @settingsDefaultsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'新书默认设置'**
+  String get settingsDefaultsTitle;
+
+  /// No description provided for @settingsDefaultsDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'只影响以后导入的新书。'**
+  String get settingsDefaultsDesc;
+
+  /// No description provided for @settingsStorageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据与备份'**
+  String get settingsStorageTitle;
+
+  /// No description provided for @settingsStorageDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据目录、批量处理与备份位置。'**
+  String get settingsStorageDesc;
+
+  /// No description provided for @settingsDiagnostics.
+  ///
+  /// In zh, this message translates to:
+  /// **'运行状态'**
+  String get settingsDiagnostics;
+
+  /// No description provided for @settingsDiagnosticsDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'内存、运行时长与最近一分钟走势。'**
+  String get settingsDiagnosticsDesc;
+
+  /// No description provided for @settingsRuntimeMemory.
+  ///
+  /// In zh, this message translates to:
+  /// **'常驻内存'**
+  String get settingsRuntimeMemory;
+
+  /// No description provided for @settingsRuntimePeak.
+  ///
+  /// In zh, this message translates to:
+  /// **'峰值内存'**
+  String get settingsRuntimePeak;
+
+  /// No description provided for @settingsRuntimeUptime.
+  ///
+  /// In zh, this message translates to:
+  /// **'运行时长'**
+  String get settingsRuntimeUptime;
+
+  /// No description provided for @settingsRuntimePid.
+  ///
+  /// In zh, this message translates to:
+  /// **'进程 ID'**
+  String get settingsRuntimePid;
+
+  /// No description provided for @settingsRuntimePlatform.
+  ///
+  /// In zh, this message translates to:
+  /// **'平台'**
+  String get settingsRuntimePlatform;
+
+  /// No description provided for @settingsRuntimeRefresh.
+  ///
+  /// In zh, this message translates to:
+  /// **'每秒刷新一次，仅在本机读取。'**
+  String get settingsRuntimeRefresh;
+
+  /// No description provided for @settingsRuntimeUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前平台不提供该数据'**
+  String get settingsRuntimeUnavailable;
+
+  /// No description provided for @settingsCollapseSidebar.
+  ///
+  /// In zh, this message translates to:
+  /// **'收起侧栏'**
+  String get settingsCollapseSidebar;
+
+  /// No description provided for @settingsExpandSidebar.
+  ///
+  /// In zh, this message translates to:
+  /// **'展开侧栏'**
+  String get settingsExpandSidebar;
+
   /// No description provided for @settingsDataLocation.
   ///
   /// In zh, this message translates to:

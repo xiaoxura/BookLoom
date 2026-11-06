@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:bookloom/app/app.dart';
 import 'package:bookloom/app/providers.dart';
+import 'package:bookloom/app/shell/app_shell.dart' show debugForceMobileShell;
 import 'package:bookloom/app/workbench_providers.dart';
 import 'package:bookloom/core/errors/app_failure.dart';
 import 'package:bookloom/core/model/block.dart' show TextBlock;
@@ -71,6 +72,10 @@ class WorkbenchUiHarness {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    // Phone-sized fixtures exercise the phone chrome; desktop keeps the rail
+    // at every width now.
+    debugForceMobileShell = size.width < 700;
+    addTearDown(() => debugForceMobileShell = false);
     tester.platformDispatcher.localesTestValue = const <Locale>[Locale('zh')];
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
 

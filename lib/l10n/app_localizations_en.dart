@@ -80,6 +80,65 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsData => 'Data';
 
   @override
+  String get settingsPreferences => 'Preferences';
+
+  @override
+  String get settingsMaintenance => 'Data & maintenance';
+
+  @override
+  String get settingsHelp => 'Help';
+
+  @override
+  String get settingsAppearanceDesc => 'Theme and frosted glass.';
+
+  @override
+  String get settingsDefaultsTitle => 'Defaults for new books';
+
+  @override
+  String get settingsDefaultsDesc => 'Only affects books imported from now on.';
+
+  @override
+  String get settingsStorageTitle => 'Data & backup';
+
+  @override
+  String get settingsStorageDesc =>
+      'Data folder, batch runs and backup location.';
+
+  @override
+  String get settingsDiagnostics => 'Runtime';
+
+  @override
+  String get settingsDiagnosticsDesc => 'Memory, uptime and the last minute.';
+
+  @override
+  String get settingsRuntimeMemory => 'Resident memory';
+
+  @override
+  String get settingsRuntimePeak => 'Peak memory';
+
+  @override
+  String get settingsRuntimeUptime => 'Uptime';
+
+  @override
+  String get settingsRuntimePid => 'Process ID';
+
+  @override
+  String get settingsRuntimePlatform => 'Platform';
+
+  @override
+  String get settingsRuntimeRefresh =>
+      'Refreshed once a second, read on this device only.';
+
+  @override
+  String get settingsRuntimeUnavailable => 'Not available on this platform';
+
+  @override
+  String get settingsCollapseSidebar => 'Collapse sidebar';
+
+  @override
+  String get settingsExpandSidebar => 'Expand sidebar';
+
+  @override
   String get settingsDataLocation => 'Data folder';
 
   @override

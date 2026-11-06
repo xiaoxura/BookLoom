@@ -18,9 +18,13 @@ import '../features/export/presentation/export_options.dart';
 import '../features/import/presentation/batch_page.dart';
 import '../features/import/presentation/import_page.dart';
 import '../features/library/presentation/library_page.dart';
+import '../features/settings/presentation/appearance_page.dart';
 import '../features/settings/presentation/book_data_page.dart';
+import '../features/settings/presentation/defaults_page.dart';
+import '../features/settings/presentation/diagnostics_page.dart';
 import '../features/settings/presentation/permissions_page.dart';
 import '../features/settings/presentation/settings_page.dart';
+import '../features/settings/presentation/storage_page.dart';
 import '../l10n/app_localizations.dart';
 import 'providers.dart';
 import 'shell/app_shell.dart';
@@ -72,19 +76,46 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
                 path: '/settings',
                 pageBuilder: (BuildContext context, GoRouterState state) =>
                     _tabPage(const SettingsPage()),
+                // Settings sections are nested in this branch so the sidebar
+                // stays visible while reading them; they used to be root-level
+                // pages with the shell hidden, which left wide empty margins.
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'appearance',
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _shellPage(const AppearancePage()),
+                  ),
+                  GoRoute(
+                    path: 'defaults',
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _shellPage(const DefaultsPage()),
+                  ),
+                  GoRoute(
+                    path: 'storage',
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _shellPage(const StoragePage()),
+                  ),
+                  GoRoute(
+                    path: 'diagnostics',
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _shellPage(const DiagnosticsPage()),
+                  ),
+                  GoRoute(
+                    path: 'permissions',
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _shellPage(const PermissionsPage()),
+                  ),
+                  GoRoute(
+                    path: 'about',
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _shellPage(const AboutPage(showBackButton: true)),
+                  ),
+                ],
               ),
             ],
           ),
-          StatefulShellBranch(
-            preload: true,
-            routes: <RouteBase>[
-              GoRoute(
-                path: '/about',
-                pageBuilder: (BuildContext context, GoRouterState state) =>
-                    _tabPage(const AboutPage()),
-              ),
-            ],
-          ),
+          // The About page has no tab of its own: it lives under
+          // /settings/about, which keeps the sidebar down to three entries.
         ],
       ),
       GoRoute(
@@ -159,17 +190,6 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         pageBuilder: (context, state) => _fadePage(const BookDataPage()),
       ),
       GoRoute(
-        path: '/permissions',
-        parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => _fadePage(const PermissionsPage()),
-      ),
-      GoRoute(
-        path: '/about-info',
-        parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) =>
-            _fadePage(const AboutPage(showBackButton: true)),
-      ),
-      GoRoute(
         path: '/design',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (BuildContext context, GoRouterState state) =>
@@ -189,16 +209,59 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
 NoTransitionPage<void> _tabPage(Widget page) =>
     NoTransitionPage<void>(child: AppSurface(child: page));
 
+/// Pushes a page inside the current shell branch: the sidebar and bottom bar
+/// stay put, so settings sections read as part of the app instead of taking the
+/// whole window and leaving empty margins on both sides.
+CustomTransitionPage<void> _shellPage(Widget page) {
+  return CustomTransitionPage<void>(
+    // Opaque canvas behind the page: without it the incoming page fades in over
+    // the previous one and its text shows through, which read as the old page
+    // lingering after a section switch.
+    child: AppCanvas(child: AppSurface(child: page)),
+    transitionDuration: AppMotion.page,
+    reverseTransitionDuration: AppMotion.page,
+    transitionsBuilder:
+        (
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+          Widget child,
+        ) {
+          final Animation<double> curved = CurvedAnimation(
+            parent: animation,
+            curve: AppMotion.enter,
+            reverseCurve: AppMotion.exit,
+          );
+          return FadeTransition(
+            opacity: curved,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.012),
+                end: Offset.zero,
+              ).animate(curved),
+              child: child,
+            ),
+          );
+        },
+  );
+}
+
 /// Short cross-fade with a 1% rise for pushed pages (e.g. /design).
 CustomTransitionPage<void> _fadePage(Widget page) {
   return CustomTransitionPage<void>(
     // Pushed pages replace the shell, so they carry their own window caption;
     // otherwise the frameless window could not be dragged or closed there.
-    child: Column(
-      children: <Widget>[
-        const WindowCaption(),
-        Expanded(child: AppSurface(child: page)),
-      ],
+    // The invisible hit surface is part of the page: without it a click on a
+    // gap around the caption reaches the route's non-dismissible ModalBarrier,
+    // which plays the Windows alert sound.
+    child: ColoredBox(
+      color: Colors.transparent,
+      child: Column(
+        children: <Widget>[
+          const WindowCaption(),
+          Expanded(child: AppSurface(child: page)),
+        ],
+      ),
     ),
     transitionDuration: AppMotion.page,
     reverseTransitionDuration: AppMotion.page,

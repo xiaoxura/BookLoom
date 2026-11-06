@@ -1,17 +1,34 @@
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:bookloom/app/shell/app_shell.dart' show debugForceMobileShell;
+import 'package:bookloom/design/components/app_mark.dart';
+import 'package:bookloom/design/components/app_page.dart';
 import 'package:bookloom/design/components/glass_surface.dart';
 import 'package:bookloom/design/tokens/app_metrics.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart'
+    show debugDefaultTargetPlatformOverride;
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/pump_bookloom.dart';
 
 void main() {
   final AppLocalizations zh = lookupAppLocalizations(const Locale('zh'));
+
+  /// Desktop keeps the rail at every width, so narrow-window tests that want
+  /// the phone chrome have to ask for it explicitly.
+  Future<void> pumpMobileShell(
+    WidgetTester tester, {
+    Size size = const Size(520, 900),
+  }) async {
+    debugForceMobileShell = true;
+    addTearDown(() => debugForceMobileShell = false);
+    await pumpBookloom(tester, size: size);
+  }
 
   testBookloomWidgets('desktop shell shows the sidebar and the empty shelf', (
     WidgetTester tester,
@@ -21,17 +38,18 @@ void main() {
     expect(find.text(zh.navLibrary), findsWidgets);
     expect(find.text(zh.navImport), findsWidgets);
     expect(find.text(zh.navSettings), findsWidgets);
-    expect(find.text(zh.navAbout), findsWidgets);
+    // About lives under settings now, so the rail has three entries.
+    expect(find.text(zh.navAbout), findsNothing);
     expect(find.text(zh.libraryEmptyTitle), findsOneWidget);
     expect(find.text(zh.libraryEmptyMessage), findsOneWidget);
     expect(find.text(zh.libraryEmptyAction), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byKey(const Key('bottom-navigation')), findsNothing);
 
     // The sidebar footer no longer carries copy; the shelf owns the bottom.
     // Branches are preloaded, so the first switch to another tab does not pay
     // a first-build cost: the settings page already exists offstage.
     expect(
-      find.text(zh.settingsThemeMode, skipOffstage: false),
+      find.text(zh.settingsAppearance, skipOffstage: false),
       findsOneWidget,
     );
   });
@@ -74,9 +92,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(zh.settingsAppearance), findsOneWidget);
-    expect(find.text(zh.settingsDataLocation), findsOneWidget);
-    // Settings keep their one-line explanations.
-    expect(find.text(zh.settingsGlassDesc), findsOneWidget);
+    // The settings tab is an index: sections live on their own pages now.
+    expect(find.text(zh.settingsStorageTitle), findsOneWidget);
+    expect(find.text(zh.settingsDefaultsTitle), findsOneWidget);
+    // Entry rows keep their one-line explanations.
+    expect(find.text(zh.settingsAppearanceDesc), findsOneWidget);
     // Project facts moved to their own page.
     expect(find.text(zh.aboutHeading), findsNothing);
   });
@@ -86,33 +106,199 @@ void main() {
   ) async {
     await pumpBookloom(tester);
 
-    await tester.tap(find.text(zh.navAbout).first);
+    // About lives under settings now; open it through the settings index.
+    await tester.tap(find.text(zh.navSettings).first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text(zh.navAbout));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(zh.navAbout));
     await tester.pumpAndSettle();
 
     expect(find.text(zh.aboutHeading), findsOneWidget);
     expect(find.text(zh.aboutTech), findsOneWidget);
     expect(find.text(zh.aboutOpenSource), findsOneWidget);
-    expect(find.text('AGPL-3.0'), findsOneWidget);
+    // The licence shows twice: the hero pill and the repository card.
+    expect(find.text('AGPL-3.0'), findsWidgets);
     expect(find.text(zh.techFlutter), findsOneWidget);
     expect(find.text(zh.aboutChangelog), findsNothing);
+  });
+
+  testBookloomWidgets('page margins swallow clicks instead of the barrier', (
+    WidgetTester tester,
+  ) async {
+    final List<MethodCall> platformCalls = <MethodCall>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (MethodCall call) async {
+        platformCalls.add(call);
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+
+    await pumpBookloom(tester);
+    // The 16px shell gutter has no widget of its own. Without the invisible
+    // page hit surface a tap here falls through to the route's colourless,
+    // non-dismissible ModalBarrier, which answers with the system alert sound
+    // (the Windows "ding").
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+
+    expect(
+      platformCalls.where(
+        (MethodCall call) =>
+            call.method == 'SystemSound.play' &&
+            call.arguments == 'SystemSoundType.alert',
+      ),
+      isEmpty,
+    );
+  });
+
+  testBookloomWidgets('page scrollbar rides the page edge, not the content', (
+    WidgetTester tester,
+  ) async {
+    // Scrollbars are added by the desktop scroll behaviour only.
+    debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+    try {
+      await pumpBookloom(tester, size: const Size(1440, 700));
+
+      await tester.tap(find.text(zh.navSettings).first);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text(zh.navAbout));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(zh.navAbout));
+      await tester.pumpAndSettle();
+
+      final Rect page = tester.getRect(find.byType(AppPage).last);
+      final Rect scrollbar = tester.getRect(find.byType(Scrollbar).last);
+      // The body scrolls at the page edge even though the content stays at the
+      // readable measure, so the thumb never hugs the cards.
+      expect(scrollbar.width, greaterThan(AppLayout.contentMaxWidth));
+      expect(scrollbar.right, closeTo(page.right, 0.5));
+      expect(tester.takeException(), isNull);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
+
+  testBookloomWidgets('tech stack keeps two columns on a narrow desktop', (
+    WidgetTester tester,
+  ) async {
+    // The old breakpoint dropped the grid to one column here even though the
+    // stacked tech card had the full page width to itself.
+    await pumpBookloom(tester, size: const Size(900, 900));
+
+    // The rail is icon-only this narrow, so reach settings through its tooltip.
+    await tester.tap(find.byTooltip(zh.navSettings));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text(zh.navAbout));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(zh.navAbout));
+    await tester.pumpAndSettle();
+
+    final Offset flutter = tester.getTopLeft(find.text(zh.techFlutter));
+    final Offset dart = tester.getTopLeft(find.text(zh.techDart));
+    expect(dart.dy, flutter.dy);
+    expect(dart.dx, greaterThan(flutter.dx));
+    expect(tester.takeException(), isNull);
+  });
+
+  testBookloomWidgets('desktop rail auto-collapses on a narrow window', (
+    WidgetTester tester,
+  ) async {
+    await pumpBookloom(tester, size: const Size(1280, 900));
+    // Wide: icons and labels.
+    expect(find.text(zh.navSettings), findsWidgets);
+    expect(find.byKey(const Key('bottom-navigation')), findsNothing);
+
+    tester.view.physicalSize = const Size(980, 900);
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    // Narrow desktop still keeps the rail, but only its icons: navigation
+    // never moves to the bottom on a desktop window.
+    expect(find.byKey(const Key('bottom-navigation')), findsNothing);
+    expect(find.text(zh.navSettings), findsNothing);
+    expect(find.text(zh.libraryEmptyTitle), findsOneWidget);
+
+    tester.view.physicalSize = const Size(1280, 900);
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    // Widening again brings the labels back on its own.
+    expect(find.text(zh.navSettings), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testBookloomWidgets('rail toggle collapses and expands on demand', (
+    WidgetTester tester,
+  ) async {
+    await pumpBookloom(tester, size: const Size(1280, 900));
+    expect(find.text(zh.navSettings), findsWidgets);
+
+    await tester.tap(find.byKey(const Key('rail-collapse')));
+    await tester.pumpAndSettle();
+    expect(find.text(zh.navSettings), findsNothing);
+
+    // Collapsed, the mark swaps to the expand chevron only under the pointer.
+    final TestGesture mouse = await tester.createGesture(
+      kind: PointerDeviceKind.mouse,
+    );
+    await mouse.addPointer();
+    addTearDown(mouse.removePointer);
+    await mouse.moveTo(tester.getCenter(find.byType(AppMark)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rail-expand')));
+    await tester.pumpAndSettle();
+    expect(find.text(zh.navSettings), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testBookloomWidgets('batch task page offers a way back', (
+    WidgetTester tester,
+  ) async {
+    await pumpBookloom(tester, size: const Size(1280, 900));
+    await tester.tap(find.text(zh.navImport).first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text(zh.workbenchOpenBatch));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(zh.workbenchOpenBatch));
+    await tester.pumpAndSettle();
+
+    expect(find.text(zh.dataWorkbenchBatchTitle), findsOneWidget);
+    expect(find.byType(BackButton), findsOneWidget);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(find.text(zh.dataWorkbenchBatchTitle), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 
   testBookloomWidgets('narrow layout uses the bottom navigation bar', (
     WidgetTester tester,
   ) async {
-    await pumpBookloom(tester, size: const Size(520, 900));
+    await pumpMobileShell(tester);
 
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byKey(const Key('bottom-navigation')), findsOneWidget);
     expect(
-      tester.widget<NavigationBar>(find.byType(NavigationBar)).destinations,
-      hasLength(3),
+      find.descendant(
+        of: find.byKey(const Key('bottom-navigation')),
+        matching: find.byType(Text),
+      ),
+      findsNWidgets(3),
     );
+    // The phone bar keeps three entries; About is reached through settings.
     expect(find.text(zh.navAbout), findsNothing);
     expect(find.text(zh.libraryEmptyTitle), findsOneWidget);
 
     await tester.tap(find.text(zh.navSettings).last);
     await tester.pump();
-    expect(find.text(zh.settingsThemeMode), findsOneWidget);
+    expect(find.text(zh.settingsAppearance), findsOneWidget);
     expect(find.text(zh.libraryEmptyTitle), findsNothing);
     expect(
       find.text(zh.libraryEmptyTitle, skipOffstage: false),
@@ -127,9 +313,9 @@ void main() {
   ) async {
     tester.view.padding = const FakeViewPadding(top: 30, bottom: 24);
     tester.view.viewPadding = const FakeViewPadding(top: 30, bottom: 24);
-    await pumpBookloom(tester, size: const Size(363, 800));
+    await pumpMobileShell(tester, size: const Size(363, 800));
 
-    final Finder bar = find.byType(NavigationBar);
+    final Finder bar = find.byKey(const Key('bottom-navigation'));
     final Finder glass = find.ancestor(
       of: bar,
       matching: find.byType(GlassSurface),
@@ -159,7 +345,7 @@ void main() {
   testBookloomWidgets('settings opens permission checks and returns', (
     WidgetTester tester,
   ) async {
-    await pumpBookloom(tester, size: const Size(520, 900));
+    await pumpMobileShell(tester);
     await tester.tap(find.text(zh.navSettings).last);
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text(zh.settingsPermissions));
@@ -172,14 +358,14 @@ void main() {
     await tester.tap(find.byType(BackButton));
     await tester.pump();
     await tester.pump(AppMotion.page + const Duration(milliseconds: 50));
-    expect(find.text(zh.settingsThemeMode), findsOneWidget);
+    expect(find.text(zh.settingsAppearance), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
   testBookloomWidgets('settings opens about and returns to settings', (
     WidgetTester tester,
   ) async {
-    await pumpBookloom(tester, size: const Size(520, 900));
+    await pumpMobileShell(tester);
     await tester.tap(find.text(zh.navSettings).last);
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text(zh.navAbout));
@@ -188,36 +374,42 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(zh.aboutHeading), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
+    // Settings sections are nested in the settings branch, so the phone bar
+    // stays visible while reading them.
+    expect(find.byKey(const Key('bottom-navigation')), findsOneWidget);
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
 
-    expect(find.text(zh.settingsThemeMode), findsOneWidget);
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.text(zh.settingsAppearance), findsOneWidget);
+    expect(find.byKey(const Key('bottom-navigation')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
   testBookloomWidgets(
     'pushed page canvas hides shell during both transition halves',
     (WidgetTester tester) async {
-      await pumpBookloom(tester, size: const Size(520, 900));
-      await tester.tap(find.text(zh.navSettings).last);
+      await pumpMobileShell(tester);
+      // Batch still opens above the shell (settings sections no longer do), so
+      // it is the page that must paint an opaque canvas over the bar.
+      await tester.tap(find.text(zh.navImport).last);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text(zh.navAbout));
+      await tester.ensureVisible(find.text(zh.workbenchOpenBatch));
       await tester.pumpAndSettle();
 
-      // The stripe lies inside the old glass bar but outside AppPage's 20px
+      // The stripe lies inside the glass bar but outside AppPage's 20px
       // content inset. On a pushed page it should show only the paper canvas.
-      final Rect bar = tester.getRect(find.byType(NavigationBar));
+      final Rect bar = tester.getRect(
+        find.byKey(const Key('bottom-navigation')),
+      );
       final Rect stripe = Rect.fromLTWH(16, bar.top + 12, 4, bar.height - 24);
       final Uint8List shell = await _capturePixels(tester, stripe);
 
-      await tester.tap(find.text(zh.navAbout));
+      await tester.tap(find.text(zh.workbenchOpenBatch));
       // The first pump dispatches the router change; the second paints the
       // newly mounted route at the start of its transition.
       await tester.pump();
       await tester.pump();
-      expect(find.text(zh.aboutHeading), findsOneWidget);
+      expect(find.text(zh.dataWorkbenchBatchTitle), findsOneWidget);
       final Uint8List enteringStart = await _capturePixels(tester, stripe);
       await tester.pump(const Duration(milliseconds: 120));
       final Uint8List enteringMiddle = await _capturePixels(tester, stripe);
@@ -248,9 +440,18 @@ void main() {
   ) async {
     await pumpBookloom(tester);
 
-    await tester.tap(find.text(zh.navAbout).first);
+    // About is a settings section now.
+    await tester.tap(find.text(zh.navSettings).first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text(zh.navAbout));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(zh.navAbout));
     await tester.pumpAndSettle();
 
+    // The equal-height tech card makes the page a little taller; scroll the
+    // footer link into view before tapping it.
+    await tester.ensureVisible(find.text(zh.aboutDesignSystem));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(zh.aboutDesignSystem));
     await tester.pumpAndSettle();
 
@@ -264,7 +465,7 @@ void main() {
     (WidgetTester tester) async {
       tester.platformDispatcher.textScaleFactorTestValue = 2;
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      await pumpBookloom(tester, size: const Size(320, 720));
+      await pumpMobileShell(tester, size: const Size(320, 720));
       expect(find.text(zh.libraryEmptyMessage), findsOneWidget);
       expect(tester.takeException(), isNull);
 

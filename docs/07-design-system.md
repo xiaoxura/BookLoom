@@ -129,17 +129,17 @@ final glass = context.glass;     // GlassTokens
 
 ### 窗口标题栏
 
-窗口是**无边框**的（`gtk_window_set_decorated(FALSE)` / `TitleBarStyle.hidden`），系统那条灰色标题栏不再出现。取而代之的是 40px 高的自绘 caption：
+窗口是**无边框**的（Linux 由 GTK runner 设为 undecorated；Windows/macOS 用 `TitleBarStyle.hidden`），系统那条灰色标题栏不再出现。取而代之的是 40px 高的自绘 caption：
 
 - 只铺在**内容列**上方，侧栏保持通高 —— 左上角不会出现一条空白带；
 - 整条 caption 可拖拽窗口，双击切换最大化；
 - 右上角三个 34×26 按钮（最小化 / 最大化 / 关闭）跟随主题 token，关闭按钮悬停时转朱砂色；
-- 窗口四边和四角有 6–14px 隐形热区，拖拽交给 GTK/Win32 处理（`window_manager` 的 `startResizing`）；
+- 窗口四边和四角有 6–14px 隐形热区，拖拽交给 GTK/Win32 处理（`window_manager` 的 `startResizing`）；Windows 保留系统的缩放边框（约 6–7px，`WM_NCHITTEST` 直接返回 `HTLEFT` 等），应用不在客户区里叠加第二层热区；
 - 推入页（如 `/design`）由路由自己再挂一条 caption，保证任何页面都能拖窗口、能关窗口。
 
 代价：窗口没有系统阴影；Linux 上圆角由合成器决定。这些在 M4 打包时再统一处理（Windows 11 自带圆角，GNOME 由 Shell 处理）。
 
-内容列最宽 1080，页面左右内边距 32（窄屏 20）。列表永远用 `ListView.builder` / `SliverList`，不整页 `SingleChildScrollView` 包长列表。
+内容列最宽 1080，页面左右内边距 32（窄屏 20）。页面滚动条贴在页面外沿（内容列之外），不压着内容列边缘，避免紧贴卡片。路由页面与壳层铺一层不可见的命中层（透明 `ColoredBox`）：`PageRoute` 背后有一个无色、不可关闭的 `ModalBarrier`，点在页面空隙会落到它并触发系统提示音（Windows 上就是「叮」的一声）。列表永远用 `ListView.builder` / `SliverList`，不整页 `SingleChildScrollView` 包长列表。
 
 玻璃面板把「模糊底」和「内容」分成两个绘制层：模糊结果被 `RepaintBoundary` 缓存，选中态动画或墨水涟漪只重绘内容，不会每帧重跑一次背景模糊。
 
@@ -181,7 +181,7 @@ final glass = context.glass;     // GlassTokens
 | --- | --- |
 | ![设计系统](design/design-system.png) | ![深色设置](design/settings-dark.png) |
 
-关于页采用居中的 960px 内容区：顶部标识、产品说明与版本；全宽开源仓库卡；下方为技术栈与开发者信息卡，窄屏纵向排列。不提供指向开源仓库的“更新日志”按钮；开源仓库入口保持明确名称。正文卡片保持不透明，底部保留版权与设计系统入口。手机从设置进入时带返回操作。
+关于页采用居中的 960px 内容区：顶部标识、产品说明与版本；全宽开源仓库卡；下方为技术栈与开发者信息卡，窄屏纵向排列。技术栈的列数按卡片自身可用宽度决定（内部宽度不足 400 时收为单列），卡片纵向铺满时仍保留两列。不提供指向开源仓库的“更新日志”按钮；开源仓库入口保持明确名称。正文卡片保持不透明，底部保留版权与设计系统入口。手机从设置进入时带返回操作。
 
 ![关于](design/about-light.png)
 

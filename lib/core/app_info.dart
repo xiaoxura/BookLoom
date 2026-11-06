@@ -9,4 +9,9 @@ abstract final class AppInfo {
   static const String license = 'AGPL-3.0';
 
   static String get displayVersion => 'v$version';
+
+  /// When this process started. Captured once per isolate, so the runtime page
+  /// keeps counting across navigations instead of restarting at zero every time
+  /// the page is rebuilt.
+  static final DateTime startedAt = DateTime.now();
 }
