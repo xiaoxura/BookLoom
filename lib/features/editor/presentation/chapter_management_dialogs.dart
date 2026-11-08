@@ -52,12 +52,19 @@ Future<NewChapterRequest?> showNewChapterDialog(
   required List<Chapter> chapters,
   String? activeChapterId,
   String? initialVolumeId,
+
+  /// Presets the insert position relative to this chapter (must be a
+  /// non-volume chapter). The volume and position stay adjustable.
+  String? anchorChapterId,
+  bool anchorAfter = true,
 }) => showDialog<NewChapterRequest>(
   context: context,
   builder: (_) => _NewChapterDialog(
     chapters: chapters,
     activeChapterId: activeChapterId,
     initialVolumeId: initialVolumeId,
+    anchorChapterId: anchorChapterId,
+    anchorAfter: anchorAfter,
   ),
 );
 
@@ -66,10 +73,14 @@ class _NewChapterDialog extends StatefulWidget {
     required this.chapters,
     this.activeChapterId,
     this.initialVolumeId,
+    this.anchorChapterId,
+    this.anchorAfter = true,
   });
   final List<Chapter> chapters;
   final String? activeChapterId;
   final String? initialVolumeId;
+  final String? anchorChapterId;
+  final bool anchorAfter;
 
   @override
   State<_NewChapterDialog> createState() => _NewChapterDialogState();
@@ -94,6 +105,20 @@ class _NewChapterDialogState extends State<_NewChapterDialog> {
     _after = _siblings.any((chapter) => chapter.id == active?.id)
         ? active!.id
         : _siblings.lastOrNull?.id ?? '';
+    final anchor = widget.anchorChapterId == null
+        ? null
+        : widget.chapters
+              .where((chapter) => chapter.id == widget.anchorChapterId)
+              .firstOrNull;
+    if (anchor != null && !anchor.isVolume) {
+      _volume = anchor.parentId ?? '';
+      if (widget.anchorAfter) {
+        _after = anchor.id;
+      } else {
+        final index = _siblings.indexWhere((item) => item.id == anchor.id);
+        _after = index > 0 ? _siblings[index - 1].id : '';
+      }
+    }
   }
 
   @override

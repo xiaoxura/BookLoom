@@ -11,7 +11,6 @@ import 'package:bookloom/core/model/book.dart';
 import 'package:bookloom/core/model/chapter.dart';
 import 'package:bookloom/core/model/metadata.dart';
 import 'package:bookloom/core/platform/background_jobs.dart';
-import 'package:bookloom/core/settings/appearance.dart';
 import 'package:bookloom/design/theme/app_theme.dart';
 import 'package:bookloom/features/editor/application/ai_rule_creation_task.dart';
 import 'package:bookloom/features/editor/application/editor_session.dart';
@@ -76,8 +75,8 @@ void main() {
             valueListenable: mode,
             builder: (context, value, child) => MaterialApp(
               locale: const Locale('zh'),
-              theme: AppTheme.light(glass: GlassQuality.off),
-              darkTheme: AppTheme.dark(glass: GlassQuality.off),
+              theme: AppTheme.light(),
+              darkTheme: AppTheme.dark(),
               themeMode: value,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,

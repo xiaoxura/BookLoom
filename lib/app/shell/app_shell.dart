@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../design/components/app_mark.dart';
-import '../../design/components/glass_surface.dart';
+import '../../design/components/paper_surface.dart';
 import '../../design/theme/app_tokens.dart';
 import '../../design/tokens/app_metrics.dart';
 import '../../design/tokens/motion_spring.dart';
@@ -186,7 +186,7 @@ class _Sidebar extends StatelessWidget {
       width: collapsed
           ? AppLayout.sidebarCollapsedWidth
           : AppLayout.sidebarWidth,
-      child: GlassSurface(
+      child: PaperSurface(
         radius: AppRadius.xl,
         padding: EdgeInsets.fromLTRB(
           collapsed ? AppSpacing.sm : AppSpacing.md,
@@ -677,7 +677,7 @@ class _BottomBar extends StatelessWidget {
           constraints: const BoxConstraints(
             maxWidth: AppLayout.bottomBarMaxWidth,
           ),
-          child: GlassSurface(
+          child: PaperSurface(
             radius: AppRadius.xl,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
             child: SizedBox(
@@ -776,7 +776,7 @@ class _BottomNavItemState extends State<_BottomNavItem>
             children: <Widget>[
               // The fill spans icon *and* label; the previous Material bar only
               // tinted the icon, which read as an unfinished selection. Inset a
-              // little so the pill floats inside the glass instead of filling
+              // little so the pill floats inside the panel instead of filling
               // the bar edge to edge.
               Positioned.fill(
                 child: IgnorePointer(

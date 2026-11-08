@@ -125,9 +125,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get editorAiCreateAdvertisementRule => 'AI 创建广告清理规则';
 
   @override
-  String get editorAiAnalyzeAdvertisement => 'AI 广告判断';
-
-  @override
   String get aiJointRuleRequest => '同时请求规则候选';
 
   @override
@@ -1083,18 +1080,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeDark => '深色';
 
   @override
-  String get settingsGlass => '磨砂玻璃';
-
-  @override
-  String get glassStrong => '强';
-
-  @override
-  String get glassSoft => '轻';
-
-  @override
-  String get glassOff => '关';
-
-  @override
   String get settingsData => '数据';
 
   @override
@@ -1107,7 +1092,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsHelp => '帮助';
 
   @override
-  String get settingsAppearanceDesc => '主题与磨砂玻璃。';
+  String get settingsAppearanceDesc => '应用主题与色彩。';
 
   @override
   String get settingsDefaultsTitle => '新书默认设置';
@@ -1155,6 +1140,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsExpandSidebar => '展开侧栏';
 
   @override
+  String editorTotalWords(int count) {
+    return '全书 $count 字';
+  }
+
+  @override
+  String editorTotalWordsWan(String count) {
+    return '全书 $count 万字';
+  }
+
+  @override
   String get settingsDataLocation => '数据目录';
 
   @override
@@ -1185,12 +1180,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get designSectionSpacing => '间距与圆角';
 
   @override
-  String get designSectionGlass => '玻璃与层级';
-
-  @override
-  String get designSectionGlassDesc => '玻璃只出现在浮层上；关闭后自动退化为不透明纸面。';
-
-  @override
   String get designSectionComponents => '组件';
 
   @override
@@ -1207,12 +1196,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get designSampleCardBody => '样张文字，用来检查行高、字距与灰度。';
-
-  @override
-  String get designGlassPanelTitle => '浮层面板';
-
-  @override
-  String get designGlassPanelBody => '玻璃面板下的内容会轻微模糊，正文不放在这里。';
 
   @override
   String get designLabelPrimary => '主按钮';
@@ -1259,9 +1242,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get importPendingMessage =>
       'M1 会先打通 TXT：编码探测、分章评分、目录校对。当前版本先确认界面语言与数据结构。';
-
-  @override
-  String get settingsGlassDesc => '只用于侧栏、浮层与对话框；正文始终落在不透明的纸面上。';
 
   @override
   String get settingsDataLocationDesc => '书籍、封面和备份都保存在这里，可以直接拷贝带走。';
@@ -1551,6 +1531,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importPickFailed => '无法选择文件，请检查权限后重试。';
 
   @override
+  String get importDropHint => '把文件拖到这里，或点击选择。';
+
+  @override
+  String get importDropUnsupported => '仅支持 TXT / EPUB / DOCX 文件。';
+
+  @override
   String get importAnalyzeFailed => '解析失败，请检查文件或尝试其他编码。';
 
   @override
@@ -1634,6 +1620,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get editorNewChapter => '新建章节';
+
+  @override
+  String get editorNewChapterBefore => '在此前新建章节';
+
+  @override
+  String get editorNewChapterAfter => '在此后新建章节';
+
+  @override
+  String get editorNewVolumeBefore => '在此前新建卷';
+
+  @override
+  String get editorNewVolumeAfter => '在此后新建卷';
 
   @override
   String get editorMoveChapters => '批量移动章节';

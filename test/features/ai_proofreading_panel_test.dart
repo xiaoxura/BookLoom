@@ -13,7 +13,6 @@ import 'package:bookloom/core/model/block.dart';
 import 'package:bookloom/core/model/book.dart';
 import 'package:bookloom/core/model/chapter.dart';
 import 'package:bookloom/core/model/metadata.dart';
-import 'package:bookloom/core/settings/appearance.dart';
 import 'package:bookloom/core/storage/app_database.dart' show AppDatabase;
 import 'package:bookloom/design/theme/app_theme.dart';
 import 'package:bookloom/features/editor/application/ai_advertisement_request.dart';
@@ -2127,8 +2126,8 @@ Future<AiProofreadingTask> _pumpCompletedAiPanel(
       ],
       child: MaterialApp(
         locale: locale,
-        theme: AppTheme.light(glass: GlassQuality.off),
-        darkTheme: AppTheme.dark(glass: GlassQuality.off),
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
         themeMode: themeMode,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

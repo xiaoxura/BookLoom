@@ -14,6 +14,16 @@ class ParseOptions {
   final Map<String, Object?>? ruleSpec;
   final ConvertMode convertMode;
 
+  /// Value equality across all fields, including a deep compare of the
+  /// optional rule JSON. Used to ignore no-op option changes so a re-selected
+  /// dropdown value never triggers a needless re-parse.
+  bool sameAs(ParseOptions other) =>
+      encoding == other.encoding &&
+      filterAds == other.filterAds &&
+      rulePreset == other.rulePreset &&
+      convertMode == other.convertMode &&
+      _sameJson(ruleSpec, other.ruleSpec);
+
   ParseOptions copyWith({
     String? encoding,
     bool? filterAds,
@@ -56,6 +66,23 @@ class ParseOptions {
   static Map<String, Object?>? _safeRuleSpec(Object? value) {
     if (value is! Map<String, Object?> || !_isJsonValue(value)) return null;
     return Map<String, Object?>.unmodifiable(value);
+  }
+
+  static bool _sameJson(Object? a, Object? b) {
+    if (identical(a, b)) return true;
+    if (a is Map<String, Object?> && b is Map<String, Object?>) {
+      return a.length == b.length &&
+          a.entries.every(
+            (entry) =>
+                b.containsKey(entry.key) &&
+                _sameJson(entry.value, b[entry.key]),
+          );
+    }
+    if (a is List<Object?> && b is List<Object?>) {
+      return a.length == b.length &&
+          a.indexed.every((e) => _sameJson(e.$2, b[e.$1]));
+    }
+    return a == b;
   }
 
   static bool _isJsonValue(Object? value) {

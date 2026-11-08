@@ -58,10 +58,8 @@ void main() {
     tester,
   ) async {
     final fixture = await _ImportFixture.pump(tester);
-    await fixture.pick(tester);
-
     fixture.service.prepareGate = Completer<void>();
-    await tester.tap(find.text(_zh.importAnalyze));
+    await fixture.pick(tester);
     await tester.pump();
     expect(find.byType(AlertDialog), findsOneWidget);
     expect(find.text(_zh.importPreparing), findsOneWidget);
@@ -96,7 +94,12 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text(_zh.commonCancel).hitTestable(), findsOneWidget);
 
-    await tester.tap(find.text(_zh.commonCancel));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text(_zh.commonCancel),
+      ),
+    );
     await _pumpUntil(tester, () => find.byType(AlertDialog).evaluate().isEmpty);
     expect(fixture.service.cancelCalls, 1);
     expect(tester.takeException(), isNull);
@@ -130,7 +133,7 @@ void main() {
     addTearDown(logSubscription.cancel);
     final fixture = await _ImportFixture.pump(tester);
     await fixture.pick(tester);
-    await tester.tap(find.text(_zh.importAnalyze));
+    await tester.pump();
     await _pumpUntil(
       tester,
       () => find.text(_zh.importReviewTitle).evaluate().isNotEmpty,
@@ -221,7 +224,7 @@ void main() {
         },
       );
       await fixture.pick(tester);
-      await tester.tap(find.text(_zh.importAnalyze));
+      await tester.pump();
       await _pumpUntil(tester, () => loadingLayout);
       expect(find.byType(AlertDialog), findsOneWidget);
       expect(find.text(_zh.importStageReady), findsOneWidget);
@@ -250,7 +253,7 @@ void main() {
   ) async {
     final fixture = await _ImportFixture.pump(tester);
     await fixture.pick(tester);
-    await tester.tap(find.text(_zh.importAnalyze));
+    await tester.pump();
     await _pumpUntil(
       tester,
       () => find.text(_zh.importReviewTitle).evaluate().isNotEmpty,
@@ -383,8 +386,12 @@ class _ImportFixture {
   }
 
   Future<void> pick(WidgetTester tester) async {
-    await tester.tap(find.text(_zh.importChooseFile));
-    await tester.pumpAndSettle();
+    await tester.tap(find.text(_zh.importSelectTitle));
+    // Parsing starts automatically; avoid pumpAndSettle here because the
+    // progress dialog carries an indeterminate indicator until the gate
+    // (or the fake service) resolves.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
     expect(find.text('sample.txt'), findsOneWidget);
   }
 }

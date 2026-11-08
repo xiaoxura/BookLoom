@@ -48,12 +48,6 @@ class AppearanceController extends Notifier<Appearance> {
     await _persist();
   }
 
-  Future<void> setGlass(GlassQuality quality) async {
-    if (state.glass == quality) return;
-    state = state.copyWith(glass: quality);
-    await _persist();
-  }
-
   /// Cycles system → light → dark, used by the sidebar shortcut.
   Future<void> cycleThemeMode() {
     const List<AppThemeMode> order = <AppThemeMode>[
@@ -63,17 +57,6 @@ class AppearanceController extends Notifier<Appearance> {
     ];
     final int next = (order.indexOf(state.themeMode) + 1) % order.length;
     return setThemeMode(order[next]);
-  }
-
-  /// Cycles strong → soft → off, used by the sidebar shortcut.
-  Future<void> cycleGlass() {
-    const List<GlassQuality> order = <GlassQuality>[
-      GlassQuality.strong,
-      GlassQuality.soft,
-      GlassQuality.off,
-    ];
-    final int next = (order.indexOf(state.glass) + 1) % order.length;
-    return setGlass(order[next]);
   }
 
   Future<void> _persist() async {

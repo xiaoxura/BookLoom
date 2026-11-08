@@ -9,7 +9,7 @@ import '../../../design/tokens/app_metrics.dart';
 import '../../../l10n/app_localizations.dart';
 import 'settings_widgets.dart';
 
-/// Theme mode and frost level. Split out of the settings index so the index
+/// Theme mode. Split out of the settings index so the index
 /// stays a list of destinations instead of growing into one long page.
 class AppearancePage extends ConsumerWidget {
   const AppearancePage({super.key});
@@ -62,32 +62,6 @@ class AppearancePage extends ConsumerWidget {
                   selected: <AppThemeMode>{appearance.themeMode},
                   onSelectionChanged: (Set<AppThemeMode> selection) =>
                       controller.setThemeMode(selection.first),
-                ),
-              ),
-              const SettingsCardDivider(),
-              SettingsRow(
-                title: l10n.settingsGlass,
-                description: l10n.settingsGlassDesc,
-                scrollableControl: true,
-                control: SegmentedButton<GlassQuality>(
-                  showSelectedIcon: false,
-                  segments: <ButtonSegment<GlassQuality>>[
-                    ButtonSegment<GlassQuality>(
-                      value: GlassQuality.off,
-                      label: Text(l10n.glassOff),
-                    ),
-                    ButtonSegment<GlassQuality>(
-                      value: GlassQuality.soft,
-                      label: Text(l10n.glassSoft),
-                    ),
-                    ButtonSegment<GlassQuality>(
-                      value: GlassQuality.strong,
-                      label: Text(l10n.glassStrong),
-                    ),
-                  ],
-                  selected: <GlassQuality>{appearance.glass},
-                  onSelectionChanged: (Set<GlassQuality> selection) =>
-                      controller.setGlass(selection.first),
                 ),
               ),
             ],

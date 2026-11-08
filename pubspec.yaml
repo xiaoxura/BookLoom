@@ -9,6 +9,7 @@ environment:
 dependencies:
   archive: 4.6.0
   crypto: 3.0.8
+  desktop_drop: ^0.8.0
   drift: ^2.35.3
   file_picker: 13.3.2
   flutter:

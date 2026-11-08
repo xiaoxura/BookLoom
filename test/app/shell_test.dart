@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import 'package:bookloom/app/shell/app_shell.dart' show debugForceMobileShell;
 import 'package:bookloom/design/components/app_mark.dart';
 import 'package:bookloom/design/components/app_page.dart';
-import 'package:bookloom/design/components/glass_surface.dart';
+import 'package:bookloom/design/components/paper_surface.dart';
 import 'package:bookloom/design/tokens/app_metrics.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart'
@@ -62,7 +62,7 @@ void main() {
     await tester.tap(find.text(zh.libraryEmptyAction));
     await tester.pumpAndSettle();
 
-    expect(find.text(zh.importChooseFile), findsOneWidget);
+    expect(find.text(zh.importSelectTitle), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -74,13 +74,10 @@ void main() {
     await tester.tap(find.text(zh.navImport).first);
     await tester.pumpAndSettle();
 
-    expect(find.text(zh.importFormatsTitle), findsOneWidget);
-    expect(
-      find.text(zh.importFormatAvailable(zh.importFormatTxt)),
-      findsOneWidget,
-    );
-    // Guidance stays: each format explains what it will do.
-    expect(find.text(zh.importFormatTxtDesc), findsOneWidget);
+    expect(find.text(zh.importSelectTitle), findsOneWidget);
+    expect(find.text(zh.importDropHint), findsOneWidget);
+    // The batch workbench stays reachable from the same card.
+    expect(find.text(zh.workbenchOpenBatch), findsOneWidget);
   });
 
   testBookloomWidgets('settings page exposes appearance and data sections', (
@@ -308,7 +305,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testBookloomWidgets('mobile chrome excludes system insets from glass', (
+  testBookloomWidgets('mobile chrome excludes system insets from panel', (
     WidgetTester tester,
   ) async {
     tester.view.padding = const FakeViewPadding(top: 30, bottom: 24);
@@ -316,13 +313,13 @@ void main() {
     await pumpMobileShell(tester, size: const Size(363, 800));
 
     final Finder bar = find.byKey(const Key('bottom-navigation'));
-    final Finder glass = find.ancestor(
+    final Finder panel = find.ancestor(
       of: bar,
-      matching: find.byType(GlassSurface),
+      matching: find.byType(PaperSurface),
     );
     expect(tester.getSize(bar).height, AppLayout.bottomBarHeight);
-    expect(tester.getSize(glass).height, AppLayout.bottomBarHeight);
-    expect(tester.getBottomLeft(glass).dy, 800 - 24 - AppSpacing.md);
+    expect(tester.getSize(panel).height, AppLayout.bottomBarHeight);
+    expect(tester.getBottomLeft(panel).dy, 800 - 24 - AppSpacing.md);
     expect(
       tester.getTopLeft(find.text(zh.libraryEmptyTitle)).dy,
       greaterThan(30),
@@ -352,13 +349,13 @@ void main() {
           await pumpMobileShell(tester, size: Size(width, 800));
 
           final bar = find.byKey(const Key('bottom-navigation'));
-          final glass = find.ancestor(
+          final panel = find.ancestor(
             of: bar,
-            matching: find.byType(GlassSurface),
+            matching: find.byType(PaperSurface),
           );
-          expect(tester.getCenter(glass).dx, closeTo(width / 2, 0.01));
+          expect(tester.getCenter(panel).dx, closeTo(width / 2, 0.01));
           expect(
-            tester.getSize(glass).width,
+            tester.getSize(panel).width,
             lessThanOrEqualTo(AppLayout.bottomBarMaxWidth),
           );
           if (textScale == 1) {
@@ -389,7 +386,7 @@ void main() {
           }
           await tester.tap(items.at(1));
           await tester.pumpAndSettle();
-          expect(find.text(zh.importChooseFile), findsOneWidget);
+          expect(find.text(zh.importSelectTitle), findsOneWidget);
           expect(tester.takeException(), isNull);
         },
       );
@@ -552,7 +549,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(zh.designSectionColors), findsOneWidget);
-    expect(find.text(zh.designSectionGlass), findsOneWidget);
     expect(find.byIcon(Icons.arrow_back), findsOneWidget);
   });
 

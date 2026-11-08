@@ -66,10 +66,7 @@ class WorkbenchUiHarness {
     WidgetTester tester, {
     Size size = const Size(1280, 900),
     TargetPlatform platform = TargetPlatform.linux,
-    Appearance appearance = const Appearance(
-      themeMode: AppThemeMode.dark,
-      glass: GlassQuality.off,
-    ),
+    Appearance appearance = const Appearance(themeMode: AppThemeMode.dark),
     SettingsStore Function(AppDatabase database)? settingsStoreFactory,
   }) async {
     debugDefaultTargetPlatformOverride = platform;

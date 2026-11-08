@@ -6,6 +6,7 @@ import 'package:bookloom/core/model/parse_options.dart';
 import 'package:bookloom/core/parsing/rules.dart';
 import 'package:bookloom/core/platform/files.dart';
 import 'package:bookloom/core/platform/job_cache.dart';
+import 'package:bookloom/design/tokens/app_metrics.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
@@ -36,140 +37,181 @@ class _ParseOptionsFieldsState extends State<ParseOptionsFields> {
   String? _error;
   bool _busy = false;
 
+  /// Paper selectors stay at a form-friendly width instead of stretching to
+  /// the full card, which read as ten-metre dropdowns on wide windows.
+  double _fieldWidth(BoxConstraints constraints) {
+    final double width = constraints.maxWidth;
+    if (!width.isFinite) return 320;
+    return width < 340 ? width : 320;
+  }
+
+  /// Dropdowns reroute through here: a re-selected identical value is a no-op
+  /// and never discards + re-parses the preview.
+  void _apply(ParseOptions next) {
+    if (next.sameAs(widget.options)) return;
+    widget.onChanged(next);
+  }
+
+  /// Controlled paper selector: the value lives in [ParseOptions] rather than
+  /// in FormField state, so changing it never remounts the widget (the old
+  /// `ValueKey(value)` + `initialValue` dance re-created the whole field and
+  /// read as a page refresh on every click).
+  Widget _selector<T>({
+    required String label,
+    required T value,
+    required List<DropdownMenuItem<T>> items,
+    required double width,
+    ValueChanged<T?>? onChanged,
+  }) {
+    return SizedBox(
+      width: width,
+      child: InputDecorator(
+        decoration: InputDecoration(labelText: label),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<T>(
+            value: value,
+            isDense: true,
+            isExpanded: true,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            items: items,
+            onChanged: onChanged,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final options = widget.options;
     final enabled = widget.enabled && !_busy;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.isTxt) ...[
-          DropdownButtonFormField<String>(
-            key: ValueKey('encoding-${options.encoding}'),
-            initialValue: options.encoding,
-            decoration: InputDecoration(
-              labelText: l10n.editorWorkbenchOptionsFileEncoding,
-            ),
-            items: [
-              DropdownMenuItem(
-                value: 'auto',
-                child: Text(l10n.editorWorkbenchOptionsAuto),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final double fieldWidth = _fieldWidth(constraints);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.isTxt) ...[
+              _selector<String>(
+                label: l10n.editorWorkbenchOptionsFileEncoding,
+                value: options.encoding,
+                width: fieldWidth,
+                items: [
+                  DropdownMenuItem(
+                    value: 'auto',
+                    child: Text(l10n.editorWorkbenchOptionsAuto),
+                  ),
+                  for (final entry in const {
+                    'utf-8': 'UTF-8',
+                    'gb18030': 'GB18030 / GBK',
+                    'big5': 'Big5',
+                    'utf-16le': 'UTF-16 LE',
+                    'utf-16be': 'UTF-16 BE',
+                  }.entries)
+                    DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+                ],
+                onChanged: enabled
+                    ? (value) =>
+                          _apply(options.copyWith(encoding: value))
+                    : null,
               ),
-              for (final entry in const {
-                'utf-8': 'UTF-8',
-                'gb18030': 'GB18030 / GBK',
-                'big5': 'Big5',
-                'utf-16le': 'UTF-16 LE',
-                'utf-16be': 'UTF-16 BE',
-              }.entries)
-                DropdownMenuItem(value: entry.key, child: Text(entry.value)),
-            ],
-            onChanged: enabled
-                ? (value) => widget.onChanged(options.copyWith(encoding: value))
-                : null,
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            key: ValueKey('rule-${options.rulePreset}'),
-            initialValue: options.rulePreset,
-            decoration: InputDecoration(
-              labelText: l10n.editorWorkbenchOptionsChapterRules,
-            ),
-            items: [
-              for (final entry in {
-                'auto': l10n.importEncodingAuto,
-                'ixdzs': l10n.editorWorkbenchRulePresetIxdzs,
-                'biquge': l10n.editorWorkbenchRulePresetBiquge,
-                'numbered': l10n.editorWorkbenchRulePresetNumbered,
-                'bare-number': l10n.editorWorkbenchRulePresetBareNumber,
-                'english': l10n.editorWorkbenchRulePresetEnglish,
-              }.entries)
-                DropdownMenuItem(value: entry.key, child: Text(entry.value)),
-            ],
-            onChanged: enabled
-                ? (value) =>
-                      widget.onChanged(options.copyWith(rulePreset: value))
-                : null,
-          ),
-          SwitchListTile.adaptive(
-            contentPadding: EdgeInsets.zero,
-            title: Text(l10n.editorWorkbenchOptionsFilterAds),
-            value: options.filterAds,
-            onChanged: enabled
-                ? (value) =>
-                      widget.onChanged(options.copyWith(filterAds: value))
-                : null,
-          ),
-          Wrap(
-            spacing: 8,
-            children: [
-              TextButton(
-                onPressed: enabled ? _editRule : null,
-                child: Text(l10n.editorWorkbenchOptionsEditRules),
+              const SizedBox(height: 12),
+              _selector<String>(
+                label: l10n.editorWorkbenchOptionsChapterRules,
+                value: options.rulePreset,
+                width: fieldWidth,
+                items: [
+                  for (final entry in {
+                    'auto': l10n.importEncodingAuto,
+                    'ixdzs': l10n.editorWorkbenchRulePresetIxdzs,
+                    'biquge': l10n.editorWorkbenchRulePresetBiquge,
+                    'numbered': l10n.editorWorkbenchRulePresetNumbered,
+                    'bare-number': l10n.editorWorkbenchRulePresetBareNumber,
+                    'english': l10n.editorWorkbenchRulePresetEnglish,
+                  }.entries)
+                    DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+                ],
+                onChanged: enabled
+                    ? (value) =>
+                          _apply(options.copyWith(rulePreset: value))
+                    : null,
               ),
-              TextButton(
-                onPressed: enabled ? _importRule : null,
-                child: Text(l10n.editorWorkbenchOptionsImportRules),
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.editorWorkbenchOptionsFilterAds),
+                value: options.filterAds,
+                onChanged: enabled
+                    ? (value) =>
+                          _apply(options.copyWith(filterAds: value))
+                    : null,
               ),
-              if (options.ruleSpec != null) ...[
-                TextButton(
-                  onPressed: enabled ? _exportRule : null,
-                  child: Text(l10n.editorWorkbenchOptionsExportRules),
+              Wrap(
+                spacing: 8,
+                children: [
+                  TextButton(
+                    onPressed: enabled ? _editRule : null,
+                    child: Text(l10n.editorWorkbenchOptionsEditRules),
+                  ),
+                  TextButton(
+                    onPressed: enabled ? _importRule : null,
+                    child: Text(l10n.editorWorkbenchOptionsImportRules),
+                  ),
+                  if (options.ruleSpec != null) ...[
+                    TextButton(
+                      onPressed: enabled ? _exportRule : null,
+                      child: Text(l10n.editorWorkbenchOptionsExportRules),
+                    ),
+                    TextButton(
+                      onPressed: enabled
+                          ? () => _apply(options.copyWith(clearRuleSpec: true))
+                          : null,
+                      child: Text(l10n.editorWorkbenchOptionsRemoveRules),
+                    ),
+                  ],
+                ],
+              ),
+              if (options.ruleSpec != null)
+                Text(
+                  l10n.editorWorkbenchOptionsCurrentRules(
+                    RuleSpec.fromMap(options.ruleSpec).name,
+                  ),
                 ),
-                TextButton(
-                  onPressed: enabled
-                      ? () => widget.onChanged(
-                          options.copyWith(clearRuleSpec: true),
-                        )
-                      : null,
-                  child: Text(l10n.editorWorkbenchOptionsRemoveRules),
+              const SizedBox(height: 12),
+            ],
+            _selector<ConvertMode>(
+              label: l10n.editorWorkbenchOptionsConvertAtImport,
+              value: options.convertMode,
+              width: fieldWidth,
+              items: [
+                DropdownMenuItem(
+                  value: ConvertMode.none,
+                  child: Text(l10n.editorWorkbenchOptionsKeepOriginal),
+                ),
+                DropdownMenuItem(
+                  value: ConvertMode.simplified,
+                  child: Text(l10n.editorWorkbenchOptionsToSimplified),
+                ),
+                DropdownMenuItem(
+                  value: ConvertMode.taiwan,
+                  child: Text(l10n.editorWorkbenchOptionsToTaiwan),
                 ),
               ],
-            ],
-          ),
-          if (options.ruleSpec != null)
-            Text(
-              l10n.editorWorkbenchOptionsCurrentRules(
-                RuleSpec.fromMap(options.ruleSpec).name,
+              onChanged: enabled
+                  ? (value) => _apply(options.copyWith(convertMode: value))
+                  : null,
+            ),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  _error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ),
-            ),
-          const SizedBox(height: 12),
-        ],
-        DropdownButtonFormField<ConvertMode>(
-          key: ValueKey('convert-${options.convertMode.name}'),
-          initialValue: options.convertMode,
-          decoration: InputDecoration(
-            labelText: l10n.editorWorkbenchOptionsConvertAtImport,
-          ),
-          items: [
-            DropdownMenuItem(
-              value: ConvertMode.none,
-              child: Text(l10n.editorWorkbenchOptionsKeepOriginal),
-            ),
-            DropdownMenuItem(
-              value: ConvertMode.simplified,
-              child: Text(l10n.editorWorkbenchOptionsToSimplified),
-            ),
-            DropdownMenuItem(
-              value: ConvertMode.taiwan,
-              child: Text(l10n.editorWorkbenchOptionsToTaiwan),
-            ),
           ],
-          onChanged: enabled
-              ? (value) =>
-                    widget.onChanged(options.copyWith(convertMode: value))
-              : null,
-        ),
-        if (_error != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              _error!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-      ],
+        );
+      },
     );
   }
 
@@ -200,7 +242,10 @@ class _ParseOptionsFieldsState extends State<ParseOptionsFields> {
                     minLines: 6,
                     maxLines: 12,
                     maxLength: maxRuleJsonBytes,
-                    decoration: InputDecoration(errorText: error),
+                    decoration: InputDecoration(
+                      errorText: error,
+                      counterText: '',
+                    ),
                   ),
                 ],
               ),

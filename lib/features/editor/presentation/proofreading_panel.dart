@@ -22,11 +22,17 @@ class ProofreadingPanel extends StatefulWidget {
     required this.session,
     required this.onLocate,
     this.onUseRule,
+    this.embedded = false,
   });
 
   final EditorSession session;
   final Future<void> Function(String chapterId, String? blockId) onLocate;
   final ValueChanged<ProofreadingRule>? onUseRule;
+
+  /// True when hosted inside the docked editor pane. The host paints its own
+  /// header, so the panel skips its duplicate page title and tightens its
+  /// paddings for the narrower column.
+  final bool embedded;
 
   @override
   State<ProofreadingPanel> createState() => _ProofreadingPanelState();
@@ -274,26 +280,28 @@ class _ProofreadingPanelState extends State<ProofreadingPanel> {
     ];
     if (_selectedTool == _ProofreadingTool.ai ||
         _selectedTool == _ProofreadingTool.rules) {
+      final EdgeInsets titlePadding = widget.embedded
+          ? const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 0)
+          : const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, 0);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xl,
-              AppSpacing.xl,
-              AppSpacing.xl,
-              0,
+          if (!widget.embedded) ...[
+            Padding(
+              padding: titlePadding,
+              child: Text(
+                l10n.editorWorkbenchTools,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
             ),
-            child: Text(
-              l10n.editorWorkbenchTools,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.md),
+          ],
           SizedBox(
             height: 56,
             child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              padding: EdgeInsets.symmetric(
+                horizontal: widget.embedded ? AppSpacing.md : AppSpacing.xl,
+              ),
               scrollDirection: Axis.horizontal,
               itemCount: toolChoices.length,
               itemBuilder: (context, index) => toolChoices[index],
@@ -322,13 +330,15 @@ class _ProofreadingPanelState extends State<ProofreadingPanel> {
       );
     }
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      padding: EdgeInsets.all(widget.embedded ? AppSpacing.md : AppSpacing.xl),
       children: [
-        Text(
-          l10n.editorWorkbenchTools,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: AppSpacing.sm),
+        if (!widget.embedded) ...[
+          Text(
+            l10n.editorWorkbenchTools,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
         Text(l10n.editorWorkbenchToolsIntro),
         if (_working || widget.session.isToolRunning) ...[
           const SizedBox(height: AppSpacing.md),
@@ -353,7 +363,11 @@ class _ProofreadingPanelState extends State<ProofreadingPanel> {
         const SizedBox(height: AppSpacing.md),
         LayoutBuilder(
           builder: (context, constraints) {
-            if (constraints.maxWidth < AppLayout.editorCompactBreakpoint) {
+            // Docked panes always wrap their tool chips: a horizontal scroller
+            // inside a narrow column hides half the choices. The dialog keeps
+            // its scroller only on genuinely compact windows.
+            if (!widget.embedded &&
+                constraints.maxWidth < AppLayout.editorCompactBreakpoint) {
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(

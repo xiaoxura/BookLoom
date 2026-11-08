@@ -13,7 +13,6 @@ import 'package:bookloom/core/model/chapter.dart';
 import 'package:bookloom/core/model/metadata.dart';
 import 'package:bookloom/core/model/parse_options.dart';
 import 'package:bookloom/core/platform/files.dart';
-import 'package:bookloom/core/settings/appearance.dart';
 import 'package:bookloom/design/theme/app_theme.dart';
 import 'package:bookloom/features/editor/application/editor_session.dart';
 import 'package:bookloom/features/editor/application/rule_workbench_task.dart';
@@ -455,7 +454,7 @@ void main() {
     final darkRuleName = _resolvedColor(tester, ruleName);
     expect(darkOffline, isNot(lightOffline));
     expect(darkRuleName, isNot(lightRuleName));
-    final surface = AppTheme.dark(glass: GlassQuality.off).colorScheme.surface;
+    final surface = AppTheme.dark().colorScheme.surface;
     expect(_contrast(darkOffline, surface), greaterThanOrEqualTo(4.5));
     expect(_contrast(darkRuleName, surface), greaterThanOrEqualTo(4.5));
     await _tap(tester, const ValueKey('rule-new'));
@@ -2011,8 +2010,8 @@ Widget _app(
 
 Widget _themedApp(EditorSession session, ThemeMode mode) => MaterialApp(
   locale: const Locale('zh'),
-  theme: AppTheme.light(glass: GlassQuality.off),
-  darkTheme: AppTheme.dark(glass: GlassQuality.off),
+  theme: AppTheme.light(),
+  darkTheme: AppTheme.dark(),
   themeMode: mode,
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,

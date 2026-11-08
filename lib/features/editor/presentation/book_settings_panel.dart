@@ -43,6 +43,9 @@ class BookSettingsPanel extends StatefulWidget {
 class _BookSettingsPanelState extends State<BookSettingsPanel> {
   late BookAssets _assets;
   _Section _section = _Section.metadata;
+
+  /// Extended metadata is collapsed by default; the description stays basic.
+  bool _moreExpanded = false;
   File? _coverFile;
   File? _fontFile;
   String? _fontMime;
@@ -316,102 +319,129 @@ class _BookSettingsPanelState extends State<BookSettingsPanel> {
     );
   }
 
-  Widget _metadata(Book book) => ListView(
-    padding: const EdgeInsets.all(AppSpacing.md),
-    children: [
-      _SettingField(
-        label: _l10n.editorBookTitle,
-        value: book.meta.title,
-        maxLength: 200,
-        validate: (value) =>
-            value.trim().isEmpty ? _l10n.bookWorkbenchTitleRequired : null,
-        onValid: (value) =>
-            _editMeta((meta) => meta.copyWith(title: value.trim())),
-      ),
-      _SettingField(
-        label: _l10n.editorBookAuthor,
-        value: book.meta.author,
-        maxLength: 160,
-        onValid: (value) =>
-            _editMeta((meta) => meta.copyWith(author: value.trim())),
-      ),
-      const SizedBox(height: AppSpacing.lg),
-      Text(
-        _l10n.bookWorkbenchMoreInformation,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      const SizedBox(height: AppSpacing.sm),
-      _SettingField(
-        label: _l10n.editorDescription,
-        value: book.meta.description,
-        maxLength: 10000,
-        maxLines: 4,
-        onValid: (value) =>
-            _editMeta((meta) => meta.copyWith(description: value)),
-      ),
-      _SettingField(
-        label: _l10n.editorSeries,
-        value: book.meta.series ?? '',
-        maxLength: 200,
-        onValid: (value) => _editMeta(
-          (meta) => meta.copyWith(
-            series: value.trim(),
-            clearSeries: value.trim().isEmpty,
+  Widget _metadata(Book book) {
+    final colors = context.colors;
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      children: [
+        _SettingField(
+          label: _l10n.editorBookTitle,
+          value: book.meta.title,
+          maxLength: 200,
+          validate: (value) =>
+              value.trim().isEmpty ? _l10n.bookWorkbenchTitleRequired : null,
+          onValid: (value) =>
+              _editMeta((meta) => meta.copyWith(title: value.trim())),
+        ),
+        _SettingField(
+          label: _l10n.editorBookAuthor,
+          value: book.meta.author,
+          maxLength: 160,
+          onValid: (value) =>
+              _editMeta((meta) => meta.copyWith(author: value.trim())),
+        ),
+        // The description is basic information: a recognized intro chapter
+        // auto-fills it, so it no longer lives in the extended section below.
+        _SettingField(
+          label: _l10n.editorDescription,
+          value: book.meta.description,
+          maxLength: 10000,
+          maxLines: 4,
+          onValid: (value) =>
+              _editMeta((meta) => meta.copyWith(description: value)),
+        ),
+        // Extended details stay available but collapsed until asked for.
+        InkWell(
+          key: const ValueKey('book-extended-header'),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+          onTap: () => setState(() => _moreExpanded = !_moreExpanded),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _l10n.bookWorkbenchMoreInformation,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                Icon(
+                  _moreExpanded
+                      ? Icons.expand_less_outlined
+                      : Icons.expand_more_rounded,
+                  size: 20,
+                  color: colors.inkMuted,
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      _SettingField(
-        label: _l10n.editorPublisher,
-        value: book.meta.publisher ?? '',
-        maxLength: 200,
-        onValid: (value) => _editMeta(
-          (meta) => meta.copyWith(
-            publisher: value.trim(),
-            clearPublisher: value.trim().isEmpty,
+        if (_moreExpanded) ...[
+          _SettingField(
+            label: _l10n.editorSeries,
+            value: book.meta.series ?? '',
+            maxLength: 200,
+            onValid: (value) => _editMeta(
+              (meta) => meta.copyWith(
+                series: value.trim(),
+                clearSeries: value.trim().isEmpty,
+              ),
+            ),
           ),
-        ),
-      ),
-      _SettingField(
-        label: _l10n.editorTags,
-        value: book.meta.tags.join(', '),
-        onValid: (value) => _editMeta(
-          (meta) => meta.copyWith(
-            tags: value
-                .split(RegExp(r'[,，]'))
-                .map((tag) => tag.trim())
-                .toList(),
+          _SettingField(
+            label: _l10n.editorPublisher,
+            value: book.meta.publisher ?? '',
+            maxLength: 200,
+            onValid: (value) => _editMeta(
+              (meta) => meta.copyWith(
+                publisher: value.trim(),
+                clearPublisher: value.trim().isEmpty,
+              ),
+            ),
           ),
-        ),
-      ),
-      _SettingField(
-        label: _l10n.editorLanguage,
-        value: book.meta.language,
-        maxLength: 35,
-        validate: (value) =>
-            RegExp(r'^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$')
-                .hasMatch(value.trim())
-            ? null
-            : _l10n.bookWorkbenchLanguageCodeHint,
-        onValid: (value) =>
-            _editMeta((meta) => meta.copyWith(language: value.trim())),
-      ),
-      _SettingField(
-        label: _l10n.bookWorkbenchPublicationDate,
-        value: _date(book.meta.publishedAt),
-        maxLength: 10,
-        validate: (value) =>
-            value.trim().isEmpty || _parseDate(value.trim()) != null
-            ? null
-            : _l10n.bookWorkbenchInvalidDate,
-        onValid: (value) => _editMeta(
-          (meta) => meta.copyWith(
-            publishedAt: _parseDate(value.trim()),
-            clearPublishedAt: value.trim().isEmpty,
+          _SettingField(
+            label: _l10n.editorTags,
+            value: book.meta.tags.join(', '),
+            onValid: (value) => _editMeta(
+              (meta) => meta.copyWith(
+                tags: value
+                    .split(RegExp(r'[,，]'))
+                    .map((tag) => tag.trim())
+                    .toList(),
+              ),
+            ),
           ),
-        ),
-      ),
-    ],
-  );
+          _SettingField(
+            label: _l10n.editorLanguage,
+            value: book.meta.language,
+            maxLength: 35,
+            validate: (value) =>
+                RegExp(r'^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$')
+                    .hasMatch(value.trim())
+                ? null
+                : _l10n.bookWorkbenchLanguageCodeHint,
+            onValid: (value) =>
+                _editMeta((meta) => meta.copyWith(language: value.trim())),
+          ),
+          _SettingField(
+            label: _l10n.bookWorkbenchPublicationDate,
+            value: _date(book.meta.publishedAt),
+            maxLength: 10,
+            validate: (value) =>
+                value.trim().isEmpty || _parseDate(value.trim()) != null
+                ? null
+                : _l10n.bookWorkbenchInvalidDate,
+            onValid: (value) => _editMeta(
+              (meta) => meta.copyWith(
+                publishedAt: _parseDate(value.trim()),
+                clearPublishedAt: value.trim().isEmpty,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 
   Widget _layout(Book book) {
     final layout = book.layout;
@@ -847,7 +877,13 @@ class _SettingFieldState extends State<_SettingField> {
       focusNode: _focus,
       maxLines: widget.maxLines,
       maxLength: widget.maxLength,
-      decoration: InputDecoration(labelText: widget.label, errorText: _error),
+      // Counter silent: the "N/M" digits under every field took a
+      // row each without helping; the limit itself is still enforced.
+      decoration: InputDecoration(
+        labelText: widget.label,
+        errorText: _error,
+        counterText: '',
+      ),
       onChanged: (value) {
         final error = widget.validate?.call(value);
         if (_error != error) setState(() => _error = error);

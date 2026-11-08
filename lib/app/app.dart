@@ -23,8 +23,8 @@ class BookloomApp extends ConsumerWidget {
       onGenerateTitle: (BuildContext context) =>
           AppLocalizations.of(context).appName,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(glass: appearance.glass),
-      darkTheme: AppTheme.dark(glass: appearance.glass),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
       themeMode: switch (appearance.themeMode) {
         AppThemeMode.system => ThemeMode.system,
         AppThemeMode.light => ThemeMode.light,

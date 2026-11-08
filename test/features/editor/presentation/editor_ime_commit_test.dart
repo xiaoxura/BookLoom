@@ -33,38 +33,23 @@ import 'package:go_router/go_router.dart' hide Block;
 import '../../../support/pump_bookloom.dart';
 
 void main() {
-  for (final selectionEntry in [true, false]) {
+  for (final selectionEntry in <bool>[false]) {
     testBookloomWidgets(
       'joint rules EditorPage ${selectionEntry ? 'selection menu' : 'proofreading'} save returns to mounted AI',
       (tester) async {
         final harness = await _EditorHarness.pump(tester, jointRules: true);
         final l10n = lookupAppLocalizations(const Locale('zh'));
-        if (selectionEntry) {
-          final field = _paragraphWithText('原始段落');
-          await tester.showKeyboard(field);
-          tester.widget<TextField>(field).controller!.selection =
-              const TextSelection(baseOffset: 0, extentOffset: 2);
-          await tester.pump();
-          final editable = tester.state<EditableTextState>(
-            find.descendant(of: field, matching: find.byType(EditableText)),
-          );
-          expect(editable.showToolbar(), isTrue);
-          await tester.pump(const Duration(milliseconds: 200));
-          await tester.tap(find.text(l10n.editorAiAnalyzeAdvertisement));
-        } else {
-          await tester.tap(find.byTooltip(l10n.editorWorkbenchTools));
-          await _pumpUntil(
-            tester,
-            () => find.byType(ProofreadingPanel).evaluate().isNotEmpty,
-            'proofreading modal',
-          );
-          final chip = find.widgetWithText(
-            FilterChip,
-            l10n.aiProofreadingTitle,
-          );
-          await tester.ensureVisible(chip);
-          await tester.tap(chip);
-        }
+        // The paragraph context menu no longer opens the AI advertisement
+        // panel directly; the proofreading chip is the remaining entry.
+        await tester.tap(find.byTooltip(l10n.editorWorkbenchTools));
+        await _pumpUntil(
+          tester,
+          () => find.byType(ProofreadingPanel).evaluate().isNotEmpty,
+          'proofreading modal',
+        );
+        final chip = find.widgetWithText(FilterChip, l10n.aiProofreadingTitle);
+        await tester.ensureVisible(chip);
+        await tester.tap(chip);
         await _pumpUntil(
           tester,
           () => find.byType(AiProofreadingPanel).evaluate().isNotEmpty,
@@ -80,13 +65,11 @@ void main() {
         final task = container.read(aiProofreadingTaskProvider(session));
         expect(panel.onUseRule, isNotNull);
         await _tapJointPanel(tester, AiProofreadingPanel, 'ai-request-rules');
-        if (!selectionEntry) {
-          final field = find.byKey(const ValueKey('ai-rule-positive'));
-          await tester.ensureVisible(field);
-          await tester.enterText(field, '原始');
-          FocusManager.instance.primaryFocus?.unfocus();
-          await tester.pump();
-        }
+        final field = find.byKey(const ValueKey('ai-rule-positive'));
+        await tester.ensureVisible(field);
+        await tester.enterText(field, '原始');
+        FocusManager.instance.primaryFocus?.unfocus();
+        await tester.pump();
         await _tapJointPanel(tester, AiProofreadingPanel, 'ai-prepare');
         await _pumpUntil(
           tester,
@@ -158,7 +141,12 @@ void main() {
           'body applied after rule save',
         );
         expect(task.canUseRuleProposals, isFalse);
-        await tester.tap(find.byType(CloseButton));
+        // Wide windows host the proofreading panel in the docked right pane,
+        // whose close affordance is an IconButton, not a CloseButton.
+        final closeTooltip = MaterialLocalizations.of(
+          tester.element(find.byType(EditorPage)),
+        ).closeButtonTooltip;
+        await tester.tap(find.byTooltip(closeTooltip).first);
         await _pumpUntil(
           tester,
           () => _paragraphWithText('段落').evaluate().isNotEmpty,
@@ -282,9 +270,11 @@ void main() {
       expect(find.text(l10n.editorPreview), findsNothing);
       expect(tester.getCenter(undo).dy, closeTo(tester.getCenter(redo).dy, 1));
       expect(_paragraphWithText('原始段落'), findsOneWidget);
+      // The title sits on the toolbar row; undo/redo share that row, the
+      // save status label lives under the title.
       expect(
-        tester.getTopLeft(find.text(l10n.editorSaved)).dy,
-        lessThan(tester.getTopLeft(undo).dy),
+        tester.getTopLeft(undo).dy,
+        lessThan(tester.getTopLeft(find.text(l10n.editorSaved)).dy),
       );
       expect(
         tester.getCenter(find.byTooltip(l10n.editorChapters)).dx,
@@ -430,17 +420,17 @@ void main() {
             widget.style?.fontSize == headingSize,
       );
       expect(heading, findsOneWidget);
-      final headingContainer = find.byWidgetPredicate(
-        (widget) =>
-            widget is Padding &&
-            widget.child is Align &&
-            (widget.child! as Align).child is Text &&
-            ((widget.child! as Align).child! as Text).data == '第一章',
-      );
-      expect(
-        tester.widget<Padding>(headingContainer).padding,
-        EdgeInsets.all(headingPadding),
-      );
+      final headingContainer = find
+          .ancestor(
+            of: heading,
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is Padding &&
+                  widget.padding == EdgeInsets.all(headingPadding),
+            ),
+          )
+          .first;
+      expect(tester.widget<Padding>(headingContainer).child, isA<Align>());
 
       final paragraph = _paragraphWithText('原始段落');
       final field = tester.widget<TextField>(paragraph);
@@ -484,53 +474,6 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
-
-  testBookloomWidgets(
-    'selected advertisement analysis uses exact UTF16 range without auto send',
-    (tester) async {
-      final harness = await _EditorHarness.pump(tester);
-      final l10n = lookupAppLocalizations(const Locale('zh'));
-      const source = '😀前文。 广告样例 后文。';
-      const original = '广告样例';
-      await tester.enterText(_paragraphWithText('原始段落'), source);
-      await tester.pump();
-      final fieldFinder = _paragraphWithText(source);
-      final field = tester.widget<TextField>(fieldFinder);
-      final start = source.indexOf(original);
-      field.controller!.selection = TextSelection(
-        baseOffset: start,
-        extentOffset: start + original.length,
-      );
-      await tester.pump();
-      final editable = tester.state<EditableTextState>(
-        find.descendant(of: fieldFinder, matching: find.byType(EditableText)),
-      );
-      expect(editable.showToolbar(), isTrue);
-      await tester.pump(const Duration(milliseconds: 200));
-      final analyze = find.text(l10n.editorAiAnalyzeAdvertisement);
-      await tester.ensureVisible(analyze);
-      await tester.tap(analyze);
-      await _pumpUntil(
-        tester,
-        () => find.byType(AiProofreadingPanel).evaluate().isNotEmpty,
-        'advertisement analysis panel opens from selection menu',
-      );
-      final selection = tester
-          .widget<AiProofreadingPanel>(find.byType(AiProofreadingPanel))
-          .initialAdvertisementSelection!;
-      expect(selection.original, original);
-      expect(selection.startUtf16, start);
-      expect(selection.endUtf16, start + original.length);
-      expect(selection.chapterId, 'a');
-      expect(selection.blockId, 'p1');
-      expect(find.byKey(const ValueKey('ai-prepare')), findsOneWidget);
-      expect(find.byKey(const ValueKey('ai-run')), findsNothing);
-      expect(tester.takeException(), isNull);
-      await tester.tap(find.byType(CloseButton));
-      await tester.pumpAndSettle();
-      await tester.runAsync(harness.beforeClose!);
-    },
-  );
 
   testBookloomWidgets(
     'selected text rule menu preserves exact UTF16 selection without sending',
@@ -642,29 +585,43 @@ void main() {
       const newChapterTitle = '新章节';
       const newChapterBody = '新章节正文';
 
-      Future<void> openChapterAction(String action) async {
+      // The directory header has no add button anymore; every chapter action
+      // lives on the row's trailing menu (identical to the right-click menu).
+      Future<void> openMoreMenu(String rowTitle) async {
         FocusManager.instance.primaryFocus?.unfocus();
         await tester.pump();
-        final addMenu = find.widgetWithIcon(
-          PopupMenuButton<String>,
-          Icons.add_rounded,
+        final row = find.ancestor(
+          of: find.text(rowTitle).first,
+          matching: find.byType(ListTile),
         );
-        expect(addMenu, findsOneWidget);
         await _pumpUntil(
           tester,
-          () => addMenu.hitTestable().evaluate().isNotEmpty,
-          'chapter action button is interactive',
+          () => row.evaluate().isNotEmpty,
+          'chapter row $rowTitle is visible',
         );
-        await tester.tap(addMenu);
+        final trigger = find.descendant(
+          of: row.first,
+          matching: find.byTooltip(l10n.editorChapterActions),
+        );
+        expect(trigger, findsOneWidget);
+        await tester.tap(trigger);
         await tester.pumpAndSettle();
+      }
+
+      Future<void> chooseAction(String action) async {
         final menuItem = find.text(action).hitTestable();
         await _pumpUntil(
           tester,
           () => menuItem.evaluate().isNotEmpty,
-          'chapter action menu item $action',
+          'row action menu item $action',
         );
         await tester.tap(menuItem.last);
         await tester.pumpAndSettle();
+      }
+
+      Future<void> openMoreMenuAndPick(String rowTitle, String action) async {
+        await openMoreMenu(rowTitle);
+        await chooseAction(action);
       }
 
       Future<void> chooseVolume(String label, String title) async {
@@ -694,7 +651,7 @@ void main() {
       }
 
       Future<void> expectChapterVolume(String chapter, String volume) async {
-        await openChapterAction(l10n.editorMoveChapters);
+        await openMoreMenuAndPick(chapter, l10n.editorMoveChapters);
         final row = find.widgetWithText(CheckboxListTile, chapter);
         expect(row, findsOneWidget);
         expect(
@@ -705,7 +662,7 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      await openChapterAction(l10n.editorNewVolume);
+      await openMoreMenuAndPick('第二章', l10n.editorNewVolumeAfter);
       await tester.enterText(
         find.descendant(
           of: find.byType(AlertDialog),
@@ -730,7 +687,7 @@ void main() {
         'new volume dialog dismissal and chapter list update',
       );
 
-      await openChapterAction(l10n.editorNewChapter);
+      await openMoreMenuAndPick(volumeTitle, l10n.editorNewChapter);
       await tester.enterText(
         find.byWidgetPredicate(
           (widget) =>
@@ -755,7 +712,7 @@ void main() {
       await tester.enterText(emptyBody, newChapterBody);
       await tester.pump();
 
-      await openChapterAction(l10n.editorMoveChapters);
+      await openMoreMenuAndPick('第一章', l10n.editorMoveChapters);
       await chooseVolume(l10n.editorTargetVolume, volumeTitle);
       for (final chapter in ['第一章', '第二章']) {
         final row = find.widgetWithText(CheckboxListTile, chapter);

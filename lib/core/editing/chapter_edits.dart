@@ -7,14 +7,59 @@ import 'package:bookloom/core/model/chapter.dart';
 abstract final class ChapterEdits {
   static final RegExp _safeId = RegExp(r'^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$');
 
-  static List<Chapter> createVolume(List<Chapter> chapters, Chapter volume) {
+  /// Creates a top-level volume. Without anchors the volume is appended at
+  /// the end. With an anchor the volume is inserted before or after the
+  /// anchor chapter (which must not belong to a volume) or before or after
+  /// the anchor volume itself. Parentless chapters that now follow the new
+  /// volume are adopted by it — inserting a volume before a run of unmanaged
+  /// chapters means that run reads as its content, mirroring how volumes
+  /// work in plain-text book headers.
+  static List<Chapter> createVolume(
+    List<Chapter> chapters,
+    Chapter volume, {
+    String? beforeChapterId,
+    String? afterChapterId,
+  }) {
     _validateNewChapter(chapters, volume);
     if (!volume.isVolume ||
         volume.parentId != null ||
         volume.blocks.isNotEmpty) {
       throw const ValidationFailure('新卷只能作为不含正文的顶层容器。');
     }
-    return normalize(<Chapter>[...chapters, volume]);
+    if (beforeChapterId != null && afterChapterId != null) {
+      throw const ValidationFailure('不能同时指定插入位置的前后章节。');
+    }
+    final next = List<Chapter>.of(chapters);
+    final anchorId = beforeChapterId ?? afterChapterId;
+    int slot;
+    if (anchorId == null) {
+      slot = next.length;
+    } else {
+      _validateId(anchorId);
+      final index = _index(next, anchorId);
+      final anchor = next[index];
+      if (anchor.isVolume) {
+        // Insert before the volume, or after its whole children block.
+        var end = index + 1;
+        while (end < next.length && next[end].parentId == anchor.id) {
+          end++;
+        }
+        slot = beforeChapterId == null ? end : index;
+      } else {
+        if (anchor.parentId != null) {
+          throw const ValidationFailure('新卷不能插入到已分卷的章节之间。');
+        }
+        slot = beforeChapterId == null ? index + 1 : index;
+      }
+    }
+    next.insert(slot, volume);
+    // Chapters without a volume that now follow the new volume belong to it.
+    for (var i = slot + 1; i < next.length; i++) {
+      final chapter = next[i];
+      if (chapter.isVolume || chapter.parentId != null) break;
+      next[i] = chapter.copyWith(parentId: volume.id);
+    }
+    return normalize(next);
   }
 
   static List<Chapter> createChapter(

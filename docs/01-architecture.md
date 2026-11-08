@@ -41,7 +41,7 @@ lib/
     router.dart             # go_router + StatefulShellRoute
     providers.dart          # 全局 provider（数据库、设置、外观）
     error_handling.dart     # 全局错误处理
-    shell/app_shell.dart    # 玻璃侧栏 / 底部导航
+    shell/app_shell.dart    # 纸面侧栏 / 底部导航
   features/
     library/
       data/                 # 书架 repository
@@ -60,9 +60,9 @@ lib/
     settings/
     design_system/          # /design 预览页（非产品页面）
   design/
-    tokens/                 # 颜色、字体、间距、圆角、动效、玻璃
+    tokens/                 # 颜色、字体、间距、圆角、动效
     theme/                  # AppTheme + ThemeExtension
-    components/             # GlassSurface / AppPage / EmptyState / BookPlate
+    components/             # PaperSurface / AppPage / EmptyState / BookPlate
   core/
     model/
       book.dart

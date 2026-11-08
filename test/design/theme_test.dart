@@ -1,8 +1,6 @@
-import 'package:bookloom/core/settings/appearance.dart';
 import 'package:bookloom/design/theme/app_theme.dart';
 import 'package:bookloom/design/theme/app_tokens.dart';
 import 'package:bookloom/design/tokens/app_colors.dart';
-import 'package:bookloom/design/tokens/glass.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -26,40 +24,6 @@ void main() {
       expect(darkTokens.colors.canvas, AppColors.dark.canvas);
       expect(light.brightness, Brightness.light);
       expect(dark.brightness, Brightness.dark);
-    });
-
-    test('glass quality drives blur tokens', () {
-      for (final (
-            String name,
-            AppColors colors,
-            ThemeData Function({GlassQuality glass}) theme,
-          )
-          in <(String, AppColors, ThemeData Function({GlassQuality glass}))>[
-            ('light', AppColors.light, AppTheme.light),
-            ('dark', AppColors.dark, AppTheme.dark),
-          ]) {
-        final GlassTokens off = theme(glass: GlassQuality.off)
-            .extension<AppTokens>()!
-            .glass;
-        final GlassTokens soft = theme(glass: GlassQuality.soft)
-            .extension<AppTokens>()!
-            .glass;
-        final GlassTokens strong = theme(glass: GlassQuality.strong)
-            .extension<AppTokens>()!
-            .glass;
-
-        expect(off.isBlurred, isFalse, reason: '$name off must not blur');
-        expect(off.blurSigma, 0);
-        expect(off.fill.a, 1, reason: '$name off must be opaque');
-        expect(off.tint, colors.surface);
-        expect(soft.isBlurred, isTrue);
-        expect(strong.isBlurred, isTrue);
-        expect(strong.blurSigma, greaterThan(soft.blurSigma));
-        expect(soft.tintAlpha, greaterThan(strong.tintAlpha));
-        expect(strong.highlight.a, greaterThan(soft.highlight.a));
-        expect(soft.tint, colors.surface);
-        expect(strong.tint, colors.surface);
-      }
     });
 
     test('disabled icon buttons are muted in both themes', () {
@@ -90,7 +54,7 @@ void main() {
       expect(midpoint.canvasBloom, isNot(AppColors.dark.canvasBloom));
     });
 
-    test('text colors stay readable on canvas washes and glass', () {
+    test('text colors stay readable on canvas washes', () {
       for (final (String name, AppColors colors) in <(String, AppColors)>[
         ('light', AppColors.light),
         ('dark', AppColors.dark),
@@ -122,22 +86,9 @@ void main() {
             ('$baseName/overlap', overlap),
           ]);
         }
-        final bool dark = name == 'dark';
-        final GlassTokens soft = GlassTokens.forQuality(
-          GlassQuality.soft,
-          dark: dark,
-        );
-        final GlassTokens strong = GlassTokens.forQuality(
-          GlassQuality.strong,
-          dark: dark,
-        );
-
         for (final (String backdropName, Color backdrop) in backdrops) {
-          for (final (String layerName, Color background) in <(String, Color)>[
-            ('bare', backdrop),
-            ('soft', Color.alphaBlend(soft.fill, backdrop)),
-            ('strong', Color.alphaBlend(strong.fill, backdrop)),
-          ]) {
+          for (final (String layerName, Color background)
+              in <(String, Color)>[('bare', backdrop)]) {
             for (final (String role, Color foreground, double minimum)
                 in <(String, Color, double)>[
                   ('ink', colors.ink, 7),

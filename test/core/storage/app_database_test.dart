@@ -72,33 +72,28 @@ void main() {
   test('appearance defaults when nothing is stored', () async {
     final Appearance appearance = await store.readAppearance();
     expect(appearance.themeMode, AppThemeMode.system);
-    expect(appearance.glass, GlassQuality.strong);
   });
 
   test('appearance round-trips through the settings table', () async {
-    await store.writeAppearance(
-      const Appearance(themeMode: AppThemeMode.dark, glass: GlassQuality.soft),
-    );
+    await store.writeAppearance(const Appearance(themeMode: AppThemeMode.dark));
     expect(
       await store.readAppearance(),
-      const Appearance(themeMode: AppThemeMode.dark, glass: GlassQuality.soft),
+      const Appearance(themeMode: AppThemeMode.dark),
     );
 
     await store.writeAppearance(
-      const Appearance(themeMode: AppThemeMode.light, glass: GlassQuality.off),
+      const Appearance(themeMode: AppThemeMode.light),
     );
     expect(
       await store.readAppearance(),
-      const Appearance(themeMode: AppThemeMode.light, glass: GlassQuality.off),
+      const Appearance(themeMode: AppThemeMode.light),
     );
   });
 
   test('unknown stored values fall back to defaults', () async {
     await store.write('appearance.themeMode', 'sepia');
-    await store.write('appearance.glass', 'molten');
     final Appearance appearance = await store.readAppearance();
     expect(appearance.themeMode, AppThemeMode.system);
-    expect(appearance.glass, GlassQuality.strong);
   });
 
   test('foreign keys cascade when a book is deleted', () async {

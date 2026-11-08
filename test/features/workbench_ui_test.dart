@@ -1,16 +1,15 @@
 import 'dart:io';
 
-import 'package:bookloom/app/providers.dart';
 import 'package:bookloom/core/model/block.dart';
 import 'package:bookloom/core/model/chapter.dart';
 import 'package:bookloom/core/settings/appearance.dart';
 import 'package:bookloom/design/theme/app_tokens.dart';
+import 'package:bookloom/design/tokens/app_metrics.dart';
 import 'package:bookloom/design/tokens/app_typography.dart';
 import 'package:bookloom/features/editor/presentation/editor_page.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/pump_bookloom.dart' show testBookloomWidgets;
@@ -63,20 +62,21 @@ void main() {
 
     // A picker cancellation leaves the import page empty and creates no book.
     harness.files.cancelNextPick = true;
-    await tester.tap(find.text(zh.importChooseFile));
+    await tester.tap(find.text(zh.importSelectTitle));
     await tester.pumpAndSettle();
     expect(await harness.listSummaries(), isEmpty);
     expect(find.text(zh.importAnalyze), findsNothing);
 
-    await tester.tap(find.text(zh.importChooseFile));
-    await tester.pumpAndSettle();
+    await tester.tap(find.text(zh.importSelectTitle));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
     expect(harness.files.lastMultiple, isFalse);
     expect(harness.files.lastExtensions, <String>['txt', 'epub', 'docx']);
     expect(find.text('《海风》作者：林澈.txt'), findsOneWidget);
 
-    await tester.ensureVisible(find.text(zh.importAnalyze));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(zh.importAnalyze));
+    // The parse starts automatically; the preview replaces the options-only
+    // state without an extra click.
+    await tester.pump();
     await _pumpUntil(
       tester,
       () => find.text(zh.importReviewTitle).evaluate().isNotEmpty,
@@ -344,9 +344,11 @@ void main() {
       expect(tester.takeException(), isNull);
 
       await _setSize(tester, const Size(2560, 1440));
+      // The reading column caps at ~40 CJK ems no matter how wide the window
+      // gets; the column itself is centered in the pane.
       expect(
         tester.getSize(_paragraphFieldWithText('门边放着一封信。')).width,
-        greaterThan(1700),
+        closeTo(AppLayout.readingMaxChars * AppTypography.readingFont, 1),
       );
       await _golden(
         find.byKey(workbenchAppGoldenBoundaryKey),
@@ -386,7 +388,11 @@ void main() {
       tester.platformDispatcher.textScaleFactorTestValue = 2;
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       await tester.pumpAndSettle();
-      expect(find.byTooltip(zh.editorExport).hitTestable(), findsOneWidget);
+      // Below 420px the export action lives in the overflow menu.
+      expect(
+        find.byTooltip(zh.editorWorkbenchMoreActions).hitTestable(),
+        findsOneWidget,
+      );
       expect(find.text(zh.editorSaved).hitTestable(), findsOneWidget);
       await _golden(
         find.byKey(workbenchAppGoldenBoundaryKey),
@@ -401,42 +407,30 @@ void main() {
 
       tester.platformDispatcher.textScaleFactorTestValue = 1.5;
       await tester.pumpAndSettle();
-      expect(find.byTooltip(zh.editorExport).hitTestable(), findsOneWidget);
+      expect(
+        find.byTooltip(zh.editorWorkbenchMoreActions).hitTestable(),
+        findsOneWidget,
+      );
       expect(find.text(zh.editorSaved).hitTestable(), findsOneWidget);
       expect(tester.takeException(), isNull);
 
       tester.platformDispatcher.clearTextScaleFactorTestValue();
       await _setSize(tester, const Size(1280, 900));
-      final ProviderContainer container = ProviderScope.containerOf(
-        tester.element(find.byType(EditorPage)),
-      );
       final Chapter first = book.chapters.firstWhere((c) => !c.isVolume);
-      for (final GlassQuality quality in <GlassQuality>[
-        GlassQuality.strong,
-        GlassQuality.soft,
-        GlassQuality.off,
-      ]) {
-        await tester.runAsync(
-          () => container.read(appearanceProvider.notifier).setGlass(quality),
-        );
-        await tester.pumpAndSettle();
-        expect(find.text(first.title).hitTestable(), findsWidgets);
-        expect(find.text(zh.editorSaved).hitTestable(), findsOneWidget);
-        expect(find.byTooltip(zh.editorExport).hitTestable(), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      }
+      await tester.pumpAndSettle();
+      expect(find.text(first.title).hitTestable(), findsWidgets);
+      expect(find.text(zh.editorSaved).hitTestable(), findsOneWidget);
+      expect(find.byTooltip(zh.editorExport).hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
     },
   );
 
   testBookloomWidgets(
-    'light workbench renders at desktop with glass disabled',
+    'light workbench renders at desktop',
     (WidgetTester tester) async {
       final WorkbenchUiHarness harness = await WorkbenchUiHarness.pump(
         tester,
-        appearance: const Appearance(
-          themeMode: AppThemeMode.light,
-          glass: GlassQuality.off,
-        ),
+        appearance: const Appearance(themeMode: AppThemeMode.light),
       );
       final book = await harness.seedBook();
       await _pumpUntil(

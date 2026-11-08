@@ -4,7 +4,6 @@ import 'package:bookloom/core/ai/ai_client.dart';
 import 'package:bookloom/core/ai/ai_configuration.dart';
 import 'package:bookloom/core/ai/ai_endpoint.dart';
 import 'package:bookloom/core/ai/ai_protocol.dart';
-import 'package:bookloom/core/settings/appearance.dart';
 import 'package:bookloom/design/theme/app_theme.dart';
 import 'package:bookloom/features/settings/application/ai_configuration_service.dart';
 import 'package:bookloom/features/settings/presentation/ai_settings_page.dart';
@@ -162,8 +161,8 @@ Future<void> _pumpPage(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         theme: dark
-            ? AppTheme.dark(glass: GlassQuality.off)
-            : AppTheme.light(glass: GlassQuality.off),
+            ? AppTheme.dark()
+            : AppTheme.light(),
         home: Builder(
           builder: (context) => MediaQuery(
             data: MediaQuery.of(context).copyWith(

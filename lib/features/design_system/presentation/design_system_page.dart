@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/settings/appearance.dart';
 import '../../../design/components/app_page.dart';
-import '../../../design/components/glass_surface.dart';
 import '../../../design/theme/app_tokens.dart';
 import '../../../design/tokens/app_metrics.dart';
 import '../../../l10n/app_localizations.dart';
@@ -158,67 +156,6 @@ class DesignSystemPage extends ConsumerWidget {
                   ],
                 ),
               ],
-            ),
-          ),
-          _Section(
-            title: l10n.designSectionGlass,
-            description: l10n.designSectionGlassDesc,
-            child: Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[
-                    colors.accent.withValues(alpha: 0.35),
-                    colors.accentSoft,
-                    colors.canvas,
-                  ],
-                ),
-              ),
-              child: Wrap(
-                spacing: AppSpacing.md,
-                runSpacing: AppSpacing.md,
-                children: <Widget>[
-                  for (final GlassQuality quality in GlassQuality.values)
-                    SizedBox(
-                      width: 236,
-                      child: GlassSurface(
-                        quality: quality,
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              quality.name,
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(
-                                    letterSpacing: 1.4,
-                                    color: colors.accent,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                            const SizedBox(height: AppSpacing.xs + 2),
-                            Text(
-                              l10n.designGlassPanelTitle,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              l10n.designGlassPanelBody,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: colors.inkSecondary,
-                                    height: 1.6,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
             ),
           ),
           _Section(

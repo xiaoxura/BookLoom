@@ -13,7 +13,7 @@ abstract final class AppSpacing {
   static const double huge = 64;
 }
 
-/// Corner radii. Glass and cards use [lg]; controls use [md].
+/// Corner radii. Panels and cards use [lg]; controls use [md].
 abstract final class AppRadius {
   static const double xs = 6;
   static const double sm = 8;
@@ -64,7 +64,7 @@ abstract final class AppLayout {
   /// Horizontal padding inside a page.
   static const double pagePadding = 32;
 
-  /// The glass navigation pane excludes the device's system insets.
+  /// The floating navigation panel excludes the device's system insets.
   static const double bottomBarHeight = 56;
 
   static const double bottomBarMaxWidth = 320;
@@ -72,6 +72,12 @@ abstract final class AppLayout {
   static const double bottomBarIconSize = 20;
 
   static const double editorCompactBreakpoint = 600;
+
+  /// Reading line-length cap, in CJK ems at the active reading font size.
+  /// ~40 characters per line keeps proofreading lines inside a comfortable
+  /// saccade range no matter how wide the window gets; the body column is
+  /// centered within the pane when the cap applies.
+  static const double readingMaxChars = 40;
 
   static const double workbenchDialogMaxWidth = 900;
 

@@ -209,9 +209,9 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
   return router;
 });
 
-/// Tab switches are instant. A cross-fade here costs a full repaint per frame
-/// (and a re-blur of every glass pane behind the page), which reads as a hitch
-/// on the very first switch. Tabs are not a place for choreography.
+/// Tab switches are instant. A cross-fade here costs a full repaint per frame,
+/// which reads as a hitch on the very first switch. Tabs are not a place for
+/// choreography.
 NoTransitionPage<void> _tabPage(Widget page) =>
     NoTransitionPage<void>(child: AppSurface(child: page));
 

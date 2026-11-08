@@ -134,9 +134,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Create advertisement rule with AI';
 
   @override
-  String get editorAiAnalyzeAdvertisement => 'Analyze advertisement with AI';
-
-  @override
   String get aiJointRuleRequest => 'Also request rule candidates';
 
   @override
@@ -1176,18 +1173,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeDark => 'Dark';
 
   @override
-  String get settingsGlass => 'Frosted glass';
-
-  @override
-  String get glassStrong => 'Strong';
-
-  @override
-  String get glassSoft => 'Soft';
-
-  @override
-  String get glassOff => 'Off';
-
-  @override
   String get settingsData => 'Data';
 
   @override
@@ -1200,7 +1185,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsHelp => 'Help';
 
   @override
-  String get settingsAppearanceDesc => 'Theme and frosted glass.';
+  String get settingsAppearanceDesc => 'App theme and colors.';
 
   @override
   String get settingsDefaultsTitle => 'Defaults for new books';
@@ -1250,6 +1235,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsExpandSidebar => 'Expand sidebar';
 
   @override
+  String editorTotalWords(int count) {
+    return '$count words in book';
+  }
+
+  @override
+  String editorTotalWordsWan(String count) {
+    return 'Book total $count 万字';
+  }
+
+  @override
   String get settingsDataLocation => 'Data folder';
 
   @override
@@ -1282,13 +1277,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get designSectionSpacing => 'Spacing & radii';
 
   @override
-  String get designSectionGlass => 'Glass & elevation';
-
-  @override
-  String get designSectionGlassDesc =>
-      'Glass appears only on floating chrome; turning it off degrades to opaque paper.';
-
-  @override
   String get designSectionComponents => 'Components';
 
   @override
@@ -1308,13 +1296,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get designSampleCardBody =>
       'Sample copy to check leading, tracking and gray levels.';
-
-  @override
-  String get designGlassPanelTitle => 'Floating panel';
-
-  @override
-  String get designGlassPanelBody =>
-      'Content behind a glass pane is softly blurred. Body text never lives here.';
 
   @override
   String get designLabelPrimary => 'Primary';
@@ -1365,10 +1346,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get importPendingMessage =>
       'M1 starts with TXT: encoding detection, chapter scoring, then manual review. This build only proves the interface language and data model.';
-
-  @override
-  String get settingsGlassDesc =>
-      'Used only for sidebar, overlays and dialogs. Body text always sits on opaque paper.';
 
   @override
   String get settingsDataLocationDesc =>
@@ -1666,6 +1643,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not choose a file. Check permissions and retry.';
 
   @override
+  String get importDropHint => 'Drop a file here or click to choose.';
+
+  @override
+  String get importDropUnsupported =>
+      'Only TXT, EPUB and DOCX files are supported.';
+
+  @override
   String get importAnalyzeFailed =>
       'Parsing failed. Check the file or try another encoding.';
 
@@ -1753,6 +1737,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editorNewChapter => 'New chapter';
+
+  @override
+  String get editorNewChapterBefore => 'New chapter before';
+
+  @override
+  String get editorNewChapterAfter => 'New chapter after';
+
+  @override
+  String get editorNewVolumeBefore => 'New volume before';
+
+  @override
+  String get editorNewVolumeAfter => 'New volume after';
 
   @override
   String get editorMoveChapters => 'Move chapters';

@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../core/settings/appearance.dart';
-
 import '../tokens/app_colors.dart';
 import '../tokens/app_metrics.dart';
 import '../tokens/app_typography.dart';
-import '../tokens/glass.dart';
 import 'app_tokens.dart';
 
 /// The single place where Material components are styled.
@@ -13,17 +10,11 @@ import 'app_tokens.dart';
 /// Screens should not restyle buttons, inputs or cards locally; if something is
 /// missing here, add it here so every screen inherits the same look.
 abstract final class AppTheme {
-  static ThemeData light({GlassQuality glass = GlassQuality.strong}) =>
-      _build(Brightness.light, AppColors.light, glass);
+  static ThemeData light() => _build(Brightness.light, AppColors.light);
 
-  static ThemeData dark({GlassQuality glass = GlassQuality.strong}) =>
-      _build(Brightness.dark, AppColors.dark, glass);
+  static ThemeData dark() => _build(Brightness.dark, AppColors.dark);
 
-  static ThemeData _build(
-    Brightness brightness,
-    AppColors colors,
-    GlassQuality glassQuality,
-  ) {
+  static ThemeData _build(Brightness brightness, AppColors colors) {
     final isDark = brightness == Brightness.dark;
     final scheme =
         ColorScheme.fromSeed(
@@ -57,12 +48,7 @@ abstract final class AppTheme {
       brightness: brightness,
       colorScheme: scheme,
       textTheme: textTheme,
-      extensions: <ThemeExtension<dynamic>>[
-        AppTokens(
-          colors: colors,
-          glass: GlassTokens.forQuality(glassQuality, dark: isDark),
-        ),
-      ],
+      extensions: <ThemeExtension<dynamic>>[AppTokens(colors: colors)],
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: colors.canvas,
       dividerTheme: DividerThemeData(
@@ -413,6 +399,15 @@ abstract final class AppTheme {
         dividerColor: colors.hairline,
         labelStyle: textTheme.labelLarge,
         unselectedLabelStyle: textTheme.labelLarge,
+      ),
+      // Expansion tiles live inside paper cards; the Material default paints
+      // its own grey slab that would read as a misplaced panel.
+      expansionTileTheme: const ExpansionTileThemeData(
+        backgroundColor: Colors.transparent,
+        collapsedBackgroundColor: Colors.transparent,
+        shape: RoundedRectangleBorder(),
+        collapsedShape: RoundedRectangleBorder(),
+        expandedAlignment: Alignment.centerLeft,
       ),
     );
   }

@@ -32,14 +32,20 @@ abstract final class AppTypography {
   static const String sans = 'Noto Sans CJK SC';
   static const String serif = 'Noto Serif CJK SC';
 
+  /// Reading/editor body font sizes; [reading] and the body line-length cap
+  /// both derive from these.
+  static const double readingFont = 16.5;
+  static const double readingFontCompact = 15.5;
+
   /// Reading/editor body: roomy leading, slight tracking for CJK mixed text.
-  static TextStyle reading(AppColors c, {bool compact = false}) => _sans(
-    size: compact ? 15.5 : 16.5,
-    height: compact ? 1.75 : 1.9,
-    weight: FontWeight.w400,
-    color: c.ink,
-    tracking: 0.15,
-  ).copyWith(fontFamily: serif, fontFamilyFallback: serifFallback);
+  static TextStyle reading(AppColors c, {bool compact = false}) =>
+      _sans(
+        size: compact ? readingFontCompact : readingFont,
+        height: compact ? 1.75 : 1.9,
+        weight: FontWeight.w400,
+        color: c.ink,
+        tracking: 0.15,
+      ).copyWith(fontFamily: serif, fontFamilyFallback: serifFallback);
 
   static TextTheme textTheme(AppColors c) {
     TextStyle s(double size, double h, FontWeight w, Color color, double t) =>

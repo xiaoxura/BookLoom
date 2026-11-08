@@ -8,6 +8,7 @@ import 'package:bookloom/core/editing/ai_change_application.dart';
 import 'package:bookloom/core/editing/ai_chapter_split_proposal.dart';
 import 'package:bookloom/core/editing/ai_text_application.dart';
 import 'package:bookloom/core/editing/ai_text_proposal.dart';
+import 'package:bookloom/core/editing/book_intro.dart';
 import 'package:bookloom/core/editing/chapter_edits.dart';
 import 'package:bookloom/core/editing/proofreading.dart';
 import 'package:bookloom/core/editing/proofreading_rule_scan.dart';
@@ -106,6 +107,10 @@ class EditorSession extends ChangeNotifier {
 
   Book? _book;
   String? _activeChapterId;
+
+  /// Chapter recognized as the book intro carrier, hidden from the chapter
+  /// directory. Recomputed on open and reparse; null when nothing matches.
+  String? _introChapterId;
   final Set<String> _loadedIds = <String>{};
   final Set<String> _persistedIds = <String>{};
   final Map<String, int> _dirtyChapterSeq = <String, int>{};
@@ -130,6 +135,9 @@ class EditorSession extends ChangeNotifier {
 
   Book? get book => _book;
   String? get activeChapterId => _activeChapterId;
+
+  /// The chapter currently recognized as the intro carrier, or null.
+  String? get introChapterId => _introChapterId;
   Chapter? get activeChapter {
     final id = _activeChapterId;
     if (id == null || !_loadedIds.contains(id)) return null;
@@ -160,9 +168,19 @@ class EditorSession extends ChangeNotifier {
       if (loaded == null) {
         throw const ValidationFailure('书籍不存在，请从书架重新打开。');
       }
+      // Recognition must run before the default selection so a recognized
+      // intro chapter never becomes the automatically opened body.
+      final intro = await _recognizeIntro(loaded);
+      final introId = intro?.intro.chapterId;
       final selected =
           chapterId ??
-          loaded.chapters.where((chapter) => !chapter.isVolume).firstOrNull?.id;
+          loaded.chapters
+              .where(
+                (chapter) =>
+                    !chapter.isVolume && (introId == null || chapter.id != introId),
+              )
+              .firstOrNull
+              ?.id;
       if (selected != null &&
           !loaded.chapters.any(
             (chapter) => chapter.id == selected && !chapter.isVolume,
@@ -194,9 +212,20 @@ class EditorSession extends ChangeNotifier {
       // because both sessions happen to have the same edit sequence.
       _openGeneration++;
       _sessionId = _uuid.v4();
+      _introChapterId = introId;
       _saveSeq++;
       _savedSeq = _saveSeq;
       _history.clear();
+      final recognized = intro?.intro;
+      if (recognized != null &&
+          _requireBook().meta.description.trim().isEmpty) {
+        // The recognized description is a real meta change; mark the change so
+        // the debounced save persists it even when the book is closed at once.
+        _book = _requireBook().copyWith(
+          meta: _requireBook().meta.copyWith(description: recognized.description),
+        );
+        _markChange();
+      }
     } finally {
       _openingCount--;
       if (_openingCount == 0 &&
@@ -229,12 +258,18 @@ class EditorSession extends ChangeNotifier {
     _commitStructure(next);
   }
 
-  Future<String> createVolume(String title) => _runStructure(() async {
+  Future<String> createVolume(
+    String title, {
+    String? beforeChapterId,
+    String? afterChapterId,
+  }) => _runStructure(() async {
     final book = _requireBook();
     final id = _uuid.v4();
     final next = ChapterEdits.createVolume(
       book.chapters,
       Chapter(id: id, bookId: book.id, title: title.trim(), level: 1),
+      beforeChapterId: beforeChapterId,
+      afterChapterId: afterChapterId,
     );
     _commitStructure(next);
     return id;
@@ -1134,8 +1169,16 @@ class EditorSession extends ChangeNotifier {
     _loadedIds
       ..clear()
       ..addAll(ids);
+    // The parsed tree carries the bodies, so the intro carrier is visible
+    // immediately. Book metadata stays untouched here: the description is
+    // filled on the next open, exactly like an existing stored book.
+    _introChapterId = detectBookIntro(normalized)?.chapterId;
     _activeChapterId = normalized
-        .where((chapter) => !chapter.isVolume)
+        .where(
+          (chapter) =>
+              !chapter.isVolume &&
+              (_introChapterId == null || chapter.id != _introChapterId),
+        )
         .firstOrNull
         ?.id;
     _markChange(blockDirty: ids, affected: <String>{...removedIds, ...ids});
@@ -1452,6 +1495,35 @@ class EditorSession extends ChangeNotifier {
         cause: error,
         stackTrace: stackTrace,
       );
+    }
+  }
+
+  /// Loads the preface-shaped chapters near the start of the book and detects
+  /// the intro carrier among them. A failed candidate read only leaves that
+  /// chapter unrecognized, never fails the open.
+  Future<({BookIntro intro})?> _recognizeIntro(Book loaded) async {
+    final candidates = <Chapter>[];
+    var position = 0;
+    for (final chapter in loaded.chapters) {
+      if (chapter.isVolume) continue;
+      if (position >= maxIntroScanChapters) break;
+      position++;
+      if (!isIntroChapterCandidate(chapter)) continue;
+      final candidate = chapter.blocks.isNotEmpty
+          ? chapter
+          : await _tryReadCandidate(loaded.id, chapter.id);
+      if (candidate == null) continue;
+      candidates.add(candidate);
+    }
+    final intro = detectBookIntro(candidates);
+    return intro == null ? null : (intro: intro);
+  }
+
+  Future<Chapter?> _tryReadCandidate(String bookId, String chapterId) async {
+    try {
+      return await _readChapter(bookId, chapterId);
+    } on Object {
+      return null;
     }
   }
 

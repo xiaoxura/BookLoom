@@ -30,6 +30,7 @@ import 'ai_rule_creation_panel.dart';
 import 'book_settings_panel.dart';
 import 'chapter_management_dialogs.dart';
 import 'proofreading_panel.dart';
+import 'reading_preview_host.dart';
 import 'reparse_panel.dart';
 import 'rule_workbench_panel.dart';
 
@@ -39,6 +40,10 @@ typedef CloseGuardRegistrar = VoidCallback Function(
   Future<void> Function() beforeClose, {
   void Function(Object)? onError,
 });
+
+/// What the wide-window right column shows; panes are exclusive so the body
+/// keeps the remaining width and the two side columns stay symmetric.
+enum _RightPane { settings, proofreading, preview }
 
 /// The pushed, native editing workspace. The router supplies [onExport] once
 /// an export implementation is available; a missing exporter is never success.
@@ -82,6 +87,11 @@ class _EditorPageState extends ConsumerState<EditorPage>
   bool _drawerOpen = false;
   bool _composing = false;
   bool _disposing = false;
+
+  /// What the wide-window right pane currently hosts (settings / docked
+  /// proofreading / reading preview). The proofreading job and its progress
+  /// stay attached to the pane while the user keeps editing.
+  _RightPane _rightPane = _RightPane.settings;
   bool _assetCleanupNeeded = false;
   String? _observedBookId;
   String? _observedCoverId;
@@ -267,10 +277,10 @@ class _EditorPageState extends ConsumerState<EditorPage>
       ref.watch(ruleWorkbenchTaskProvider(_session).select((task) => null));
     }
     final l10n = AppLocalizations.of(context);
-    final width = MediaQuery.sizeOf(context).width;
-    final mobile = width < 960;
-    final wide = width >= 1280;
-    final compactBody = width < AppLayout.editorCompactBreakpoint;
+    final sectionWidth = MediaQuery.sizeOf(context).width;
+    final mobile = sectionWidth < 960;
+    final wide = sectionWidth >= 1280;
+    final compactBody = sectionWidth < AppLayout.editorCompactBreakpoint;
     return PopScope(
       canPop: _allowPop || _drawerOpen,
       onPopInvokedWithResult: (didPop, _) {
@@ -330,13 +340,23 @@ class _EditorPageState extends ConsumerState<EditorPage>
                           child: Row(
                             children: [
                               if (!mobile) ...[
-                                SizedBox(width: 232, child: _chapterPane(l10n)),
+                                SizedBox(width: 320, child: _chapterPane(l10n)),
                                 const SizedBox(width: AppSpacing.md),
                               ],
                               Expanded(child: _bodyPane(l10n, compactBody)),
-                              if (wide) ...[
+                              if (wide) ...<Widget>[
                                 const SizedBox(width: AppSpacing.md),
-                                SizedBox(width: 320, child: _settingsPane()),
+                                SizedBox(
+                                  width: 320,
+                                  child: switch (_rightPane) {
+                                    _RightPane.proofreading =>
+                                      _proofreadingDockPane(l10n),
+                                    _RightPane.preview => _previewDockPane(
+                                      l10n,
+                                    ),
+                                    _RightPane.settings => _settingsPane(),
+                                  },
+                                ),
                               ],
                             ],
                           ),
@@ -353,7 +373,8 @@ class _EditorPageState extends ConsumerState<EditorPage>
   Widget _toolbar(AppLocalizations l10n, bool mobile) {
     final book = _session.book!;
     final colors = context.colors;
-    final compactActions = MediaQuery.sizeOf(context).width < 420;
+    final width = MediaQuery.sizeOf(context).width;
+    final compactActions = width < 420;
     final platform = Theme.of(context).platform;
     final phone =
         platform == TargetPlatform.android || platform == TargetPlatform.iOS;
@@ -373,11 +394,27 @@ class _EditorPageState extends ConsumerState<EditorPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    book.meta.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          book.meta.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Flexible(
+                        child: Text(
+                          _bookWordsLabel(l10n),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: colors.inkSecondary),
+                        ),
+                      ),
+                    ],
                   ),
                   Text(
                     _saveLabel(l10n),
@@ -398,6 +435,20 @@ class _EditorPageState extends ConsumerState<EditorPage>
                 onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 icon: const Icon(Icons.toc_rounded),
               ),
+            IconButton(
+              tooltip: l10n.editorUndo,
+              onPressed: (_session.canUndo || _composing) && !_leaving
+                  ? () => _run(() => _undoRedo(redo: false))
+                  : null,
+              icon: const Icon(Icons.undo_rounded),
+            ),
+            IconButton(
+              tooltip: l10n.editorRedo,
+              onPressed: _session.canRedo && !_composing && !_leaving
+                  ? () => _run(() => _undoRedo(redo: true))
+                  : null,
+              icon: const Icon(Icons.redo_rounded),
+            ),
             if (compactActions)
               PopupMenuButton<String>(
                 tooltip: l10n.editorWorkbenchMoreActions,
@@ -408,13 +459,22 @@ class _EditorPageState extends ConsumerState<EditorPage>
                       _showMetadata(l10n);
                     case 'proofreading':
                       _showProofreading();
+                    case 'preview':
+                      unawaited(_showPreview());
                     case 'reparse':
                       _showReparse();
+                    case 'export':
+                      unawaited(_export());
                     case 'share':
                       unawaited(_share());
                   }
                 },
                 itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: 'export',
+                    enabled: widget.onExport != null && !_leaving,
+                    child: Text(l10n.editorExport),
+                  ),
                   PopupMenuItem(
                     value: 'settings',
                     enabled: !_composing && !_leaving,
@@ -424,6 +484,11 @@ class _EditorPageState extends ConsumerState<EditorPage>
                     value: 'proofreading',
                     enabled: !_composing && !_leaving,
                     child: Text(l10n.editorWorkbenchTools),
+                  ),
+                  PopupMenuItem(
+                    value: 'preview',
+                    enabled: !_composing && !_leaving,
+                    child: Text(l10n.bookWorkbenchReadingPreview),
                   ),
                   PopupMenuItem(
                     value: 'reparse',
@@ -438,7 +503,8 @@ class _EditorPageState extends ConsumerState<EditorPage>
                     ),
                 ],
               ),
-            if (!compactActions && MediaQuery.sizeOf(context).width < 1280)
+            if (!compactActions &&
+                (width < 1280 || _rightPane != _RightPane.settings))
               IconButton(
                 tooltip: l10n.editorBookInfo,
                 onPressed: _composing ? null : () => _showMetadata(l10n),
@@ -446,7 +512,15 @@ class _EditorPageState extends ConsumerState<EditorPage>
               ),
             if (!compactActions) ...[
               IconButton(
+                tooltip: l10n.bookWorkbenchReadingPreview,
+                isSelected: width >= 1280 && _rightPane == _RightPane.preview,
+                onPressed: _composing ? null : _showPreview,
+                icon: const Icon(Icons.menu_book_outlined),
+              ),
+              IconButton(
                 tooltip: l10n.editorWorkbenchTools,
+                isSelected:
+                    width >= 1280 && _rightPane == _RightPane.proofreading,
                 onPressed: _composing ? null : _showProofreading,
                 icon: const Icon(Icons.fact_check_outlined),
               ),
@@ -456,11 +530,12 @@ class _EditorPageState extends ConsumerState<EditorPage>
                 icon: const Icon(Icons.restart_alt_rounded),
               ),
             ],
-            IconButton(
-              tooltip: l10n.editorExport,
-              onPressed: widget.onExport == null || _leaving ? null : _export,
-              icon: const Icon(Icons.ios_share_outlined),
-            ),
+            if (!compactActions)
+              IconButton(
+                tooltip: l10n.editorExport,
+                onPressed: widget.onExport == null || _leaving ? null : _export,
+                icon: const Icon(Icons.ios_share_outlined),
+              ),
             if (!compactActions && Platform.isAndroid && widget.onShare != null)
               IconButton(
                 tooltip: l10n.editorWorkbenchShare,
@@ -468,36 +543,6 @@ class _EditorPageState extends ConsumerState<EditorPage>
                 icon: const Icon(Icons.share_outlined),
               ),
           ],
-        ),
-        SizedBox(
-          width: double.infinity,
-          child: Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.xs,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    tooltip: l10n.editorUndo,
-                    onPressed: (_session.canUndo || _composing) && !_leaving
-                        ? () => _run(() => _undoRedo(redo: false))
-                        : null,
-                    icon: const Icon(Icons.undo_rounded),
-                  ),
-                  IconButton(
-                    tooltip: l10n.editorRedo,
-                    onPressed: _session.canRedo && !_composing && !_leaving
-                        ? () => _run(() => _undoRedo(redo: true))
-                        : null,
-                    icon: const Icon(Icons.redo_rounded),
-                  ),
-                ],
-              ),
-            ],
-          ),
         ),
         if (_session.saveError != null)
           TextButton(onPressed: _retrySave, child: Text(l10n.commonRetry)),
@@ -621,9 +666,15 @@ class _EditorPageState extends ConsumerState<EditorPage>
 
   void _stepChapter(int offset) {
     if (!_canNavigateByKeyboard) return;
+    final introId = _session.introChapterId;
     final chapters =
         _session.book?.chapters
-            .where((chapter) => !chapter.isVolume)
+            .where(
+              (chapter) =>
+                  !chapter.isVolume &&
+                  // A hidden intro chapter is not part of reading sequence.
+                  chapter.id != introId,
+            )
             .toList() ??
         const <Chapter>[];
     if (chapters.isEmpty) return;
@@ -697,18 +748,121 @@ class _EditorPageState extends ConsumerState<EditorPage>
     });
   }
 
+  /// Book word count for the chapter pane header: counts ≥ 1 万 render as
+  /// "N.M 万字" with one decimal instead of eight raw digits.
+  String _bookWordsLabel(AppLocalizations l10n) {
+    final int count = _session.book?.wordCount ?? 0;
+    if (count >= 10000) {
+      return l10n.editorTotalWordsWan((count / 10000).toStringAsFixed(1));
+    }
+    return l10n.editorTotalWords(count);
+  }
+
+  /// The first editable chapter in reading order; the recognized intro
+  /// chapter never participates in merge protection or navigation.
+  String? get _firstChapterId {
+    final introId = _session.introChapterId;
+    return _session.book?.chapters
+        .where((chapter) => !chapter.isVolume && chapter.id != introId)
+        .firstOrNull
+        ?.id;
+  }
+
+  /// One shared chapter action sheet: the trailing "more" menu and the
+  /// right-click/long-press context menu offer exactly the same entries.
+  List<PopupMenuEntry<String>> _chapterMenuEntries(
+    Chapter chapter,
+    AppLocalizations l10n,
+  ) {
+    final isVolume = chapter.isVolume;
+    return [
+      if (isVolume) ...[
+        PopupMenuItem(
+          value: 'volumeBefore',
+          child: Text(l10n.editorNewVolumeBefore),
+        ),
+        PopupMenuItem(
+          value: 'volumeAfter',
+          child: Text(l10n.editorNewVolumeAfter),
+        ),
+        PopupMenuItem(value: 'newChapter', child: Text(l10n.editorNewChapter)),
+        PopupMenuItem(value: 'move', child: Text(l10n.editorMoveChapters)),
+      ] else ...[
+        PopupMenuItem(
+          value: 'chapterBefore',
+          child: Text(l10n.editorNewChapterBefore),
+        ),
+        PopupMenuItem(
+          value: 'chapterAfter',
+          child: Text(l10n.editorNewChapterAfter),
+        ),
+        if (chapter.parentId == null) ...[
+          PopupMenuItem(
+            value: 'volumeBefore',
+            child: Text(l10n.editorNewVolumeBefore),
+          ),
+          PopupMenuItem(
+            value: 'volumeAfter',
+            child: Text(l10n.editorNewVolumeAfter),
+          ),
+        ],
+        if (chapter.id != _firstChapterId)
+          PopupMenuItem(value: 'merge', child: Text(l10n.editorMergePrevious)),
+        PopupMenuItem(value: 'move', child: Text(l10n.editorMoveChapters)),
+      ],
+      const PopupMenuDivider(),
+      PopupMenuItem(
+        value: 'rename',
+        child: Text(
+          isVolume ? l10n.editorRenameVolume : l10n.editorRenameChapter,
+        ),
+      ),
+      PopupMenuItem(
+        value: 'delete',
+        child: Text(
+          isVolume ? l10n.editorDeleteVolume : l10n.editorDeleteChapter,
+        ),
+      ),
+    ];
+  }
+
+  /// Opens the shared chapter action sheet at the pointer position. Desktop
+  /// uses right-click; touch uses long press.
+  Future<void> _showChapterContextMenu(
+    Chapter chapter,
+    Offset globalPosition,
+  ) async {
+    if (_composing || _leaving) return;
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (overlay == null || !overlay.hasSize) return;
+    final position = RelativeRect.fromLTRB(
+      globalPosition.dx,
+      globalPosition.dy,
+      overlay.size.width - globalPosition.dx,
+      overlay.size.height - globalPosition.dy,
+    );
+    final action = await showMenu<String>(
+      context: context,
+      position: position,
+      items: _chapterMenuEntries(chapter, AppLocalizations.of(context)),
+    );
+    if (action != null && mounted) await _chapterAction(chapter, action);
+  }
+
   Widget _chapterPane(AppLocalizations l10n) {
     final colors = context.colors;
     final chapters = _session.book?.chapters ?? const <Chapter>[];
-    final firstChapterId = chapters
-        .where((chapter) => !chapter.isVolume)
-        .firstOrNull
-        ?.id;
+    final introId = _session.introChapterId;
     final query = _treeSearch.text.trim().toLowerCase();
     final shown = _matchingChapters(chapters, query)
         .where(
           (chapter) =>
-              chapter.isVolume || !_collapsedVolumes.contains(chapter.parentId),
+              // A recognized intro chapter carries the book description in
+              // the metadata panel; it leaves the directory once recognized.
+              chapter.id != introId &&
+              (chapter.isVolume ||
+                  !_collapsedVolumes.contains(chapter.parentId)),
         )
         .toList();
     return Material(
@@ -721,59 +875,29 @@ class _EditorPageState extends ConsumerState<EditorPage>
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    l10n.editorChapters,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  tooltip: l10n.editorChapterActions,
-                  icon: const Icon(Icons.add_rounded),
-                  enabled: !_composing && !_leaving,
-                  onSelected: (action) {
-                    switch (action) {
-                      case 'volume':
-                        unawaited(_newVolume());
-                      case 'chapter':
-                        unawaited(_newChapter());
-                      case 'move':
-                        unawaited(_moveChapters());
-                    }
-                  },
-                  itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: 'volume',
-                      child: Text(l10n.editorNewVolume),
-                    ),
-                    PopupMenuItem(
-                      value: 'chapter',
-                      child: Text(l10n.editorNewChapter),
-                    ),
-                    PopupMenuItem(
-                      value: 'move',
-                      enabled: chapters.any((chapter) => !chapter.isVolume),
-                      child: Text(l10n.editorMoveChapters),
-                    ),
-                  ],
-                ),
-              ],
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.sm,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
             child: TextField(
               controller: _treeSearch,
               focusNode: _treeSearchFocus,
               onChanged: _chapterSearchChanged,
               onTapOutside: (_) => _treeSearchFocus.unfocus(),
-              decoration: InputDecoration(
-                hintText: l10n.editorSearchChapters,
-                prefixIcon: const Icon(Icons.search_outlined),
-              ),
+              decoration: const InputDecoration(
+                isDense: true,
+                prefixIcon: Icon(Icons.search_outlined, size: 18),
+                prefixIconConstraints: BoxConstraints(
+                  minWidth: 36,
+                  minHeight: 32,
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: 8,
+                ),
+              ).copyWith(hintText: l10n.editorSearchChapters),
             ),
           ),
           Expanded(
@@ -787,99 +911,94 @@ class _EditorPageState extends ConsumerState<EditorPage>
                       final selected = chapter.id == _session.activeChapterId;
                       return Semantics(
                         expanded: chapter.isVolume ? expanded : null,
-                        child: ListTile(
-                          dense: true,
-                          minLeadingWidth: 18,
-                          horizontalTitleGap: AppSpacing.xs,
-                          contentPadding: EdgeInsets.only(
-                            left: chapter.isVolume
-                                ? AppSpacing.md
-                                : AppSpacing.xl,
-                            right: AppSpacing.xs,
+                        child: Container(
+                          // Inset the selection pill so the highlight reads as
+                          // a row marker, not a full-bleed stripe.
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.xs,
                           ),
-                          selected: selected,
-                          selectedTileColor: colors.accentSoft,
-                          selectedColor: colors.accent,
-                          title: Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  chapter.title,
-                                  style: selected
-                                      ? const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        )
-                                      : null,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onSecondaryTapUp: (details) => unawaited(
+                              _showChapterContextMenu(
+                                chapter,
+                                details.globalPosition,
+                              ),
+                            ),
+                            onLongPressStart: (details) => unawaited(
+                              _showChapterContextMenu(
+                                chapter,
+                                details.globalPosition,
+                              ),
+                            ),
+                            child: ListTile(
+                              dense: true,
+                              minLeadingWidth: 18,
+                              horizontalTitleGap: AppSpacing.xs,
+                              contentPadding: EdgeInsets.only(
+                                left: chapter.isVolume
+                                    ? AppSpacing.md
+                                    : AppSpacing.xl - AppSpacing.xs,
+                                right: AppSpacing.xs,
+                              ),
+                              selected: selected,
+                              selectedTileColor: colors.accentSoft,
+                              selectedColor: colors.accent,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(AppRadius.sm),
                                 ),
                               ),
-                              if (chapter.isVolume) ...[
-                                const SizedBox(width: AppSpacing.xs),
-                                Icon(
-                                  expanded
-                                      ? Icons.expand_more_rounded
-                                      : Icons.chevron_right_rounded,
-                                  size: 16,
-                                ),
-                              ],
-                            ],
-                          ),
-                          leading: Icon(
-                            chapter.isVolume
-                                ? Icons.folder_outlined
-                                : Icons.article_outlined,
-                            size: 18,
-                          ),
-                          onTap: chapter.isVolume
-                              ? () => setState(() {
-                                  if (expanded) {
-                                    _collapsedVolumes.add(chapter.id);
-                                  } else {
-                                    _collapsedVolumes.remove(chapter.id);
-                                  }
-                                })
-                              : _composing
-                              ? null
-                              : () => _selectChapter(chapter.id),
-                          trailing: PopupMenuButton<String>(
-                            tooltip: l10n.editorChapterActions,
-                            onSelected: (action) =>
-                                _chapterAction(chapter, action),
-                            itemBuilder: (_) => [
-                              PopupMenuItem(
-                                value: 'rename',
-                                child: Text(
-                                  chapter.isVolume
-                                      ? l10n.editorRenameVolume
-                                      : l10n.editorRenameChapter,
-                                ),
+                              title: Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      chapter.title,
+                                      style: selected
+                                          ? const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                            )
+                                          : null,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (chapter.isVolume) ...[
+                                    const SizedBox(width: AppSpacing.xs),
+                                    Icon(
+                                      expanded
+                                          ? Icons.expand_more_rounded
+                                          : Icons.chevron_right_rounded,
+                                      size: 16,
+                                    ),
+                                  ],
+                                ],
                               ),
-                              if (!chapter.isVolume &&
-                                  chapter.id != firstChapterId)
-                                PopupMenuItem(
-                                  value: 'merge',
-                                  child: Text(l10n.editorMergePrevious),
-                                ),
-                              if (chapter.isVolume) ...[
-                                PopupMenuItem(
-                                  value: 'newChapter',
-                                  child: Text(l10n.editorNewChapter),
-                                ),
-                                PopupMenuItem(
-                                  value: 'move',
-                                  child: Text(l10n.editorMoveChapters),
-                                ),
-                              ],
-                              PopupMenuItem(
-                                value: 'delete',
-                                child: Text(
-                                  chapter.isVolume
-                                      ? l10n.editorDeleteVolume
-                                      : l10n.editorDeleteChapter,
-                                ),
+                              leading: Icon(
+                                chapter.isVolume
+                                    ? Icons.folder_outlined
+                                    : Icons.article_outlined,
+                                size: 18,
                               ),
-                            ],
+                              onTap: chapter.isVolume
+                                  ? () => setState(() {
+                                      if (expanded) {
+                                        _collapsedVolumes.add(chapter.id);
+                                      } else {
+                                        _collapsedVolumes.remove(chapter.id);
+                                      }
+                                    })
+                                  : _composing
+                                  ? null
+                                  : () => _selectChapter(chapter.id),
+                              trailing: PopupMenuButton<String>(
+                                tooltip: l10n.editorChapterActions,
+                                onSelected: (action) =>
+                                    _chapterAction(chapter, action),
+                                itemBuilder: (_) =>
+                                    _chapterMenuEntries(chapter, l10n),
+                              ),
+                            ),
                           ),
                         ),
                       );
@@ -895,6 +1014,9 @@ class _EditorPageState extends ConsumerState<EditorPage>
     final colors = context.colors;
     final chapter = _session.activeChapter;
     final locatedBlockId = _locatedBlockId;
+    // Cap the reading line at ~40 CJK ems regardless of window width; the
+    // column is centered once the pane is wider than that.
+    final double readingWidth = _readingMaxWidth(compact);
     return Container(
       decoration: BoxDecoration(
         color: colors.surface,
@@ -910,12 +1032,20 @@ class _EditorPageState extends ConsumerState<EditorPage>
                     compact ? AppSpacing.md : AppSpacing.lg,
                   ),
                   child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      chapter.title,
-                      style: compact
-                          ? Theme.of(context).textTheme.headlineSmall
-                          : Theme.of(context).textTheme.headlineMedium,
+                    alignment: Alignment.center,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: readingWidth),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          chapter.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: compact
+                              ? Theme.of(context).textTheme.headlineSmall
+                              : Theme.of(context).textTheme.headlineMedium,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -979,11 +1109,19 @@ class _EditorPageState extends ConsumerState<EditorPage>
                             key: chapter.blocks[index].id == locatedBlockId
                                 ? _locatedRow
                                 : ValueKey(chapter.blocks[index].id),
-                            child: _blockRow(
-                              chapter,
-                              chapter.blocks[index],
-                              l10n,
-                              compact,
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: readingWidth,
+                                ),
+                                child: _blockRow(
+                                  chapter,
+                                  chapter.blocks[index],
+                                  l10n,
+                                  compact,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -1035,14 +1173,6 @@ class _EditorPageState extends ConsumerState<EditorPage>
                 ),
                 kind,
               ),
-              onAnalyzeAdvertisement: (start, end, original) =>
-                  _showAdvertisementSelection(
-                    chapter.id,
-                    block.id,
-                    start,
-                    end,
-                    original,
-                  ),
             ),
     );
   }
@@ -1053,12 +1183,31 @@ class _EditorPageState extends ConsumerState<EditorPage>
     files: ref.read(fileServiceProvider),
   );
 
+  /// Reading line-length cap in logical pixels for the current text scale:
+  /// [AppLayout.readingMaxChars] CJK ems at the active reading font size.
+  double _readingMaxWidth(bool compact) =>
+      AppLayout.readingMaxChars *
+      MediaQuery.textScalerOf(context).scale(
+        compact ? AppTypography.readingFontCompact : AppTypography.readingFont,
+      );
+
   void _showMetadata(AppLocalizations l10n) {
     _showWorkbenchPanel((_) => _settingsPane());
   }
 
   void _showProofreading() {
     if (_composing) return;
+    // Wide windows dock the workbench in the right pane so progress stays
+    // visible while editing continues; narrow windows keep the dialog.
+    if (MediaQuery.sizeOf(context).width >= 1280) {
+      setState(
+        () => _rightPane = switch (_rightPane) {
+          _RightPane.proofreading => _RightPane.settings,
+          _ => _RightPane.proofreading,
+        },
+      );
+      return;
+    }
     _showWorkbenchPanel(
       (dialog) => ProofreadingPanel(
         session: _session,
@@ -1067,6 +1216,134 @@ class _EditorPageState extends ConsumerState<EditorPage>
           Navigator.of(dialog).pop();
           await _locate(chapterId, blockId);
         },
+      ),
+    );
+  }
+
+  /// Reading preview docked as the wide-window right pane. Shares the live
+  /// session model, so layout edits and chapter switches are immediate.
+  Widget _previewDockPane(AppLocalizations l10n) {
+    final colors = context.colors;
+    return Material(
+      color: colors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        side: BorderSide(color: colors.hairline),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.xs,
+              AppSpacing.xs,
+              AppSpacing.xs,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.bookWorkbenchReadingPreview,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                IconButton(
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                  onPressed: () =>
+                      setState(() => _rightPane = _RightPane.settings),
+                  icon: const Icon(Icons.close, size: 18),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: colors.hairline),
+          Expanded(
+            child: ReadingPreviewHost(
+              session: _session,
+              repository: ref.read(bookRepositoryProvider),
+              assets: _assets,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Opens the reading preview: a docked live pane on wide windows, a dialog
+  /// outside the shell on narrow ones. Either way it renders the session's
+  /// current model with the book's layout options applied.
+  Future<void> _showPreview() async {
+    if (_composing) return;
+    if (MediaQuery.sizeOf(context).width >= 1280) {
+      setState(
+        () => _rightPane = switch (_rightPane) {
+          _RightPane.preview => _RightPane.settings,
+          _ => _RightPane.preview,
+        },
+      );
+      return;
+    }
+    await _flushForClose();
+    if (!mounted) return;
+    _showWorkbenchPanel(
+      (_) => ReadingPreviewHost(
+        session: _session,
+        repository: ref.read(bookRepositoryProvider),
+        assets: _assets,
+      ),
+    );
+  }
+
+  /// The proofreading workbench docked as the wide-window right pane. Shares
+  /// the [ProofreadingPanel] widget with the narrow-window dialog; job state
+  /// lives in the [EditorSession], so both hosts behave identically.
+  Widget _proofreadingDockPane(AppLocalizations l10n) {
+    final colors = context.colors;
+    return Material(
+      color: colors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        side: BorderSide(color: colors.hairline),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.xs,
+              AppSpacing.xs,
+              AppSpacing.xs,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.editorWorkbenchTools,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                IconButton(
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                  onPressed: () =>
+                      setState(() => _rightPane = _RightPane.settings),
+                  icon: const Icon(Icons.close, size: 18),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: colors.hairline),
+          Expanded(
+            child: ProofreadingPanel(
+              session: _session,
+              embedded: true,
+              onUseRule: (rule) =>
+                  _openJointRuleWorkbench(rule, context, closeSource: false),
+              onLocate: _locate,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1103,34 +1380,6 @@ class _EditorPageState extends ConsumerState<EditorPage>
     );
   }
 
-  void _showAdvertisementSelection(
-    String chapterId,
-    String blockId,
-    int startUtf16,
-    int endUtf16,
-    String original,
-  ) {
-    if (_composing) return;
-    final book = _session.book;
-    final sessionId = _session.sessionId;
-    if (book == null || sessionId == null) return;
-    try {
-      final request = AiAdvertisementRequest.fromSelection(
-        book: book,
-        sessionId: sessionId,
-        sessionRevision: _session.saveSeq,
-        chapterId: chapterId,
-        blockId: blockId,
-        startUtf16: startUtf16,
-        endUtf16: endUtf16,
-        original: original,
-      );
-      _openAdvertisementPanel(request);
-    } on Object {
-      _notice(AppLocalizations.of(context).aiAdvertisementSelectionExpired);
-    }
-  }
-
   void _openAdvertisementPanel(AiAdvertisementRequest request) {
     if (!mounted) return;
     _showWorkbenchPanel(
@@ -1146,7 +1395,11 @@ class _EditorPageState extends ConsumerState<EditorPage>
     );
   }
 
-  void _openJointRuleWorkbench(ProofreadingRule rule, BuildContext source) {
+  void _openJointRuleWorkbench(
+    ProofreadingRule rule,
+    BuildContext source, {
+    bool closeSource = true,
+  }) {
     if (!mounted) return;
     final sessionId = _session.sessionId;
     final saveSeq = _session.saveSeq;
@@ -1158,7 +1411,7 @@ class _EditorPageState extends ConsumerState<EditorPage>
         initialSaveSeq: saveSeq,
         onLocate: (chapterId, blockId) async {
           Navigator.of(workbench).pop();
-          if (source.mounted) Navigator.of(source).pop();
+          if (closeSource && source.mounted) Navigator.of(source).pop();
           await _locate(chapterId, blockId);
         },
         onAnalyzeAdvertisement: (request) async {
@@ -1281,21 +1534,6 @@ class _EditorPageState extends ConsumerState<EditorPage>
     }
   }
 
-  Future<void> _newVolume() async {
-    if (_composing || _leaving) return;
-    final title = await showNewVolumeDialog(context);
-    if (title == null || !mounted) return;
-    await _run(() async {
-      final id = await _session.createVolume(title);
-      if (mounted) {
-        setState(() {
-          _collapsedVolumes.remove(id);
-          _treeSearch.clear();
-        });
-      }
-    });
-  }
-
   Future<void> _newChapter({String? volumeId}) async {
     if (_composing || _leaving) return;
     final request = await showNewChapterDialog(
@@ -1321,6 +1559,62 @@ class _EditorPageState extends ConsumerState<EditorPage>
       _scaffoldKey.currentState?.closeDrawer();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _bodyScroll.hasClients) _bodyScroll.jumpTo(0);
+      });
+    });
+  }
+
+  /// Creates a chapter directly before or after the anchor chapter; the
+  /// dialog opens pre-selected at that volume and position.
+  Future<void> _createChapterAt(Chapter anchor, {required bool after}) async {
+    if (_composing || _leaving) return;
+    final book = _session.book;
+    final anchorChapter = book?.chapters
+        .where((item) => item.id == anchor.id)
+        .firstOrNull;
+    if (book == null || anchorChapter == null || anchorChapter.isVolume) {
+      return;
+    }
+    final request = await showNewChapterDialog(
+      context,
+      chapters: book.chapters,
+      activeChapterId: _session.activeChapterId,
+      anchorChapterId: anchorChapter.id,
+      anchorAfter: after,
+    );
+    if (request == null || !mounted) return;
+    await _run(() async {
+      await _session.createChapter(
+        request.title,
+        volumeId: request.volumeId,
+        beforeChapterId: request.beforeChapterId,
+        afterChapterId: request.afterChapterId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _treeSearch.clear();
+        _collapsedVolumes.remove(request.volumeId);
+      });
+    });
+  }
+
+  /// Creates a volume directly before or after the anchor chapter (or after
+  /// the anchor's whole volume block); unmanaged chapters that now follow
+  /// the new volume are adopted by it.
+  Future<void> _createVolumeAt(Chapter anchor, {required bool after}) async {
+    if (_composing || _leaving) return;
+    if (_session.book == null) return;
+    final title = await showNewVolumeDialog(context);
+    if (title == null || !mounted) return;
+    await _run(() async {
+      final id = await _session.createVolume(
+        title,
+        beforeChapterId: after ? null : anchor.id,
+        afterChapterId: after ? anchor.id : null,
+      );
+      if (!mounted) return;
+      setState(() {
+        _collapsedVolumes.remove(id);
+        _treeSearch.clear();
       });
     });
   }
@@ -1351,6 +1645,18 @@ class _EditorPageState extends ConsumerState<EditorPage>
     if (_composing) return;
     final l10n = AppLocalizations.of(context);
     switch (action) {
+      case 'chapterBefore':
+        await _createChapterAt(chapter, after: false);
+        return;
+      case 'chapterAfter':
+        await _createChapterAt(chapter, after: true);
+        return;
+      case 'volumeBefore':
+        await _createVolumeAt(chapter, after: false);
+        return;
+      case 'volumeAfter':
+        await _createVolumeAt(chapter, after: true);
+        return;
       case 'rename':
         var draft = chapter.title;
         final title = await showDialog<String>(
@@ -1403,7 +1709,9 @@ class _EditorPageState extends ConsumerState<EditorPage>
         await _newChapter(volumeId: chapter.id);
         return;
       case 'move':
-        await _moveChapters(volumeId: chapter.id);
+        await _moveChapters(
+          volumeId: chapter.isVolume ? chapter.id : chapter.parentId,
+        );
         return;
       case 'delete':
         final confirmed = await showDialog<bool>(
@@ -1580,7 +1888,6 @@ class _ParagraphField extends StatefulWidget {
     required this.onDisposed,
     required this.onParagraphAction,
     required this.onCreateRule,
-    required this.onAnalyzeAdvertisement,
   });
   final String text;
   final bool compact;
@@ -1596,8 +1903,6 @@ class _ParagraphField extends StatefulWidget {
     ProofreadingRuleKind kind,
   )
   onCreateRule;
-  final void Function(int startUtf16, int endUtf16, String original)
-  onAnalyzeAdvertisement;
 
   @override
   State<_ParagraphField> createState() => _ParagraphFieldState();
@@ -1688,10 +1993,6 @@ class _ParagraphFieldState extends State<_ParagraphField> {
           selected.length <= ProofreadingRule.maxExampleUtf16 &&
           !selected.contains('\n') &&
           !selected.contains('\r');
-      final canAnalyzeAdvertisement =
-          !_isComposing &&
-          selected.trim().isNotEmpty &&
-          selected.length <= 8192;
       void action(String value) {
         ContextMenuController.removeAny();
         widget.onParagraphAction(value);
@@ -1724,18 +2025,6 @@ class _ParagraphFieldState extends State<_ParagraphField> {
                   );
                 },
               ),
-          if (canAnalyzeAdvertisement)
-            ContextMenuButtonItem(
-              label: l10n.editorAiAnalyzeAdvertisement,
-              onPressed: () {
-                ContextMenuController.removeAny();
-                widget.onAnalyzeAdvertisement(
-                  selection.start,
-                  selection.end,
-                  selected,
-                );
-              },
-            ),
           ...editableText.contextMenuButtonItems,
         ],
       );

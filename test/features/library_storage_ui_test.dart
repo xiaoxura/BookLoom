@@ -103,7 +103,7 @@ void main() {
       expect(searchFocus.hasFocus, isTrue);
       await tester.tap(import);
       await tester.pumpAndSettle();
-      expect(find.text(_zh.importChooseFile), findsOneWidget);
+      expect(find.text(_zh.importSelectTitle), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

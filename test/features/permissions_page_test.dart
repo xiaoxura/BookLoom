@@ -6,7 +6,6 @@ import 'package:bookloom/app/workbench_providers.dart';
 import 'package:bookloom/core/platform/app_paths.dart';
 import 'package:bookloom/core/platform/files.dart';
 import 'package:bookloom/core/platform/permission_access.dart';
-import 'package:bookloom/core/settings/appearance.dart';
 import 'package:bookloom/design/theme/app_theme.dart';
 import 'package:bookloom/features/settings/presentation/permissions_page.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
@@ -303,7 +302,7 @@ Future<void> _pumpPermissionsPage(
         locale: const Locale('zh'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        theme: AppTheme.light(glass: GlassQuality.off),
+        theme: AppTheme.light(),
         home: Builder(
           builder: (context) => MediaQuery(
             data: MediaQuery.of(context)

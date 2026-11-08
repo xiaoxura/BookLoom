@@ -326,12 +326,6 @@ abstract class AppLocalizations {
   /// **'AI 创建广告清理规则'**
   String get editorAiCreateAdvertisementRule;
 
-  /// No description provided for @editorAiAnalyzeAdvertisement.
-  ///
-  /// In zh, this message translates to:
-  /// **'AI 广告判断'**
-  String get editorAiAnalyzeAdvertisement;
-
   /// No description provided for @aiJointRuleRequest.
   ///
   /// In zh, this message translates to:
@@ -2162,30 +2156,6 @@ abstract class AppLocalizations {
   /// **'深色'**
   String get themeDark;
 
-  /// No description provided for @settingsGlass.
-  ///
-  /// In zh, this message translates to:
-  /// **'磨砂玻璃'**
-  String get settingsGlass;
-
-  /// No description provided for @glassStrong.
-  ///
-  /// In zh, this message translates to:
-  /// **'强'**
-  String get glassStrong;
-
-  /// No description provided for @glassSoft.
-  ///
-  /// In zh, this message translates to:
-  /// **'轻'**
-  String get glassSoft;
-
-  /// No description provided for @glassOff.
-  ///
-  /// In zh, this message translates to:
-  /// **'关'**
-  String get glassOff;
-
   /// No description provided for @settingsData.
   ///
   /// In zh, this message translates to:
@@ -2213,7 +2183,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAppearanceDesc.
   ///
   /// In zh, this message translates to:
-  /// **'主题与磨砂玻璃。'**
+  /// **'应用主题与色彩。'**
   String get settingsAppearanceDesc;
 
   /// No description provided for @settingsDefaultsTitle.
@@ -2306,6 +2276,18 @@ abstract class AppLocalizations {
   /// **'展开侧栏'**
   String get settingsExpandSidebar;
 
+  /// No description provided for @editorTotalWords.
+  ///
+  /// In zh, this message translates to:
+  /// **'全书 {count} 字'**
+  String editorTotalWords(int count);
+
+  /// No description provided for @editorTotalWordsWan.
+  ///
+  /// In zh, this message translates to:
+  /// **'全书 {count} 万字'**
+  String editorTotalWordsWan(String count);
+
   /// No description provided for @settingsDataLocation.
   ///
   /// In zh, this message translates to:
@@ -2366,18 +2348,6 @@ abstract class AppLocalizations {
   /// **'间距与圆角'**
   String get designSectionSpacing;
 
-  /// No description provided for @designSectionGlass.
-  ///
-  /// In zh, this message translates to:
-  /// **'玻璃与层级'**
-  String get designSectionGlass;
-
-  /// No description provided for @designSectionGlassDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'玻璃只出现在浮层上；关闭后自动退化为不透明纸面。'**
-  String get designSectionGlassDesc;
-
   /// No description provided for @designSectionComponents.
   ///
   /// In zh, this message translates to:
@@ -2413,18 +2383,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'样张文字，用来检查行高、字距与灰度。'**
   String get designSampleCardBody;
-
-  /// No description provided for @designGlassPanelTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'浮层面板'**
-  String get designGlassPanelTitle;
-
-  /// No description provided for @designGlassPanelBody.
-  ///
-  /// In zh, this message translates to:
-  /// **'玻璃面板下的内容会轻微模糊，正文不放在这里。'**
-  String get designGlassPanelBody;
 
   /// No description provided for @designLabelPrimary.
   ///
@@ -2515,12 +2473,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'M1 会先打通 TXT：编码探测、分章评分、目录校对。当前版本先确认界面语言与数据结构。'**
   String get importPendingMessage;
-
-  /// No description provided for @settingsGlassDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'只用于侧栏、浮层与对话框；正文始终落在不透明的纸面上。'**
-  String get settingsGlassDesc;
 
   /// No description provided for @settingsDataLocationDesc.
   ///
@@ -3062,6 +3014,18 @@ abstract class AppLocalizations {
   /// **'无法选择文件，请检查权限后重试。'**
   String get importPickFailed;
 
+  /// No description provided for @importDropHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'把文件拖到这里，或点击选择。'**
+  String get importDropHint;
+
+  /// No description provided for @importDropUnsupported.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅支持 TXT / EPUB / DOCX 文件。'**
+  String get importDropUnsupported;
+
   /// No description provided for @importAnalyzeFailed.
   ///
   /// In zh, this message translates to:
@@ -3223,6 +3187,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'新建章节'**
   String get editorNewChapter;
+
+  /// No description provided for @editorNewChapterBefore.
+  ///
+  /// In zh, this message translates to:
+  /// **'在此前新建章节'**
+  String get editorNewChapterBefore;
+
+  /// No description provided for @editorNewChapterAfter.
+  ///
+  /// In zh, this message translates to:
+  /// **'在此后新建章节'**
+  String get editorNewChapterAfter;
+
+  /// No description provided for @editorNewVolumeBefore.
+  ///
+  /// In zh, this message translates to:
+  /// **'在此前新建卷'**
+  String get editorNewVolumeBefore;
+
+  /// No description provided for @editorNewVolumeAfter.
+  ///
+  /// In zh, this message translates to:
+  /// **'在此后新建卷'**
+  String get editorNewVolumeAfter;
 
   /// No description provided for @editorMoveChapters.
   ///

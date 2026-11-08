@@ -364,4 +364,89 @@ void main() {
     expect(source.map((item) => item.id), <String>['v', 'a', 'b']);
     expect(source[1].parentId, 'v');
   });
+
+  test('anchored volume before a chapter adopts its unmanaged run', () {
+    final source = <Chapter>[chapter('x'), chapter('y')];
+    final result = ChapterEdits.createVolume(
+      source,
+      chapter('v', level: 1),
+      beforeChapterId: 'x',
+    );
+    expect(result.map((item) => item.id), <String>['v', 'x', 'y']);
+    expect(result.first.level, 1);
+    expect(result[1].parentId, 'v');
+    expect(result[2].parentId, 'v');
+  });
+
+  test('anchored volume after a chapter keeps the anchor unassigned', () {
+    final source = <Chapter>[chapter('x'), chapter('y')];
+    final result = ChapterEdits.createVolume(
+      source,
+      chapter('v', level: 1),
+      afterChapterId: 'x',
+    );
+    expect(result.map((item) => item.id), <String>['x', 'v', 'y']);
+    expect(result.first.parentId, isNull);
+    expect(result[2].parentId, 'v');
+  });
+
+  test('anchored volume spans the whole anchor volume block', () {
+    final source = <Chapter>[
+      chapter('v', level: 1),
+      chapter('a', parentId: 'v'),
+      chapter('b', parentId: 'v'),
+      chapter('c'),
+    ];
+    final before = ChapterEdits.createVolume(
+      source,
+      chapter('n', level: 1),
+      beforeChapterId: 'v',
+    );
+    expect(before.map((item) => item.id), <String>['n', 'v', 'a', 'b', 'c']);
+    expect(before[1].parentId, isNull);
+    expect(before[2].parentId, 'v');
+    expect(before[3].parentId, 'v');
+    expect(before.last.parentId, isNull);
+
+    final after = ChapterEdits.createVolume(
+      source,
+      chapter('n', level: 1),
+      afterChapterId: 'v',
+    );
+    expect(after.map((item) => item.id), <String>['v', 'a', 'b', 'n', 'c']);
+    expect(after[4].parentId, 'n');
+  });
+
+  test('anchored volume rejects conflicting and nested anchors', () {
+    final source = <Chapter>[chapter('x')];
+    final inside = <Chapter>[
+      chapter('v', level: 1),
+      chapter('a', parentId: 'v'),
+    ];
+    expect(
+      () => ChapterEdits.createVolume(
+        source,
+        chapter('v', level: 1),
+        beforeChapterId: 'x',
+        afterChapterId: 'x',
+      ),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(
+      () => ChapterEdits.createVolume(
+        inside,
+        chapter('n', level: 1),
+        beforeChapterId: 'a',
+      ),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(
+      () => ChapterEdits.createVolume(
+        source,
+        chapter('n', level: 1),
+        afterChapterId: 'missing',
+      ),
+      throwsA(isA<ValidationFailure>()),
+    );
+  });
 }
