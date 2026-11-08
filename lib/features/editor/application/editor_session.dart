@@ -1,9 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bookloom/core/ai/ai_context.dart';
+import 'package:bookloom/core/ai/ai_limits.dart';
 import 'package:bookloom/core/conversion/opencc_converter.dart';
+import 'package:bookloom/core/editing/ai_change_application.dart';
+import 'package:bookloom/core/editing/ai_chapter_split_proposal.dart';
+import 'package:bookloom/core/editing/ai_text_application.dart';
+import 'package:bookloom/core/editing/ai_text_proposal.dart';
 import 'package:bookloom/core/editing/chapter_edits.dart';
 import 'package:bookloom/core/editing/proofreading.dart';
+import 'package:bookloom/core/editing/proofreading_rule_scan.dart';
 import 'package:bookloom/core/errors/app_failure.dart';
 import 'package:bookloom/core/model/block.dart';
 import 'package:bookloom/core/model/book.dart';
@@ -15,6 +22,7 @@ import 'package:bookloom/core/model/parse_options.dart';
 import 'package:bookloom/core/platform/background_jobs.dart';
 import 'package:bookloom/core/storage/book_repository.dart';
 import 'package:bookloom/core/text/word_count.dart';
+import 'package:bookloom/features/editor/application/ai_proofreading_snapshot.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
@@ -108,8 +116,14 @@ class EditorSession extends ChangeNotifier {
   int _saveSeq = 0;
   int _savedSeq = 0;
   int _openGeneration = 0;
+  int _openingCount = 0;
+  String? _sessionId;
   bool _closed = false;
+  bool _closing = false;
   bool _structuralCommandRunning = false;
+  bool _deferredBodyEviction = false;
+  bool _aiTextCommandRunning = false;
+  bool _aiTextCancelled = false;
   bool _toolRunning = false;
   bool _toolIsolateRunning = false;
   JobProgress? _toolProgress;
@@ -128,6 +142,8 @@ class EditorSession extends ChangeNotifier {
   bool get dirty => _saveSeq != _savedSeq;
   bool get isSaving => _saving != null;
   int get saveSeq => _saveSeq;
+  String? get sessionId =>
+      _closed || _closing || _openingCount != 0 ? null : _sessionId;
   AppFailure? get saveError => _saveError;
   bool get canUndo => _history.canUndo;
   bool get canRedo => _history.canRedo;
@@ -136,48 +152,61 @@ class EditorSession extends ChangeNotifier {
 
   Future<void> open(String bookId, {String? chapterId}) async {
     _requireOpen();
-    if (dirty) await flush();
-    final loaded = await _readBook(bookId);
-    if (loaded == null) {
-      throw const ValidationFailure('书籍不存在，请从书架重新打开。');
-    }
-    final selected =
-        chapterId ??
-        loaded.chapters.where((chapter) => !chapter.isVolume).firstOrNull?.id;
-    if (selected != null &&
-        !loaded.chapters.any(
-          (chapter) => chapter.id == selected && !chapter.isVolume,
-        )) {
-      throw const ValidationFailure('章节不存在，请从目录重新选择。');
-    }
-    Chapter? body;
-    if (selected != null) {
-      body = await _readChapter(bookId, selected);
-      if (body == null) {
-        throw const ValidationFailure('章节内容无法读取，请刷新书稿。');
+    _sessionId = null;
+    _openingCount++;
+    try {
+      if (dirty) await flush();
+      final loaded = await _readBook(bookId);
+      if (loaded == null) {
+        throw const ValidationFailure('书籍不存在，请从书架重新打开。');
       }
+      final selected =
+          chapterId ??
+          loaded.chapters.where((chapter) => !chapter.isVolume).firstOrNull?.id;
+      if (selected != null &&
+          !loaded.chapters.any(
+            (chapter) => chapter.id == selected && !chapter.isVolume,
+          )) {
+        throw const ValidationFailure('章节不存在，请从目录重新选择。');
+      }
+      Chapter? body;
+      if (selected != null) {
+        body = await _readChapter(bookId, selected);
+        if (body == null) {
+          throw const ValidationFailure('章节内容无法读取，请刷新书稿。');
+        }
+      }
+      _saveTimer?.cancel();
+      _book = body == null
+          ? loaded
+          : _withChapter(loaded, _bodyOnStructure(loaded, body));
+      _activeChapterId = selected;
+      _loadedIds
+        ..clear()
+        ..addAll(selected == null ? const <String>[] : <String>[selected]);
+      _persistedIds
+        ..clear()
+        ..addAll(loaded.chapters.map((chapter) => chapter.id));
+      _dirtyChapterSeq.clear();
+      _deletedChapterSeq.clear();
+      _saveError = null;
+      // A preview from a previous open must never match this book merely
+      // because both sessions happen to have the same edit sequence.
+      _openGeneration++;
+      _sessionId = _uuid.v4();
+      _saveSeq++;
+      _savedSeq = _saveSeq;
+      _history.clear();
+    } finally {
+      _openingCount--;
+      if (_openingCount == 0 &&
+          !_closed &&
+          _sessionId == null &&
+          _book != null) {
+        _sessionId = _uuid.v4();
+      }
+      if (!_closed) notifyListeners();
     }
-    _saveTimer?.cancel();
-    _book = body == null
-        ? loaded
-        : _withChapter(loaded, _bodyOnStructure(loaded, body));
-    _activeChapterId = selected;
-    _loadedIds
-      ..clear()
-      ..addAll(selected == null ? const <String>[] : <String>[selected]);
-    _persistedIds
-      ..clear()
-      ..addAll(loaded.chapters.map((chapter) => chapter.id));
-    _dirtyChapterSeq.clear();
-    _deletedChapterSeq.clear();
-    _saveError = null;
-    // A preview from a previous open must never match this book merely
-    // because both sessions happen to have the same edit sequence.
-    _openGeneration++;
-    _saveSeq++;
-    _savedSeq = _saveSeq;
-    _history.clear();
-    notifyListeners();
   }
 
   /// Saves before switching. A failed save leaves the current selection and
@@ -425,6 +454,7 @@ class EditorSession extends ChangeNotifier {
   ) => _scan(_convertJob, mode: mode, dictionaries: dictionaries);
 
   void cancelTool() {
+    if (_aiTextCommandRunning) _aiTextCancelled = true;
     if (_toolIsolateRunning) _jobs.cancelActive();
   }
 
@@ -497,8 +527,17 @@ class EditorSession extends ChangeNotifier {
 
   /// Applies a preview in one undoable command. Every patch is verified
   /// before the in-memory book is changed, including the actual byte budget.
-  Future<void> applyToolPreview(ToolPreview preview) async {
+  Future<void> applyToolPreview(
+    ToolPreview preview, {
+    String? expectedSessionId,
+    bool Function()? isCancelled,
+    Future<void> Function(void Function() commit)? commitGuard,
+  }) async {
     final book = _requireBook();
+    if (isCancelled?.call() ?? false) throw const TaskCancelled();
+    if (expectedSessionId != null && sessionId != expectedSessionId) {
+      throw const ValidationFailure('提案已失效，请基于当前书稿重新分析。');
+    }
     _ensureToolCurrent(preview.baseRevision);
     if (preview.patches.isEmpty) return;
     final bodyChangedIds = preview.patches
@@ -510,6 +549,10 @@ class EditorSession extends ChangeNotifier {
     }
     _ensureToolCurrent(preview.baseRevision);
     final current = _requireBook();
+    if (isCancelled?.call() ?? false) throw const TaskCancelled();
+    if (expectedSessionId != null && sessionId != expectedSessionId) {
+      throw const ValidationFailure('提案已失效，请基于当前书稿重新分析。');
+    }
     if (current.id != book.id) {
       throw const ValidationFailure('当前书籍已切换，请重新预览。');
     }
@@ -558,8 +601,507 @@ class EditorSession extends ChangeNotifier {
         throw const ValidationFailure('本次修改超过撤销内存预算，请缩小处理范围。');
       }
     }
-    _ensureToolCurrent(preview.baseRevision);
-    _commitStructure(next, requireUndoBudget: true);
+    void commit() {
+      _ensureToolCurrent(preview.baseRevision);
+      if (isCancelled?.call() ?? false) throw const TaskCancelled();
+      if (_requireBook().id != book.id ||
+          expectedSessionId != null && sessionId != expectedSessionId) {
+        throw const ValidationFailure('提案已失效，请基于当前书稿重新分析。');
+      }
+      _commitStructure(next, requireUndoBudget: true);
+    }
+
+    if (commitGuard == null) {
+      commit();
+    } else {
+      await commitGuard(commit);
+    }
+  }
+
+  Future<Book> readRuleSnapshot({
+    RuleScanLimits limits = const RuleScanLimits(),
+    bool Function()? isCancelled,
+  }) => _runStructure(() async {
+    final source = _requireBook();
+    final identity = sessionId;
+    final revision = _saveSeq;
+    if (identity == null || _toolRunning || _jobs.isBusy) {
+      throw const ValidationFailure('另一项任务正在运行或书稿尚未就绪。');
+    }
+    if (!limits.isValid || source.chapters.length > limits.maxChapters) {
+      throw const ValidationFailure('全书试跑超出章节预算。');
+    }
+    _toolRunning = true;
+    _aiTextCommandRunning = true;
+    _aiTextCancelled = false;
+    notifyListeners();
+    try {
+      final chapters = <Chapter>[];
+      var characters = 0;
+      var blocks = 0;
+      void ensureCurrent() {
+        if (_aiTextCancelled || (isCancelled?.call() ?? false)) {
+          throw const TaskCancelled();
+        }
+        if (sessionId != identity ||
+            _book?.id != source.id ||
+            _saveSeq != revision) {
+          throw const ValidationFailure('书稿已变化，请重新试跑规则。');
+        }
+      }
+
+      for (final chapter in source.chapters) {
+        ensureCurrent();
+        final body = _loadedIds.contains(chapter.id)
+            ? _chapter(chapter.id)
+            : await _readChapter(source.id, chapter.id);
+        ensureCurrent();
+        if (body == null) {
+          throw const ValidationFailure('部分章节无法读取，未完成全书试跑。');
+        }
+        blocks += body.blocks.length;
+        for (final block in body.blocks.whereType<TextBlock>()) {
+          characters += block.text.length;
+        }
+        if (blocks > limits.maxBlocks || characters > limits.maxInputUtf16) {
+          throw const ValidationFailure('全书试跑超出正文预算。');
+        }
+        chapters.add(
+          chapter.copyWith(blocks: List<Block>.unmodifiable(body.blocks)),
+        );
+      }
+      ensureCurrent();
+      return source.copyWith(chapters: List<Chapter>.unmodifiable(chapters));
+    } finally {
+      _toolRunning = false;
+      _aiTextCommandRunning = false;
+      _aiTextCancelled = false;
+      if (!_closed) notifyListeners();
+    }
+  });
+
+  Future<Chapter> readAiSelectionChapter(
+    String chapterId, {
+    bool Function()? isCancelled,
+  }) async {
+    final source = _requireBook();
+    final identity = sessionId;
+    final revision = _saveSeq;
+    if (_toolRunning || _jobs.isBusy) {
+      throw const ValidationFailure('另一项任务正在运行，请等待完成或先取消。');
+    }
+    final chapters = source.chapters.where(
+      (chapter) => chapter.id == chapterId,
+    );
+    if (identity == null || chapters.length != 1 || chapters.single.isVolume) {
+      throw const ValidationFailure('请选择有效的 AI 分析章节。');
+    }
+
+    void ensureCurrent() {
+      if (isCancelled?.call() ?? false) throw const TaskCancelled();
+      if (sessionId != identity ||
+          _saveSeq != revision ||
+          _book?.id != source.id) {
+        throw const ValidationFailure('书稿已变化，请重新确认 AI 分析选区。');
+      }
+    }
+
+    ensureCurrent();
+    await flush();
+    ensureCurrent();
+    return _runStructure(() async {
+      ensureCurrent();
+      if (_toolRunning || _jobs.isBusy) {
+        throw const ValidationFailure('另一项任务正在运行，请等待完成或先取消。');
+      }
+      await _ensureLoaded(chapterId);
+      ensureCurrent();
+      return _chapter(chapterId)!;
+    });
+  }
+
+  Future<List<AiContextBlock>> readAiContext(
+    List<String> chapterIds, {
+    bool Function()? isCancelled,
+  }) async => (await readAiContextSnapshot(
+    chapterIds,
+    isCancelled: isCancelled,
+  )).blocks;
+
+  Future<AiProofreadingSnapshot> readAiContextSnapshot(
+    List<String> chapterIds, {
+    bool Function()? isCancelled,
+  }) async {
+    final selected = List<String>.unmodifiable(chapterIds);
+    final source = _requireBook();
+    final identity = sessionId;
+    final revision = _saveSeq;
+    void ensureCurrent() {
+      if (isCancelled?.call() ?? false) throw const TaskCancelled();
+      if (identity == null ||
+          sessionId != identity ||
+          _saveSeq != revision ||
+          _book?.id != source.id) {
+        throw const ValidationFailure('书稿已变化，请重新确认 AI 分析范围。');
+      }
+    }
+
+    ensureCurrent();
+    await flush();
+    ensureCurrent();
+    return _runStructure(() async {
+      ensureCurrent();
+      if (_toolRunning || _jobs.isBusy) {
+        throw const ValidationFailure('另一项任务正在运行，请等待完成或先取消。');
+      }
+      if (identity == null ||
+          selected.isEmpty ||
+          selected.length > 128 ||
+          selected.toSet().length != selected.length) {
+        throw const ValidationFailure('请选择有效的 AI 分析章节范围。');
+      }
+      final chapters = <String, Chapter>{
+        for (final chapter in source.chapters) chapter.id: chapter,
+      };
+      if (selected.any(
+        (id) => chapters[id] == null || chapters[id]!.isVolume,
+      )) {
+        throw const ValidationFailure('AI 分析范围包含无效章节或卷。');
+      }
+      final blocks = <AiContextBlock>[];
+      final localChapters = <String, Chapter>{};
+      var characters = 0;
+      var blockCount = 0;
+      _deferredBodyEviction = true;
+      for (final id
+          in source.chapters
+              .map((chapter) => chapter.id)
+              .where(selected.contains)) {
+        if (isCancelled?.call() ?? false) throw const TaskCancelled();
+        await _ensureLoaded(id);
+        if (isCancelled?.call() ?? false) throw const TaskCancelled();
+        if (sessionId != identity ||
+            _saveSeq != revision ||
+            _book?.id != source.id) {
+          throw const ValidationFailure('书稿已变化，请重新确认 AI 分析范围。');
+        }
+        final chapter = _chapter(id)!;
+        blockCount += chapter.blocks.length;
+        if (blockCount > 10000) {
+          throw const ValidationFailure('AI 分析范围的内容块超过预算，请减少章节。');
+        }
+        localChapters[id] = chapter;
+        for (final block in chapter.blocks) {
+          if (block is! TextBlock) continue;
+          characters += block.text.length;
+          if (characters > aiMaxContextCharacters || blocks.length >= 10000) {
+            throw const ValidationFailure('AI 分析范围超过预算，请减少章节。');
+          }
+          blocks.add(
+            AiContextBlock(
+              chapterId: id,
+              chapterTitle: chapter.title,
+              blockId: block.id,
+              text: block.text,
+            ),
+          );
+        }
+      }
+      if (blocks.isEmpty) throw const ValidationFailure('选定章节没有可分析的正文。');
+      ensureCurrent();
+      return AiProofreadingSnapshot(blocks: blocks, chapters: localChapters);
+    });
+  }
+
+  Future<void> applyAiTextProposals(
+    List<AiTextProposal> proposals, {
+    required Set<String> selectedIds,
+    Future<void> Function(void Function() commit)? commitGuard,
+  }) {
+    final proposalSnapshot = List<AiTextProposal>.unmodifiable(proposals);
+    final selectedSnapshot = Set<String>.unmodifiable(selectedIds);
+    return _runStructure(() async {
+      final source = _requireBook();
+      final currentSessionId = sessionId;
+      if (currentSessionId == null) {
+        throw const ValidationFailure('提案已失效，请基于当前书稿重新分析。');
+      }
+      if (_toolRunning || _jobs.isBusy) {
+        throw const ValidationFailure('另一项任务正在运行，请等待完成或先取消。');
+      }
+      _toolRunning = true;
+      _aiTextCommandRunning = true;
+      _aiTextCancelled = false;
+      _toolProgress = null;
+      notifyListeners();
+      try {
+        final seq = _saveSeq;
+        final targets = proposalSnapshot
+            .where((proposal) => selectedSnapshot.contains(proposal.id))
+            .map((proposal) => proposal.target.chapterId)
+            .toSet();
+        for (final id in targets) {
+          await _ensureLoaded(id);
+        }
+        if (_aiTextCancelled) throw const TaskCancelled();
+        if (sessionId != currentSessionId ||
+            _book?.id != source.id ||
+            _saveSeq != seq) {
+          throw const ValidationFailure('提案已失效，请基于当前书稿重新分析。');
+        }
+        final selectedBlocks = <String, Set<String>>{};
+        for (final proposal in proposalSnapshot) {
+          if (!selectedSnapshot.contains(proposal.id)) continue;
+          selectedBlocks
+              .putIfAbsent(proposal.target.chapterId, () => <String>{})
+              .add(proposal.target.blockId);
+        }
+        var totalCharacters = 0;
+        final targetChapters = <Chapter>[];
+        for (final chapter in _requireBook().chapters) {
+          final ids = selectedBlocks[chapter.id];
+          if (ids == null) continue;
+          final blocks = <Block>[];
+          for (final block in chapter.blocks) {
+            if (!ids.contains(block.id)) continue;
+            if (block is! TextBlock) {
+              throw const ValidationFailure('AI 文本提案目标不是正文段落。');
+            }
+            totalCharacters += block.text.length;
+            if (totalCharacters > aiMaxContextCharacters) {
+              throw const ValidationFailure('AI 文本提案正文超出验证预算，请缩小范围。');
+            }
+            blocks.add(block);
+          }
+          targetChapters.add(
+            Chapter(
+              id: chapter.id,
+              bookId: chapter.bookId,
+              title: '',
+              level: chapter.level,
+              blocks: List<Block>.unmodifiable(blocks),
+            ),
+          );
+        }
+        final work = _jobs.run<_AiTextApplicationInput, ToolPreview>(
+          _AiTextApplicationInput(
+            source.id,
+            currentSessionId,
+            seq,
+            List<Chapter>.unmodifiable(targetChapters),
+            proposalSnapshot,
+            selectedSnapshot,
+            _history.byteBudget,
+          ),
+          _compileAiTextJob,
+          revision: seq,
+          onProgress: (progress) {
+            if (_closed ||
+                !_aiTextCommandRunning ||
+                sessionId != currentSessionId ||
+                progress.revision != _saveSeq) {
+              return;
+            }
+            _toolProgress = progress;
+            notifyListeners();
+          },
+        );
+        _toolIsolateRunning = true;
+        final preview = await work;
+        _toolIsolateRunning = false;
+        if (_aiTextCancelled) throw const TaskCancelled();
+        if (sessionId != currentSessionId ||
+            _book?.id != source.id ||
+            _saveSeq != seq) {
+          throw const ValidationFailure('提案已失效，请基于当前书稿重新分析。');
+        }
+        if (preview.patches.isEmpty) return;
+        await applyToolPreview(
+          preview,
+          expectedSessionId: currentSessionId,
+          isCancelled: () => _aiTextCancelled,
+          commitGuard: commitGuard,
+        );
+      } finally {
+        _toolIsolateRunning = false;
+        _toolRunning = false;
+        _aiTextCommandRunning = false;
+        _aiTextCancelled = false;
+        _toolProgress = null;
+        if (!_closed) notifyListeners();
+      }
+    });
+  }
+
+  Future<void> applyAiChanges({
+    required List<AiTextProposal> textProposals,
+    required List<AiChapterSplitProposal> splitProposals,
+    required Set<String> selectedIds,
+    Future<void> Function(void Function() commit)? commitGuard,
+  }) {
+    final textSnapshot = List<AiTextProposal>.unmodifiable(textProposals);
+    final splitSnapshot = List<AiChapterSplitProposal>.unmodifiable(
+      splitProposals,
+    );
+    final selectedSnapshot = Set<String>.unmodifiable(selectedIds);
+    final allIds = <String>{};
+    for (final id in [
+      ...textSnapshot.map((proposal) => proposal.id),
+      ...splitSnapshot.map((proposal) => proposal.id),
+    ]) {
+      if (id.trim().isEmpty || id.length > 128 || !allIds.add(id)) {
+        return Future<void>.error(const ValidationFailure('变更提案标识无效，请重新分析。'));
+      }
+    }
+    if (allIds.length > 100 ||
+        selectedSnapshot.length > 100 ||
+        !selectedSnapshot.every(allIds.contains)) {
+      return Future<void>.error(
+        const ValidationFailure('变更提案范围无效，请缩小范围或重新分析。'),
+      );
+    }
+    if (!splitSnapshot.any(
+          (proposal) => selectedSnapshot.contains(proposal.id),
+        ) &&
+        !textSnapshot.any(
+          (proposal) =>
+              selectedSnapshot.contains(proposal.id) &&
+              (proposal.action == AiTextProposalAction.removeBlock ||
+                  proposal.action == AiTextProposalAction.renameChapter),
+        )) {
+      return applyAiTextProposals(
+        textSnapshot,
+        selectedIds: selectedSnapshot,
+        commitGuard: commitGuard,
+      );
+    }
+    return _runStructure(() async {
+      final source = _requireBook();
+      final currentSessionId = sessionId;
+      final seq = _saveSeq;
+      if (currentSessionId == null) {
+        throw const ValidationFailure('提案已失效，请基于当前书稿重新分析。');
+      }
+      if (_toolRunning || _jobs.isBusy) {
+        throw const ValidationFailure('另一项任务正在运行，请等待完成或先取消。');
+      }
+      final targetIds = <String>{
+        for (final proposal in textSnapshot)
+          if (selectedSnapshot.contains(proposal.id)) proposal.target.chapterId,
+        for (final proposal in splitSnapshot)
+          if (selectedSnapshot.contains(proposal.id)) proposal.target.chapterId,
+      };
+      _toolRunning = true;
+      _aiTextCommandRunning = true;
+      _aiTextCancelled = false;
+      _toolProgress = null;
+      notifyListeners();
+      void ensureCurrent() {
+        if (_aiTextCancelled) throw const TaskCancelled();
+        if (sessionId != currentSessionId ||
+            _book?.id != source.id ||
+            _saveSeq != seq) {
+          throw const ValidationFailure('提案已失效，请基于当前书稿重新分析。');
+        }
+      }
+
+      try {
+        for (final id in targetIds) {
+          ensureCurrent();
+          await _ensureLoaded(id);
+        }
+        ensureCurrent();
+        final current = _requireBook();
+        var characters = 0;
+        var blockCount = 0;
+        final inputChapters = <Chapter>[];
+        for (final chapter in current.chapters) {
+          final selected = targetIds.contains(chapter.id);
+          if (selected) {
+            for (final block in chapter.blocks) {
+              characters += block.plainText.length;
+              blockCount++;
+              if (characters > aiMaxContextCharacters || blockCount > 10000) {
+                throw const ValidationFailure('变更验证超出正文预算，请缩小处理范围。');
+              }
+            }
+          }
+          inputChapters.add(
+            chapter.copyWith(
+              blocks: selected
+                  ? List<Block>.unmodifiable(chapter.blocks)
+                  : const <Block>[],
+            ),
+          );
+        }
+        final identities = <String, AiChapterSplitIdentity>{
+          for (final proposal in splitSnapshot)
+            if (selectedSnapshot.contains(proposal.id))
+              proposal.id: AiChapterSplitIdentity(
+                chapterId: _uuid.v4(),
+                blockId: _uuid.v4(),
+                volumeId: proposal.headingLevel == 1 ? _uuid.v4() : null,
+              ),
+        };
+        final work = _jobs.run<_AiChangeApplicationInput, List<Chapter>>(
+          _AiChangeApplicationInput(
+            current.copyWith(
+              chapters: List<Chapter>.unmodifiable(inputChapters),
+            ),
+            currentSessionId,
+            seq,
+            textSnapshot,
+            splitSnapshot,
+            selectedSnapshot,
+            identities,
+            _history.byteBudget,
+          ),
+          _compileAiChangesJob,
+          revision: seq,
+          onProgress: (progress) {
+            if (!_closed &&
+                _aiTextCommandRunning &&
+                sessionId == currentSessionId &&
+                progress.revision == _saveSeq) {
+              _toolProgress = progress;
+              notifyListeners();
+            }
+          },
+        );
+        _toolIsolateRunning = true;
+        final compiled = await work;
+        _toolIsolateRunning = false;
+        ensureCurrent();
+        void commit() {
+          ensureCurrent();
+          final originals = {
+            for (final chapter in _requireBook().chapters) chapter.id: chapter,
+          };
+          final next = <Chapter>[
+            for (final chapter in compiled)
+              if (originals.containsKey(chapter.id) &&
+                  !targetIds.contains(chapter.id))
+                chapter.copyWith(blocks: originals[chapter.id]!.blocks)
+              else
+                chapter,
+          ];
+          _commitStructure(next, requireUndoBudget: true);
+        }
+
+        if (commitGuard == null) {
+          commit();
+        } else {
+          await commitGuard(commit);
+        }
+      } finally {
+        _toolIsolateRunning = false;
+        _toolRunning = false;
+        _aiTextCommandRunning = false;
+        _aiTextCancelled = false;
+        _toolProgress = null;
+        if (!_closed) notifyListeners();
+      }
+    });
   }
 
   /// Replaces the current chapter tree after the caller has shown the parsed
@@ -599,7 +1141,7 @@ class EditorSession extends ChangeNotifier {
     _markChange(blockDirty: ids, affected: <String>{...removedIds, ...ids});
   }
 
-  Future<void> undo() async {
+  Future<void> undo() => _runStructure(() async {
     _requireBook();
     final entry = _history.takeUndo();
     if (entry == null) return;
@@ -609,9 +1151,9 @@ class EditorSession extends ChangeNotifier {
       _history.takeRedo();
       rethrow;
     }
-  }
+  });
 
-  Future<void> redo() async {
+  Future<void> redo() => _runStructure(() async {
     _requireBook();
     final entry = _history.takeRedo();
     if (entry == null) return;
@@ -621,7 +1163,7 @@ class EditorSession extends ChangeNotifier {
       _history.takeUndo();
       rethrow;
     }
-  }
+  });
 
   Future<void> _applyHistory(_EditEntry entry, {required bool redo}) async {
     if (entry is _LayoutEdit) {
@@ -726,9 +1268,17 @@ class EditorSession extends ChangeNotifier {
 
   /// Flushes on route/window close and then releases the notifier.
   Future<void> close() async {
-    await flush();
-    _closed = true;
-    dispose();
+    _closing = true;
+    if (_aiTextCommandRunning) cancelTool();
+    try {
+      await flush();
+      _closed = true;
+      _sessionId = null;
+      dispose();
+    } catch (_) {
+      _closing = false;
+      rethrow;
+    }
   }
 
   Future<void> _saveOnce() async {
@@ -776,6 +1326,8 @@ class EditorSession extends ChangeNotifier {
         for (final id in _persistedIds.difference(currentIds)) {
           _deletedChapterSeq[id] = _saveSeq;
         }
+      } else if (_structuralCommandRunning) {
+        _deferredBodyEviction = true;
       } else {
         _evictCleanBodies();
       }
@@ -811,6 +1363,10 @@ class EditorSession extends ChangeNotifier {
       return await operation();
     } finally {
       _structuralCommandRunning = false;
+      if (_deferredBodyEviction) {
+        _deferredBodyEviction = false;
+        if (!_closed && !dirty && _saving == null) _evictCleanBodies();
+      }
     }
   }
 
@@ -826,11 +1382,15 @@ class EditorSession extends ChangeNotifier {
         !_dirtyChapterSeq.containsKey(previous)) {
       final chapter = _chapter(previous);
       if (chapter != null) {
-        _book = _withChapter(
-          _requireBook(),
-          chapter.copyWith(blocks: const <Block>[]),
-        );
-        _loadedIds.remove(previous);
+        if (_structuralCommandRunning) {
+          _deferredBodyEviction = true;
+        } else {
+          _book = _withChapter(
+            _requireBook(),
+            chapter.copyWith(blocks: const <Block>[]),
+          );
+          _loadedIds.remove(previous);
+        }
       }
     }
     notifyListeners();
@@ -1069,9 +1629,97 @@ class EditorSession extends ChangeNotifier {
     _saveTimer?.cancel();
     if (_toolIsolateRunning) _jobs.cancelActive();
     if (_ownsJobs) _jobs.dispose();
+    _aiTextCancelled = true;
     _closed = true;
+    _closing = true;
+    _sessionId = null;
     super.dispose();
   }
+}
+
+class _AiChangeApplicationInput {
+  const _AiChangeApplicationInput(
+    this.book,
+    this.sessionId,
+    this.saveSeq,
+    this.textProposals,
+    this.splitProposals,
+    this.selectedIds,
+    this.identities,
+    this.byteBudget,
+  );
+
+  final Book book;
+  final String sessionId;
+  final int saveSeq;
+  final List<AiTextProposal> textProposals;
+  final List<AiChapterSplitProposal> splitProposals;
+  final Set<String> selectedIds;
+  final Map<String, AiChapterSplitIdentity> identities;
+  final int byteBudget;
+}
+
+List<Chapter> _compileAiChangesJob(
+  _AiChangeApplicationInput input,
+  void Function(double, String) progress,
+) {
+  progress(0, '验证文本与卷章结构提案');
+  final chapters = AiChangeApplication.compile(
+    book: input.book,
+    sessionId: input.sessionId,
+    saveSeq: input.saveSeq,
+    textProposals: input.textProposals,
+    splitProposals: input.splitProposals,
+    selectedIds: input.selectedIds,
+    splitIdentities: input.identities,
+    byteBudget: input.byteBudget,
+  );
+  progress(1, '验证完成');
+  return chapters;
+}
+
+class _AiTextApplicationInput {
+  const _AiTextApplicationInput(
+    this.bookId,
+    this.sessionId,
+    this.saveSeq,
+    this.targetChapters,
+    this.proposals,
+    this.selectedIds,
+    this.byteBudget,
+  );
+
+  final String bookId;
+  final String sessionId;
+  final int saveSeq;
+  final List<Chapter> targetChapters;
+  final List<AiTextProposal> proposals;
+  final Set<String> selectedIds;
+  final int byteBudget;
+}
+
+ToolPreview _compileAiTextJob(
+  _AiTextApplicationInput input,
+  void Function(double, String) progress,
+) {
+  progress(0, '验证AI文本提案');
+  final now = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+  final preview = AiTextApplication.compile(
+    book: Book(
+      id: input.bookId,
+      meta: BookMeta(title: '', author: ''),
+      chapters: input.targetChapters,
+      createdAt: now,
+      updatedAt: now,
+    ),
+    sessionId: input.sessionId,
+    saveSeq: input.saveSeq,
+    proposals: input.proposals,
+    selectedIds: input.selectedIds,
+    byteBudget: input.byteBudget,
+  );
+  progress(1, '验证完成');
+  return preview;
 }
 
 class _ProofreadingInput {

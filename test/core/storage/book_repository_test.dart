@@ -227,6 +227,37 @@ void main() {
     },
   );
 
+  test('dirty chapter save keeps block order across batches', () async {
+    final now = DateTime.utc(2026, 11, 4);
+    await repository.createBook(
+      _book('edited-batch', now, const <Chapter>[
+        Chapter(
+          id: 'edited-chapter',
+          bookId: 'edited-batch',
+          title: 'Draft',
+          blocks: <Block>[TextBlock(id: 'old-block', text: '旧')],
+        ),
+      ]),
+    );
+    final structure = (await repository.loadBook('edited-batch'))!;
+    final blocks = <Block>[
+      for (var index = 0; index < 260; index++)
+        TextBlock(id: 'edited-block-$index', text: '甲'),
+    ];
+    final saved = await repository.saveBook(
+      structure.copyWith(
+        chapters: <Chapter>[structure.chapters.single.copyWith(blocks: blocks)],
+      ),
+      expectedRevision: 0,
+      dirtyChapterIds: const <String>{'edited-chapter'},
+    );
+    expect(saved.wordCount, 260);
+    expect(
+      (await repository.loadChapter('edited-batch', 'edited-chapter'))!.blocks,
+      blocks,
+    );
+  });
+
   test('deleting a volume preserves children moved to the top level', () async {
     final now = DateTime.utc(2026, 11, 4);
     await repository.createBook(
@@ -308,6 +339,99 @@ void main() {
     );
   });
 
+  test('create batches chapters and blocks while preserving parent and block order', () async {
+    final now = DateTime.utc(2026, 11, 4);
+    final chapters = <Chapter>[
+      for (var index = 0; index < 130; index++)
+        Chapter(
+          id: 'chapter-$index',
+          bookId: 'batch-book',
+          title: 'Chapter $index',
+          parentId: 'volume',
+          order: index,
+          blocks: <Block>[
+            TextBlock(id: 'first-$index', text: '甲'),
+            TextBlock(id: 'second-$index', text: '乙'),
+          ],
+        ),
+      const Chapter(
+        id: 'volume',
+        bookId: 'batch-book',
+        title: 'Volume',
+        level: 1,
+      ),
+    ];
+    final progress = <(int, int, String)>[];
+    final created = await repository.createBook(
+      _book('batch-book', now, chapters),
+      onProgress: (chapters, blocks, stage) {
+        progress.add((chapters, blocks, stage));
+      },
+    );
+    expect(created.chapters.first.id, 'volume');
+    expect(created.chapters.length, 131);
+    expect(created.wordCount, 260);
+    expect(
+      progress
+          .where((entry) => entry.$3 == 'save_chapters')
+          .map((entry) => entry.$1),
+      <int>[1, 129, 131],
+    );
+    expect(
+      progress
+          .where((entry) => entry.$3 == 'save_blocks')
+          .map((entry) => entry.$2),
+      <int>[128, 256, 260],
+    );
+    expect(progress.first, (0, 0, 'save_prepare'));
+    expect(progress.last, (131, 260, 'save_finalize'));
+    final summary = (await repository.listSummaries()).single;
+    expect(summary.chapterCount, 131);
+    expect(summary.wordCount, 260);
+    expect(
+      (await repository.loadChapter('batch-book', 'chapter-129'))!.blocks,
+      <Block>[
+        const TextBlock(id: 'first-129', text: '甲'),
+        const TextBlock(id: 'second-129', text: '乙'),
+      ],
+    );
+  });
+
+  test('large block payloads are split before the row limit', () async {
+    final now = DateTime.utc(2026, 11, 4);
+    final chapterProgress = <int>[];
+    final blockProgress = <int>[];
+    await repository.createBook(
+      _book('byte-batch', now, <Chapter>[
+        Chapter(
+          id: 'byte-chapter',
+          bookId: 'byte-batch',
+          title: 'Large paragraphs',
+          blocks: <Block>[
+            for (var index = 0; index < 3; index++)
+              TextBlock(id: 'byte-block-$index', text: 'a' * 150000),
+          ],
+        ),
+        Chapter(
+          id: 'wide-chapter-1',
+          bookId: 'byte-batch',
+          title: 't' * 150000,
+        ),
+        Chapter(
+          id: 'wide-chapter-2',
+          bookId: 'byte-batch',
+          title: 't' * 150000,
+        ),
+      ]),
+      onProgress: (chapters, blocks, stage) {
+        if (stage == 'save_chapters') chapterProgress.add(chapters);
+        if (stage == 'save_blocks') blockProgress.add(blocks);
+      },
+    );
+    expect(chapterProgress, <int>[2, 3]);
+    expect(blockProgress, <int>[1, 2, 3]);
+  });
+
   test('rejects cross-book image and cover references', () async {
     final now = DateTime.utc(2026, 11, 4);
     await repository.createBook(
@@ -367,12 +491,16 @@ void main() {
     );
     await expectLater(
       repository.createBook(
-        _book('rolled-back', now, const <Chapter>[
+        _book('rolled-back', now, <Chapter>[
           Chapter(
             id: 'new-chapter',
             bookId: 'rolled-back',
             title: 'c',
-            blocks: <Block>[TextBlock(id: 'shared-block', text: '乙')],
+            blocks: <Block>[
+              for (var index = 0; index < 129; index++)
+                TextBlock(id: 'rolled-block-$index', text: '乙'),
+              const TextBlock(id: 'shared-block', text: '乙'),
+            ],
           ),
         ]),
         source: SourceImport(
@@ -385,6 +513,14 @@ void main() {
     );
     expect(await repository.loadBook('too-large'), isNull);
     expect(await repository.loadBook('rolled-back'), isNull);
+    expect(await repository.listSummaries(), hasLength(1));
+    expect(
+      (await repository.loadChapter(
+        'existing',
+        'shared-block-chapter',
+      ))!.blocks,
+      <Block>[const TextBlock(id: 'shared-block', text: '甲')],
+    );
     expect(await Directory('${support.path}/books/existing').exists(), isTrue);
     expect(
       await Directory('${support.path}/books/rolled-back').exists(),

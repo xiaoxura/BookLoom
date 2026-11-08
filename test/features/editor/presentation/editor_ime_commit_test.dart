@@ -1,6 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookloom/app/ai_providers.dart';
+import 'package:bookloom/app/rule_providers.dart';
 import 'package:bookloom/app/workbench_providers.dart';
+import 'package:bookloom/core/ai/ai_client.dart';
+import 'package:bookloom/core/ai/ai_configuration.dart';
+import 'package:bookloom/core/ai/ai_endpoint.dart';
 import 'package:bookloom/core/model/block.dart';
 import 'package:bookloom/core/model/book.dart';
 import 'package:bookloom/core/model/chapter.dart';
@@ -10,7 +16,13 @@ import 'package:bookloom/core/storage/book_repository.dart';
 import 'package:bookloom/design/components/app_select_field.dart';
 import 'package:bookloom/design/theme/app_theme.dart';
 import 'package:bookloom/design/tokens/app_metrics.dart';
+import 'package:bookloom/features/editor/application/ai_proofreading_task.dart';
+import 'package:bookloom/features/editor/data/proofreading_rule_store.dart';
+import 'package:bookloom/features/editor/presentation/ai_proofreading_panel.dart';
+import 'package:bookloom/features/editor/presentation/ai_rule_creation_panel.dart';
 import 'package:bookloom/features/editor/presentation/editor_page.dart';
+import 'package:bookloom/features/editor/presentation/proofreading_panel.dart';
+import 'package:bookloom/features/editor/presentation/rule_workbench_panel.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +33,143 @@ import 'package:go_router/go_router.dart' hide Block;
 import '../../../support/pump_bookloom.dart';
 
 void main() {
+  for (final selectionEntry in [true, false]) {
+    testBookloomWidgets(
+      'joint rules EditorPage ${selectionEntry ? 'selection menu' : 'proofreading'} save returns to mounted AI',
+      (tester) async {
+        final harness = await _EditorHarness.pump(tester, jointRules: true);
+        final l10n = lookupAppLocalizations(const Locale('zh'));
+        if (selectionEntry) {
+          final field = _paragraphWithText('原始段落');
+          await tester.showKeyboard(field);
+          tester.widget<TextField>(field).controller!.selection =
+              const TextSelection(baseOffset: 0, extentOffset: 2);
+          await tester.pump();
+          final editable = tester.state<EditableTextState>(
+            find.descendant(of: field, matching: find.byType(EditableText)),
+          );
+          expect(editable.showToolbar(), isTrue);
+          await tester.pump(const Duration(milliseconds: 200));
+          await tester.tap(find.text(l10n.editorAiAnalyzeAdvertisement));
+        } else {
+          await tester.tap(find.byTooltip(l10n.editorWorkbenchTools));
+          await _pumpUntil(
+            tester,
+            () => find.byType(ProofreadingPanel).evaluate().isNotEmpty,
+            'proofreading modal',
+          );
+          final chip = find.widgetWithText(
+            FilterChip,
+            l10n.aiProofreadingTitle,
+          );
+          await tester.ensureVisible(chip);
+          await tester.tap(chip);
+        }
+        await _pumpUntil(
+          tester,
+          () => find.byType(AiProofreadingPanel).evaluate().isNotEmpty,
+          'AI panel',
+        );
+        final aiElement = tester.element(find.byType(AiProofreadingPanel));
+        final panel = tester.widget<AiProofreadingPanel>(
+          find.byType(AiProofreadingPanel),
+        );
+        final session = panel.session;
+        final revision = session.saveSeq;
+        final container = ProviderScope.containerOf(aiElement);
+        final task = container.read(aiProofreadingTaskProvider(session));
+        expect(panel.onUseRule, isNotNull);
+        await _tapJointPanel(tester, AiProofreadingPanel, 'ai-request-rules');
+        if (!selectionEntry) {
+          final field = find.byKey(const ValueKey('ai-rule-positive'));
+          await tester.ensureVisible(field);
+          await tester.enterText(field, '原始');
+          FocusManager.instance.primaryFocus?.unfocus();
+          await tester.pump();
+        }
+        await _tapJointPanel(tester, AiProofreadingPanel, 'ai-prepare');
+        await _pumpUntil(
+          tester,
+          () => task.phase == AiProofreadingPhase.awaitingConsent,
+          'joint consent',
+        );
+        await _tapJointPanel(tester, AiProofreadingPanel, 'ai-run');
+        await _pumpUntil(
+          tester,
+          () => task.phase == AiProofreadingPhase.completed,
+          'joint results',
+        );
+        expect(task.changes, hasLength(1));
+        final proposal = task.ruleProposals.single;
+        await _tapJointPanel(
+          tester,
+          AiProofreadingPanel,
+          'ai-rule-tile-${proposal.proposalId}',
+        );
+        await _tapJointPanel(
+          tester,
+          AiProofreadingPanel,
+          'ai-use-rule-${proposal.proposalId}',
+        );
+        await _pumpUntil(
+          tester,
+          () => find.byType(RuleWorkbenchPanel).evaluate().isNotEmpty,
+          'nested rule workbench',
+        );
+        expect(aiElement.mounted, isTrue);
+        final workbench = container.read(ruleWorkbenchTaskProvider(session));
+        await _pumpUntil(
+          tester,
+          () => workbench.rules.isNotEmpty,
+          'candidate loaded',
+        );
+        expect(workbench.trial, isNull);
+        expect(session.saveSeq, revision);
+        expect(session.dirty, isFalse);
+        expect(harness.repository.saveAttempts, 0);
+        await _tapJointPanel(tester, RuleWorkbenchPanel, 'rule-scan');
+        await _pumpUntil(
+          tester,
+          () => workbench.hasCurrentTrial,
+          'explicit trial',
+        );
+        await _tapJointPanel(tester, RuleWorkbenchPanel, 'rule-save');
+        await _pumpUntil(
+          tester,
+          () => workbench.isSaved(proposal.rule.id),
+          'explicit save-only',
+        );
+        await tester.tap(find.byType(CloseButton).last);
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(aiElement.mounted, isTrue);
+        expect(find.byType(AiProofreadingPanel), findsOneWidget);
+        expect(task.canApply, isTrue);
+        expect(session.saveSeq, revision);
+        expect(harness.repository.saveAttempts, 0);
+        await _tapJointPanel(
+          tester,
+          AiProofreadingPanel,
+          'ai-change-${task.changes.single.id}',
+        );
+        await _tapJointPanel(tester, AiProofreadingPanel, 'ai-apply-selected');
+        await _pumpUntil(
+          tester,
+          () => task.phase == AiProofreadingPhase.applied,
+          'body applied after rule save',
+        );
+        expect(task.canUseRuleProposals, isFalse);
+        await tester.tap(find.byType(CloseButton));
+        await _pumpUntil(
+          tester,
+          () => _paragraphWithText('段落').evaluate().isNotEmpty,
+          'updated editor',
+        );
+        await tester.runAsync(harness.beforeClose!);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   for (final composing in [false, true]) {
     testBookloomWidgets(
       'toolbar undo and redo update focused text composing=$composing',
@@ -337,6 +486,99 @@ void main() {
   }
 
   testBookloomWidgets(
+    'selected advertisement analysis uses exact UTF16 range without auto send',
+    (tester) async {
+      final harness = await _EditorHarness.pump(tester);
+      final l10n = lookupAppLocalizations(const Locale('zh'));
+      const source = '😀前文。 广告样例 后文。';
+      const original = '广告样例';
+      await tester.enterText(_paragraphWithText('原始段落'), source);
+      await tester.pump();
+      final fieldFinder = _paragraphWithText(source);
+      final field = tester.widget<TextField>(fieldFinder);
+      final start = source.indexOf(original);
+      field.controller!.selection = TextSelection(
+        baseOffset: start,
+        extentOffset: start + original.length,
+      );
+      await tester.pump();
+      final editable = tester.state<EditableTextState>(
+        find.descendant(of: fieldFinder, matching: find.byType(EditableText)),
+      );
+      expect(editable.showToolbar(), isTrue);
+      await tester.pump(const Duration(milliseconds: 200));
+      final analyze = find.text(l10n.editorAiAnalyzeAdvertisement);
+      await tester.ensureVisible(analyze);
+      await tester.tap(analyze);
+      await _pumpUntil(
+        tester,
+        () => find.byType(AiProofreadingPanel).evaluate().isNotEmpty,
+        'advertisement analysis panel opens from selection menu',
+      );
+      final selection = tester
+          .widget<AiProofreadingPanel>(find.byType(AiProofreadingPanel))
+          .initialAdvertisementSelection!;
+      expect(selection.original, original);
+      expect(selection.startUtf16, start);
+      expect(selection.endUtf16, start + original.length);
+      expect(selection.chapterId, 'a');
+      expect(selection.blockId, 'p1');
+      expect(find.byKey(const ValueKey('ai-prepare')), findsOneWidget);
+      expect(find.byKey(const ValueKey('ai-run')), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byType(CloseButton));
+      await tester.pumpAndSettle();
+      await tester.runAsync(harness.beforeClose!);
+    },
+  );
+
+  testBookloomWidgets(
+    'selected text rule menu preserves exact UTF16 selection without sending',
+    (tester) async {
+      final harness = await _EditorHarness.pump(tester);
+      final l10n = lookupAppLocalizations(const Locale('zh'));
+      const source = '😀前文。 第二章 标题 ';
+      const original = ' 第二章 标题 ';
+      final paragraph = _paragraphWithText('原始段落');
+      await tester.enterText(paragraph, source);
+      await tester.pump();
+      final fieldFinder = _paragraphWithText(source);
+      final field = tester.widget<TextField>(fieldFinder);
+      final start = source.indexOf(original);
+      field.controller!.selection = TextSelection(
+        baseOffset: start,
+        extentOffset: source.length,
+      );
+      await tester.pump();
+      final editable = tester.state<EditableTextState>(
+        find.descendant(of: fieldFinder, matching: find.byType(EditableText)),
+      );
+      final toolbar = field.contextMenuBuilder!(
+        tester.element(fieldFinder),
+        editable,
+      ) as AdaptiveTextSelectionToolbar;
+      final create = toolbar.buttonItems!.singleWhere(
+        (item) => item.label == l10n.editorAiCreateChapterRule,
+      );
+      create.onPressed!();
+      await tester.pumpAndSettle();
+      final panel = tester.widget<AiRuleCreationPanel>(
+        find.byType(AiRuleCreationPanel),
+      );
+      expect(panel.selection.original, original);
+      expect(panel.selection.startUtf16, start);
+      expect(panel.selection.endUtf16, source.length);
+      expect(panel.selection.blockId, 'p1');
+      expect(panel.selection.chapterId, 'a');
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byType(CloseButton));
+      await tester.pumpAndSettle();
+      await tester.runAsync(harness.beforeClose!);
+      expect(await _storedParagraph(tester, harness.repository), source);
+    },
+  );
+
+  testBookloomWidgets(
     'long press offers paragraph actions with native text actions',
     (tester) async {
       final harness = await _EditorHarness.pump(
@@ -366,6 +608,8 @@ void main() {
       );
       expect(find.text(l10n.editorSplitHere), findsOneWidget);
       expect(find.text(l10n.editorSetAsTitle), findsOneWidget);
+      expect(find.text(l10n.editorAiCreateChapterRule), findsOneWidget);
+      expect(find.text(l10n.editorAiCreateAdvertisementRule), findsOneWidget);
       expect(find.text('复制'), findsOneWidget);
       expect(find.text('粘贴'), findsOneWidget);
       expect(find.text('全选'), findsOneWidget);
@@ -805,6 +1049,7 @@ class _EditorHarness {
     double textScale = 1,
     TargetPlatform platform = TargetPlatform.linux,
     List<Chapter>? chapters,
+    bool jointRules = false,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -887,7 +1132,27 @@ class _EditorHarness {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [bookRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          bookRepositoryProvider.overrideWithValue(repository),
+          if (jointRules)
+            proofreadingRuleStoreProvider.overrideWithValue(
+              SettingsProofreadingRuleStore(database),
+            ),
+          if (jointRules)
+            aiProofreadingTaskProvider.overrideWith(
+              (ref, session) => AiProofreadingTask(
+                session: session,
+                loadConfiguration: () async => const AiConfiguration(
+                  enabled: true,
+                  address: 'http://localhost:9823/v1',
+                  model: 'test',
+                  credentialReference: 'key',
+                ),
+                credentials: _JointCredentials(),
+                createClient: _JointRuleClient.new,
+              ),
+            ),
+        ],
         child: MaterialApp.router(
           locale: const Locale('zh'),
           theme: AppTheme.light().copyWith(platform: platform),
@@ -939,6 +1204,92 @@ class _TrackingBookRepository extends BookRepository {
     completedSaves++;
     return saved;
   }
+}
+
+Future<void> _tapJointPanel(WidgetTester tester, Type panel, String key) async {
+  await tester.pump(const Duration(milliseconds: 300));
+  final target = find.byKey(ValueKey(key));
+  if (target.evaluate().isEmpty) {
+    await tester.scrollUntilVisible(
+      target,
+      200,
+      scrollable: find
+          .descendant(of: find.byType(panel), matching: find.byType(Scrollable))
+          .first,
+    );
+  }
+  await tester.ensureVisible(target);
+  await tester.pump(const Duration(milliseconds: 300));
+  await tester.ensureVisible(target);
+  await tester.pump(const Duration(milliseconds: 100));
+  await tester.tap(target);
+  await tester.pump();
+}
+
+class _JointCredentials implements AiCredentialStore {
+  @override
+  Future<String?> read(String reference) async => 'test';
+  @override
+  Future<void> write(String reference, String value) async {}
+  @override
+  Future<void> delete(String reference) async {}
+}
+
+class _JointRuleClient implements AiTextClient {
+  @override
+  Future<String> generate({
+    required AiEndpoint endpoint,
+    required String apiKey,
+    required String model,
+    required String systemPrompt,
+    required String userContext,
+    required int outputTokens,
+    required AiCancellation cancellation,
+  }) async => jsonEncode({
+    'schema_version': 1,
+    'findings': [
+      {
+        'id': 'ad-finding',
+        'category': 'advertisement',
+        'assessment': 'advertisement',
+        'chapter_id': 'a',
+        'block_id': 'p1',
+        'original': '原始',
+        'before': '',
+        'after': '段落',
+        'reason': '合成样例。',
+      },
+    ],
+    'proposals': [
+      {
+        'id': 'change',
+        'finding_id': 'ad-finding',
+        'action': 'delete_text',
+        'chapter_id': 'a',
+        'block_id': 'p1',
+        'original': '原始',
+        'before': '',
+        'after': '段落',
+        'replacement': '',
+        'reason': '合成样例。',
+      },
+    ],
+    'rule_proposals': [
+      {
+        'schema_version': 1,
+        'name': '合成广告规则',
+        'kind': 'advertisement',
+        'target': 'body_line',
+        'match': {'mode': 'literal', 'pattern': '原始', 'case_sensitive': true},
+        'action': 'exact_deletion',
+        'positive_examples': ['原始'],
+        'negative_examples': <String>[],
+        'reason': '仅基于提供样例。',
+      },
+    ],
+  });
+  @override
+  void dispose() {}
 }
 
 class _GuardCapture {

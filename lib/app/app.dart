@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/settings/appearance.dart';
 import '../design/components/app_canvas.dart';
+import '../design/components/app_notice_layout.dart';
 import '../design/theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import 'providers.dart';
@@ -34,8 +35,9 @@ class BookloomApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       scrollBehavior: const AppScrollBehavior(),
-      builder: (BuildContext context, Widget? child) =>
-          AppCanvas(child: child ?? const SizedBox.shrink()),
+      builder: (BuildContext context, Widget? child) => AppNoticeLayout(
+        child: AppCanvas(child: child ?? const SizedBox.shrink()),
+      ),
     );
   }
 
@@ -74,6 +76,8 @@ class StartupFailureApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
+      builder: (BuildContext context, Widget? child) =>
+          AppNoticeLayout(child: child ?? const SizedBox.shrink()),
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

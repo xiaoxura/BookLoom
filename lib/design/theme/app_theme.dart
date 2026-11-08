@@ -246,6 +246,7 @@ abstract final class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: colors.ink,
+        actionTextColor: colors.canvas,
         contentTextStyle: textTheme.bodyMedium?.copyWith(color: colors.canvas),
         elevation: 0,
         insetPadding: const EdgeInsets.all(AppSpacing.lg),

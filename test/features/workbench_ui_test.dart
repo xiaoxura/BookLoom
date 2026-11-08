@@ -4,6 +4,7 @@ import 'package:bookloom/app/providers.dart';
 import 'package:bookloom/core/model/block.dart';
 import 'package:bookloom/core/model/chapter.dart';
 import 'package:bookloom/core/settings/appearance.dart';
+import 'package:bookloom/design/theme/app_tokens.dart';
 import 'package:bookloom/design/tokens/app_typography.dart';
 import 'package:bookloom/features/editor/presentation/editor_page.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
@@ -274,6 +275,50 @@ void main() {
   );
 
   testBookloomWidgets(
+    'active chapter has a visible selected surface after navigation',
+    (WidgetTester tester) async {
+      final harness = await WorkbenchUiHarness.pump(tester);
+      final book = await harness.seedBook();
+      await _pumpUntil(
+        tester,
+        () => find.text(book.meta.title).evaluate().isNotEmpty,
+      );
+      await tester.tap(find.text(book.meta.title));
+      await _pumpUntil(
+        tester,
+        () => find.text(zh.editorSaved).evaluate().isNotEmpty,
+      );
+      final tiles = find.byWidgetPredicate(
+        (widget) => widget is ListTile && widget.selected,
+      );
+      expect(tiles, findsOneWidget);
+      final firstTile = tester.widget<ListTile>(tiles);
+      final colors = tester.element(tiles).colors;
+      expect(firstTile.selectedTileColor, colors.accentSoft);
+      expect(firstTile.selectedTileColor, isNot(colors.surface));
+      expect(
+        find.descendant(of: tiles, matching: find.text('第一章 清晨')),
+        findsOneWidget,
+      );
+      final nextChapter = find.ancestor(
+        of: find.text('第二章 返航'),
+        matching: find.byType(ListTile),
+      );
+      await tester.tap(nextChapter);
+      await _pumpUntil(
+        tester,
+        () => _paragraphFieldWithText('灯又亮了。').evaluate().isNotEmpty,
+      );
+      expect(tiles, findsOneWidget);
+      expect(
+        find.descendant(of: tiles, matching: find.text('第二章 返航')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testBookloomWidgets(
     'workbench remains reachable and renders at desktop and narrow sizes',
     (WidgetTester tester) async {
       final WorkbenchUiHarness harness = await WorkbenchUiHarness.pump(tester);
@@ -295,6 +340,17 @@ void main() {
       await _golden(
         find.byKey(workbenchAppGoldenBoundaryKey),
         'goldens/workbench-dark-1280x900.png',
+      );
+      expect(tester.takeException(), isNull);
+
+      await _setSize(tester, const Size(2560, 1440));
+      expect(
+        tester.getSize(_paragraphFieldWithText('门边放着一封信。')).width,
+        greaterThan(1700),
+      );
+      await _golden(
+        find.byKey(workbenchAppGoldenBoundaryKey),
+        'goldens/workbench-dark-2560x1440.png',
       );
       expect(tester.takeException(), isNull);
 

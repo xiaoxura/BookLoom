@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive.dart' as archive;
+import 'package:bookloom/core/editing/proofreading_rule.dart';
 import 'package:bookloom/core/errors/app_failure.dart';
 import 'package:bookloom/core/model/block.dart' as model;
 import 'package:bookloom/core/model/book.dart' as model;
@@ -13,6 +14,8 @@ import 'package:bookloom/core/model/parse_options.dart';
 import 'package:bookloom/core/storage/app_database.dart';
 import 'package:bookloom/core/storage/book_backup.dart';
 import 'package:bookloom/core/storage/book_repository.dart';
+import 'package:bookloom/core/storage/settings_store.dart';
+import 'package:bookloom/features/editor/data/proofreading_rule_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -52,6 +55,157 @@ void main() {
     await originalDb.close();
     await destinationDb.close();
     await root.delete(recursive: true);
+  });
+
+  group('rule-carrying backups', () {
+    ProofreadingRule rule() => ProofreadingRule.create(
+      id: 'restored-rule',
+      name: '恢复规则',
+      kind: ProofreadingRuleKind.advertisement,
+      source: ProofreadingRuleSource.user,
+      bookId: 'source-book',
+      target: ProofreadingRuleTarget.bodyLine,
+      mode: ProofreadingMatchMode.literal,
+      pattern: '推广',
+      caseSensitive: false,
+      action: ProofreadingRuleAction.advertisementCandidate,
+      positiveExamples: const <String>['推广'],
+      negativeExamples: const <String>[],
+    );
+
+    test('v3 export carries rules and restore never applies them', () async {
+      await _createOriginal(original);
+      final rulesJson = encodeProofreadingRules(<ProofreadingRule>[rule()]);
+      final output = await exporter.exportBooks(
+        <String>['source-book'],
+        '${root.path}/rules.bookloom',
+        rulesJson: rulesJson,
+      );
+      final decoded = archive.ZipDecoder().decodeBytes(
+        await output.readAsBytes(),
+      );
+      final contents = <String, List<int>>{
+        for (final entry in decoded.files) entry.name: entry.content,
+      };
+      expect(contents.keys, contains('rules.json'));
+      final manifest = jsonDecode(
+        utf8.decode(contents['manifest.json']!),
+      ) as Map<String, dynamic>;
+      expect(manifest['formatVersion'], 3);
+      expect(manifest['ruleCount'], 1);
+
+      final preview = await importer.prepareRestore(
+        output.path,
+        maxOutputBytes: 16 * 1024 * 1024,
+      );
+      expect(preview.formatVersion, 3);
+      expect(preview.ruleCount, 1);
+      expect(preview.rulesJson, rulesJson);
+      final applied = await importer.applyRestore(preview);
+      expect(applied.restoredIds, <String>['source-book']);
+      expect(
+        await SettingsStore(destinationDb)
+            .read(SettingsProofreadingRuleStore.settingsKey),
+        isNull,
+      );
+    });
+
+    test('v3 rules payload and count are validated before apply', () async {
+      await _createOriginal(original);
+      final rulesJson = encodeProofreadingRules(<ProofreadingRule>[rule()]);
+      final output = await exporter.exportBooks(
+        <String>['source-book'],
+        '${root.path}/rules.bookloom',
+        rulesJson: rulesJson,
+      );
+
+      final missing = File('${root.path}/missing.bookloom');
+      await _rewriteZip(output, missing, (contents) {
+        contents.remove('rules.json');
+      });
+      await expectLater(
+        importer.prepareRestore(missing.path, maxOutputBytes: 16 * 1024 * 1024),
+        throwsA(isA<FormatException>()),
+      );
+
+      final mismatch = File('${root.path}/mismatch.bookloom');
+      await _rewriteZip(output, mismatch, (contents) {
+        final manifest = jsonDecode(
+          utf8.decode(contents['manifest.json']!),
+        ) as Map<String, dynamic>;
+        manifest['ruleCount'] = 2;
+        contents['manifest.json'] = utf8.encode(jsonEncode(manifest));
+      });
+      await expectLater(
+        importer.prepareRestore(
+          mismatch.path,
+          maxOutputBytes: 16 * 1024 * 1024,
+        ),
+        throwsA(isA<FormatException>()),
+      );
+
+      final malformed = File('${root.path}/malformed.bookloom');
+      await _rewriteZip(output, malformed, (contents) {
+        contents['rules.json'] = utf8.encode('not json');
+      });
+      await expectLater(
+        importer.prepareRestore(
+          malformed.path,
+          maxOutputBytes: 16 * 1024 * 1024,
+        ),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('legacy exports reject a rules entry and invalid payloads', () async {
+      await _createOriginal(original);
+      final legacy = await exporter.exportBooks(<String>[
+        'source-book',
+      ], '${root.path}/legacy.bookloom');
+      final rulesJson = encodeProofreadingRules(<ProofreadingRule>[rule()]);
+      final tampered = File('${root.path}/legacy-rules.bookloom');
+      await _rewriteZip(legacy, tampered, (contents) {
+        contents['rules.json'] = utf8.encode(rulesJson);
+      });
+      await expectLater(
+        importer.prepareRestore(
+          tampered.path,
+          maxOutputBytes: 16 * 1024 * 1024,
+        ),
+        throwsA(isA<FormatException>()),
+      );
+
+      for (final payload in <String>[
+        'not json',
+        '[]',
+        '{"schema_version":2,"rules":[]}',
+        '{"schema_version":1,"rules":[{"id":"x"}]}',
+        '{"schema_version":1,"extra":true,"rules":[]}',
+        '{"schema_version":1,"rules":[{"id":"a","book_id":"source-book"},{"id":"a","book_id":"source-book"}]}',
+      ]) {
+        await expectLater(
+          exporter.exportBooks(
+            <String>['source-book'],
+            '${root.path}/bad-${payload.hashCode}.bookloom',
+            rulesJson: payload,
+          ),
+          throwsA(isA<FormatException>()),
+          reason: payload,
+        );
+      }
+      await expectLater(
+        exporter.exportBooks(
+          <String>['source-book'],
+          '${root.path}/too-large.bookloom',
+          rulesJson: jsonEncode(<String, Object?>{
+            'schema_version': 1,
+            'rules': <Object?>[],
+            'padding': 'x' * (2 * 1024 * 1024),
+          }),
+        ),
+        throwsA(isA<FormatException>()),
+      );
+    });
   });
 
   test(
@@ -535,6 +689,36 @@ void main() {
     ))!;
     expect((restoredChapter.blocks.single as model.TextBlock).text, '旧正文');
   });
+
+  test('corrupt and over-budget archives report distinct failures', () async {
+    final corrupt = File('${root.path}/corrupt.bookloom');
+    await corrupt.writeAsString('not a bookloom backup');
+    await expectLater(
+      importer.prepareRestore(corrupt.path, maxOutputBytes: 1024 * 1024),
+      throwsA(
+        isA<ValidationFailure>().having(
+          (error) => error.message,
+          'message',
+          contains('无效或已损坏'),
+        ),
+      ),
+    );
+
+    await _createOriginal(original);
+    final output = await exporter.exportBooks(<String>[
+      'source-book',
+    ], '${root.path}/small.bookloom');
+    await expectLater(
+      importer.prepareRestore(output.path, maxOutputBytes: 32),
+      throwsA(
+        isA<ValidationFailure>().having(
+          (error) => error.message,
+          'message',
+          contains('预算'),
+        ),
+      ),
+    );
+  });
 }
 
 Future<void> _createOriginal(BookRepository repository) async {
@@ -601,4 +785,30 @@ Future<void> _createOriginal(BookRepository repository) async {
       ),
     ],
   );
+}
+
+Future<void> _rewriteZip(
+  File source,
+  File destination,
+  void Function(Map<String, List<int>> contents) mutate,
+) async {
+  final decoded = archive.ZipDecoder().decodeBytes(await source.readAsBytes());
+  final contents = <String, List<int>>{
+    for (final entry in decoded.files) entry.name: entry.content,
+  };
+  mutate(contents);
+  final manifest = jsonDecode(
+    utf8.decode(contents['manifest.json']!),
+  ) as Map<String, dynamic>;
+  manifest['payloadBytes'] = contents.entries
+      .where((entry) => entry.key != 'manifest.json')
+      .fold<int>(0, (sum, entry) => sum + entry.value.length);
+  contents['manifest.json'] = utf8.encode(jsonEncode(manifest));
+  final rewritten = archive.Archive();
+  for (final entry in contents.entries) {
+    rewritten.addFile(
+      archive.ArchiveFile(entry.key, entry.value.length, entry.value),
+    );
+  }
+  await destination.writeAsBytes(archive.ZipEncoder().encodeBytes(rewritten));
 }

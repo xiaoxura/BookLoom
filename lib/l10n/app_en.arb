@@ -21,6 +21,435 @@
   "importStatusPlanned": "Planned",
   "importStatusNext": "M1",
   "settingsAppearance": "Appearance",
+  "aiSettingsTitle": "AI service",
+  "aiSettingsDescription": "Optional and off by default. You choose the service and start each task explicitly.",
+  "aiEnabled": "Enable AI assistance",
+  "aiOfflineNotice": "No AI requests are sent while disabled. Import, editing, rule scans and export remain available offline.",
+  "aiFormat": "API format",
+  "aiAddress": "API address",
+  "aiOpenAiAddressHint": "https://api.example.com/v1",
+  "aiClaudeAddressHint": "https://api.example.com (no /v1 needed)",
+  "aiApiKey": "API key",
+  "aiKeyNewHint": "Enter a key; it is stored only in system secure storage",
+  "aiKeyReuseHint": "Leave blank to reuse the saved key; it is never filled into this form",
+  "aiKeyChangedAddressHint": "The address or format changed; enter the key again",
+  "aiShowKey": "Show key",
+  "aiHideKey": "Hide key",
+  "aiModel": "Model identifier",
+  "aiModelHint": "Enter a model supported by this service",
+  "aiNormalizedAddress": "Normalized base address",
+  "aiRequestAddress": "Final request address",
+  "aiEndpointInvalid": "Check the scheme, address, port and selected API format.",
+  "aiRemoteHttpConsent": "I understand remote HTTP exposes keys and content in plaintext and still want to use this address",
+  "aiTestDisclosure": "The connection test sends a fixed small sample, never manuscript content, and may incur a small charge. Confirm manuscript analysis separately in the proofreading tools.",
+  "aiProofreadingTitle": "AI proofreading",
+  "editorAiCreateChapterRule": "Create chapter rule with AI",
+  "editorAiCreateAdvertisementRule": "Create advertisement rule with AI",
+  "editorAiAnalyzeAdvertisement": "Analyze advertisement with AI",
+  "aiJointRuleRequest": "Also request rule candidates",
+  "aiJointRuleHelp": "Rules use only the examples you provide. Candidates are not saved or applied automatically; check and trial them separately in the rule workbench.",
+  "aiJointRuleLimits": "One example per line: 1–12 positives, 0–12 negatives; at most 2048 UTF-16 units per example and 8192 in total. All positives must appear completely within one sent chunk.",
+  "aiJointRuleAuthorization": "Explicit rule candidate authorization",
+  "aiJointRuleChunk": "Only chunk {index} may return rules (numbered from 1).",
+  "@aiJointRuleChunk": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "aiJointRuleNotRequested": "Rule candidates were not requested. This analysis has no permission to generate rules.",
+  "aiJointRuleCount": "Independent rule candidates: {count}",
+  "@aiJointRuleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRuleTitle": "Create rule from selection",
+  "aiRuleSelected": "Selected text",
+  "aiRuleIntent": "Rule intent",
+  "aiRuleNegative": "Examples that must not match",
+  "aiRuleChapterTitle": "Chapter title",
+  "aiRuleBefore": "Text before selection",
+  "aiRuleAfter": "Text after selection",
+  "aiRuleRelated": "Related rule summaries sent (up to 16)",
+  "aiRuleRunning": "Generating candidates",
+  "aiRuleCompleted": "Candidates generated",
+  "aiRuleNoProposals": "No rule candidate was generated. Adjust the intent or examples and prepare again.",
+  "aiRuleCheckAndTrial": "Check and trial",
+  "ruleWorkbenchTitle": "Custom rules",
+  "ruleWorkbenchNumberCaptureGroup": "Number capture group (optional)",
+  "ruleWorkbenchNumberCaptureHelper": "Requires a title capture group. Extracts only explicit source numbers; never auto-numbers. Empty means no mapping; 0 is the whole match, 1 onwards are groups. Clearing the title group or switching to literal/advertisement clears this number setting.",
+  "ruleWorkbenchNumberCaptureInvalid": "Set a title capture group and enter a non-negative integer within the available groups.",
+  "ruleWorkbenchNumberToken": "Source number token",
+  "ruleWorkbenchParsedNumber": "Parsed number",
+  "ruleWorkbenchDefinition": "Full rule definition",
+  "ruleWorkbenchId": "Rule ID",
+  "ruleWorkbenchBookId": "Book ID",
+  "ruleWorkbenchSource": "Source",
+  "ruleWorkbenchInitialRejected": "The rule candidate expired or conflicts with an existing rule. Select a new example.",
+  "ruleWorkbenchOffline": "Trial rules across this book locally. No AI is called. Choose rules and matches before changing the manuscript.",
+  "ruleWorkbenchImportRules": "Built-in import rules (read-only)",
+  "ruleWorkbenchImportPreset": "Preset: {name}",
+  "@ruleWorkbenchImportPreset": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ruleWorkbenchImportCustom": "Custom",
+  "ruleWorkbenchImportAutoNote": "Automatic detection uses the importer's built-in heuristics and advertisement rules; the workbench neither copies nor replays them.",
+  "ruleWorkbenchImportCustomNote": "Custom rules were also stored for import; they are read-only here and do not take part in this trial.",
+  "ruleWorkbenchImportInvalid": "The stored import rules cannot be resolved (unknown preset or invalid custom rule). Check the import settings.",
+  "ruleWorkbenchImportReadOnly": "Import rules run only while importing or reparsing, never in this trial; the workbench runs only the saved rules explicitly checked above. Create a new rule to reuse a pattern in the editor.",
+  "ruleWorkbenchImportEmpty": "This preset has no chapter, volume or drop patterns to show.",
+  "ruleWorkbenchImportEntryChapter": "Chapter heading rule (whole line)",
+  "ruleWorkbenchImportEntryVolume": "Volume heading rule (whole line)",
+  "ruleWorkbenchImportEntryDrop": "Whole-line drop rule",
+  "ruleWorkbenchImportEntryInlineJunk": "Inline promotion cleanup rule",
+  "ruleWorkbenchRules": "Rules for this trial",
+  "ruleWorkbenchEmpty": "No rules yet. Create a rule for this book.",
+  "ruleWorkbenchBookScope": "This book",
+  "ruleWorkbenchGlobalScope": "Across books",
+  "ruleWorkbenchEnabled": "Enabled",
+  "ruleWorkbenchDisabled": "Disabled",
+  "ruleWorkbenchUnsaved": "Unsaved",
+  "ruleWorkbenchCurrent": "Current rule",
+  "ruleWorkbenchBuiltIn": "Built-in",
+  "ruleWorkbenchUser": "User",
+  "ruleWorkbenchAiSource": "AI source",
+  "ruleWorkbenchActions": "Rule actions",
+  "ruleWorkbenchEdit": "Edit",
+  "ruleWorkbenchEnable": "Enable rule",
+  "ruleWorkbenchDisable": "Disable rule",
+  "ruleWorkbenchDelete": "Delete rule",
+  "ruleWorkbenchDeleteTitle": "Delete this rule?",
+  "ruleWorkbenchNew": "New rule",
+  "ruleWorkbenchScan": "Trial whole book",
+  "ruleWorkbenchIdentify": "What to identify",
+  "ruleWorkbenchExclude": "What to exclude",
+  "ruleWorkbenchExcludePattern": "Exclude matches containing (optional)",
+  "ruleWorkbenchExcludePatternHelper": "Skip a match when the line containing it also contains this text; case sensitivity follows the switch above.",
+  "ruleWorkbenchExcludePatternInvalid": "The exclude text cannot span lines and must stay within 256 UTF-16 code units.",
+  "ruleWorkbenchWholeLine": "Whole-line matches only",
+  "ruleWorkbenchNoGlobalRules": "There are no rules to export.",
+  "ruleWorkbenchRulesNoSharedInFile": "The file contains no usable rules.",
+  "ruleWorkbenchExportSharedRules": "Export rule file",
+  "ruleWorkbenchImportSharedRules": "Import rule file",
+  "ruleWorkbenchRulesExported": "Exported {count} rules.",
+  "ruleWorkbenchRulesImportTitle": "Import rule file",
+  "ruleWorkbenchRulesImportBody": "The file contains {global} shared rules and {book} book-scoped rules (copied to the open book); {existing} same-ID rules already exist and will be skipped. Only missing definitions are added; nothing is overwritten, enabled, or run.",
+  "ruleWorkbenchRulesImported": "Imported: {added} added, {skipped} already present.",
+  "ruleWorkbenchRulesImportInvalid": "The rule file is invalid or has an unsupported version.",
+  "@ruleWorkbenchRulesExported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ruleWorkbenchRulesImportBody": {
+    "placeholders": {
+      "global": {
+        "type": "int"
+      },
+      "book": {
+        "type": "int"
+      },
+      "existing": {
+        "type": "int"
+      }
+    }
+  },
+  "@ruleWorkbenchRulesImported": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "ruleWorkbenchWholeLineHelper": "After trimming leading and trailing whitespace, a match must cover the whole line. Only available for heading and body lines.",
+  "ruleWorkbenchEffect": "What will change",
+  "ruleWorkbenchName": "Rule name",
+  "ruleWorkbenchKind": "Rule type",
+  "ruleWorkbenchChapter": "Chapter heading",
+  "ruleWorkbenchHeadingLevel": "Heading level",
+  "ruleWorkbenchVolumeLevel": "Volume",
+  "ruleWorkbenchChapterLevel": "Chapter",
+  "ruleWorkbenchVolumeCandidate": "Volume heading",
+  "ruleWorkbenchVolumeEffect": "Remove the full heading line and its line ending to create a top-level volume. Preserve content after the boundary as untitled front matter and move consecutive sibling chapters into the new volume. Do not create an empty chapter when there is no content.",
+  "ruleWorkbenchNewVolumeTitle": "New volume title",
+  "ruleWorkbenchVolumeFrontMatter": "Volume front matter (no invented chapter title)",
+  "ruleWorkbenchVolumePreview": "Single volume boundary preview. The new volume is a top-level entry with no body. Content before the boundary stays in the source chapter. Following text, images, footnotes and dividers become untitled front matter in their original order; no empty chapter is created when there is no content. Consecutive chapters with the source chapter's parent move into the new volume, stopping at a volume or a different parent. Batch application assigns content at each volume boundary and can be undone once.",
+  "ruleWorkbenchVolumeFollowingBlockCount": "Following blocks preserved as front matter",
+  "ruleWorkbenchVolumeFollowingBlocks": "Expand all following front matter blocks",
+  "ruleWorkbenchVolumeFollowingChapterCount": "Following chapters moved by this single change",
+  "ruleWorkbenchVolumeFollowingChapters": "Expand the list of chapters moving into the new volume",
+  "ruleWorkbenchMoreChapters": "Load more chapters",
+  "ruleWorkbenchAdvertisement": "Advertisement",
+  "ruleWorkbenchTarget": "Match target",
+  "ruleWorkbenchHeadingLine": "Match target: heading line",
+  "ruleWorkbenchBodyLine": "Body line",
+  "ruleWorkbenchParagraph": "Paragraph",
+  "ruleWorkbenchMode": "Match mode",
+  "ruleWorkbenchLiteral": "Literal text",
+  "ruleWorkbenchSafeRegex": "Restricted regex (advanced)",
+  "ruleWorkbenchPattern": "Text or expression to match",
+  "ruleWorkbenchAdvanced": "Advanced options",
+  "ruleWorkbenchTitleCaptureGroup": "Table of contents title from capture group",
+  "ruleWorkbenchTitleCaptureHelper": "Blank = full heading line; 0 = whole match; 1 onward = capture group.",
+  "ruleWorkbenchAvailableGroups": "Available numbers",
+  "ruleWorkbenchTitleCaptureInvalid": "Enter a non-negative integer in the available range.",
+  "ruleWorkbenchFullHeadingLine": "Full heading line",
+  "ruleWorkbenchCaseSensitive": "Case sensitive",
+  "ruleWorkbenchPositive": "Positive examples (at least one line)",
+  "ruleWorkbenchNegative": "Negative examples (optional lines)",
+  "ruleWorkbenchOnePerLine": "One single-line example per row",
+  "ruleWorkbenchAction": "Action",
+  "ruleWorkbenchCandidate": "Mark ad candidate (no deletion)",
+  "ruleWorkbenchExactDeletion": "Delete exact matched text",
+  "ruleWorkbenchChapterEffect": "Remove the full heading line and its line ending from the body. The new table of contents title defaults to that line or can come from a capture group.",
+  "ruleWorkbenchScope": "Scope",
+  "ruleWorkbenchPriority": "Priority (-1000 to 1000)",
+  "ruleWorkbenchPriorityInvalid": "Priority must be an integer.",
+  "ruleWorkbenchOpenBook": "Open a manuscript first.",
+  "ruleWorkbenchUseDefinition": "Add to rule set",
+  "ruleWorkbenchGlobalConfirmTitle": "Use across books?",
+  "ruleWorkbenchGlobalConfirmBody": "The rule will appear for other books, but will never be selected for a trial or edit their text automatically.",
+  "ruleWorkbenchConfirm": "Confirm",
+  "ruleWorkbenchLoading": "Loading rules",
+  "ruleWorkbenchScanning": "Trialing whole book",
+  "ruleWorkbenchReady": "Trial complete",
+  "ruleWorkbenchSaving": "Saving rule",
+  "ruleWorkbenchSaved": "Rule saved. The trial has expired; run a new trial before applying.",
+  "ruleWorkbenchDeleted": "Rule deleted.",
+  "ruleWorkbenchResults": "Whole-book trial results",
+  "ruleWorkbenchCoverage": "Covered",
+  "ruleWorkbenchChapters": "chapter/volume nodes",
+  "ruleWorkbenchBlocks": "text blocks",
+  "ruleWorkbenchLines": "body lines",
+  "ruleWorkbenchTotalMatches": "Total hits",
+  "ruleWorkbenchDistinctMatches": "Distinct hits",
+  "ruleWorkbenchConflicts": "Total conflicts",
+  "ruleWorkbenchConflictSamples": "Conflict samples",
+  "ruleWorkbenchTruncated": "Not shown",
+  "ruleWorkbenchShown": "Hits shown",
+  "ruleWorkbenchExecuted": "Executed, hits",
+  "ruleWorkbenchNotExecuted": "Not executed (disabled)",
+  "ruleWorkbenchConflictDetails": "View conflict samples",
+  "ruleWorkbenchChapterConflict": "Multiple split boundaries on one line",
+  "ruleWorkbenchDeleteChapterConflict": "Deletion conflicts with chapter split",
+  "ruleWorkbenchDeletionConflict": "Overlapping deletions",
+  "ruleWorkbenchMaxApply": "Apply at most 100 changes per batch.",
+  "ruleWorkbenchSaveOnly": "Save current rule only",
+  "ruleWorkbenchApplySelected": "Apply selected (one undo)",
+  "ruleWorkbenchSaveApply": "Save and apply selected hits of this rule",
+  "ruleWorkbenchCandidateNotice": "Ad candidates are for review and cannot be selected for deletion.",
+  "aiAdvertisementAnalyze": "Analyze advertisement with AI",
+  "aiAdvertisementSource": "From rule candidate: {name}",
+  "@aiAdvertisementSource": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAdvertisementSelectedText": "Exact selection (only this range can be edited)",
+  "aiAdvertisementReadOnlyContext": "Read-only adjacent text included in the request",
+  "aiAdvertisementSelectionScope": "Select up to 8192 UTF-16 code units. Only the selection and read-only adjacent context are analyzed. Changing chapter scope cancels this selection request.",
+  "aiAdvertisementSelectionLimit": "The selection exceeds 8192 UTF-16 code units. Select less text to analyze it.",
+  "aiAdvertisementSelectionExpired": "This advertisement selection has expired. Select the text again to analyze it.",
+  "ruleWorkbenchMore": "Load more hits",
+  "ruleWorkbenchReload": "Reload saved rules",
+  "ruleWorkbenchReloadTitle": "Reload rules?",
+  "ruleWorkbenchReloadWarning": "Unsaved rule definitions, form contents and trial results will be discarded.",
+  "ruleWorkbenchLine": "line",
+  "ruleWorkbenchRule": "Matched rules",
+  "ruleWorkbenchOffset": "Range",
+  "ruleWorkbenchSplitPrefix": "Boundary block kept in source chapter",
+  "ruleWorkbenchRemoveHeadingLine": "Full heading line to remove",
+  "ruleWorkbenchSplitTitle": "New table of contents title",
+  "ruleWorkbenchUnsupportedCrLine": "A heading line ending in a lone CR cannot be split yet. Adjust the line ending and run the trial again.",
+  "ruleWorkbenchSplitSuffix": "Boundary block text in new chapter",
+  "ruleWorkbenchFollowingCount": "Following blocks moved to new chapter in order",
+  "ruleWorkbenchFollowingBlocks": "Expand all following chapter content",
+  "ruleWorkbenchTextBlock": "Text block",
+  "ruleWorkbenchImageBlock": "Image block",
+  "ruleWorkbenchFootnoteBlock": "Footnote block",
+  "ruleWorkbenchDividerBlock": "Divider block",
+  "ruleWorkbenchAssetId": "Asset ID",
+  "ruleWorkbenchDeleteExact": "Remove exactly",
+  "ruleWorkbenchAfter": "Complete block after deletion",
+  "aiProofreadingIntro": "Choose a purpose and chapters. Preparing a review sends no manuscript text.",
+  "aiAuditGapSource": "From manuscript check: chapter numbering gap",
+  "aiAuditGapRange": "Missing numbers: {first}–{last}",
+  "@aiAuditGapRange": {
+    "placeholders": {
+      "first": {
+        "type": "int"
+      },
+      "last": {
+        "type": "int"
+      }
+    }
+  },
+  "aiAuditGapBefore": "Before: {title}",
+  "@aiAuditGapBefore": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAuditGapAfter": "After: {title}",
+  "@aiAuditGapAfter": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAuditGapNoBefore": "No preceding chapter in this volume; analyze the first numbered chapter.",
+  "aiAuditGapNoAutoSend": "Opening this analysis sends nothing. Review the request and confirm before sending.",
+  "aiAuditGapExpired": "This check result has expired. Run the manuscript check again to analyze this gap.",
+  "aiProofreadingAdvertisement": "Advertisement review",
+  "aiProofreadingMissingChapter": "Missing chapter diagnosis",
+  "aiProofreadingChapters": "Chapters to analyze",
+  "aiProofreadingScope": "Choose the current chapter or several chapters; all selected text is chunked for analysis.",
+  "aiProofreadingMissingScope": "The adjacent pair is selected by default. You can change the pair. Selected chapters are covered in full, without fixed trimming.",
+  "aiProofreadingCurrentChapter": "Current chapter",
+  "aiProofreadingSelectedChapters": "Selected chapters",
+  "aiProofreadingPrepare": "Prepare and review request",
+  "aiProofreadingPhase": "Task status",
+  "aiProofreadingIdle": "Ready",
+  "aiProofreadingPreparing": "Preparing",
+  "aiProofreadingAwaitingConsent": "Awaiting send confirmation",
+  "aiProofreadingRunning": "Analyzing",
+  "aiProofreadingCompleted": "Analysis complete",
+  "aiProofreadingApplying": "Applying",
+  "aiProofreadingApplied": "Applied",
+  "aiProofreadingCancelled": "Cancelled",
+  "aiProofreadingStale": "Manuscript changed; results expired",
+  "aiProofreadingFailed": "Failed",
+  "aiProofreadingCompletedChunks": "Completed chunks",
+  "aiProofreadingReview": "Review before sending",
+  "aiProofreadingCharacters": "Source characters",
+  "aiProofreadingBlocks": "Paragraphs",
+  "aiProofreadingChunks": "Request chunks",
+  "aiProofreadingSystemPrompt": "Full system prompt",
+  "aiProofreadingChunk": "Full request content, chunk",
+  "aiProofreadingCompleteScope": "Each chunk shows its complete userContext JSON. The system prompt above is also sent with each request.",
+  "aiProofreadingStart": "Confirm and start sending",
+  "aiProofreadingCancelCost": "Cancellation stops later processing. Requests already sent and any charges cannot be undone.",
+  "aiProofreadingAppliedCount": "Applied changes",
+  "aiProofreadingNoFindings": "No confirmed issue or edit was found. This does not prove that the source has no missing chapter.",
+  "aiProofreadingApplicableChanges": "Applicable changes",
+  "aiProofreadingPending": "Findings to review",
+  "aiProofreadingIgnoredCount": "{count} ignored (this run only)",
+  "@aiProofreadingIgnoredCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProofreadingRestoreIgnored": "Restore all ignored from this run",
+  "aiProofreadingIgnoreFinding": "Ignore finding and related suggestions",
+  "aiProofreadingRulesUnavailable": "Rule proposals are not enabled yet.",
+  "aiProofreadingConflict": "Selected changes conflict. Deselect one of them.",
+  "aiProofreadingApplySelected": "Apply selected changes",
+  "aiProofreadingOriginal": "Full original text",
+  "aiProofreadingOriginalEvidence": "Full source evidence",
+  "aiProofreadingOriginalChapterTitle": "Current table-of-contents title",
+  "aiProofreadingNewChapterTitle": "New table-of-contents title",
+  "aiProofreadingReplacement": "Replacement",
+  "aiProofreadingDelete": "Delete the text shown above (keep the text block)",
+  "aiProofreadingRemoveBlock": "Remove entire text block",
+  "aiProofreadingRemoveBlockImpact": "This text block is removed without leaving an empty paragraph. The chapter and other text blocks, images, footnotes, and dividers remain.",
+  "aiProofreadingReplace": "Replace text",
+  "aiProofreadingRenameChapter": "Correct chapter title",
+  "aiProofreadingRenameChapterImpact": "Only this chapter's table-of-contents title changes. Its heading line stays in the body; all other text, images, footnotes, dividers, and the chapter hierarchy remain unchanged.",
+  "aiProofreadingSplit": "Split and restore chapter",
+  "aiProofreadingSplitSource": "Boundary paragraph remaining in the source chapter",
+  "aiProofreadingSplitNew": "New chapter and its body",
+  "aiProofreadingSplitRemoveTitle": "Remove the whole heading line, including its line ending, from the body and use it as the new chapter title.",
+  "aiProofreadingSplitKeepTitle": "Keep the heading line in the body as well; no source text is deleted.",
+  "aiProofreadingSplitResources": "Single-split impact preview. Preceding blocks and body text before the boundary remain in the source chapter; body text and blocks after it move to the new chapter in their original order. Later existing chapters stay unchanged. Batch splits remain subject to conflict and application checks.",
+  "aiProofreadingSplitParent": "Parent volume (same for both chapters)",
+  "aiProofreadingSplitTopLevel": "Top-level chapters (neither belongs to a volume)",
+  "aiProofreadingSplitBeforeCount": "Preceding blocks retained in source chapter: {count}",
+  "@aiProofreadingSplitBeforeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProofreadingSplitAfterCount": "Following blocks moved to new chapter: {count}",
+  "@aiProofreadingSplitAfterCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProofreadingSplitMore": "Show up to 100 more blocks",
+  "aiProofreadingSplitCaption": "Caption",
+  "aiProofreadingSplitAlt": "Alternative text",
+  "aiProofreadingSplitMarker": "Footnote marker",
+  "aiProofreadingReason": "Reason",
+  "aiProofreadingLocate": "Locate source",
+  "aiProofreadingApplyOne": "Apply this change",
+  "aiProofreadingUndetermined": "Undetermined",
+  "aiProofreadingSuspectedMissing": "Possible missing source content",
+  "aiProofreadingMissedHeading": "Possible missed heading",
+  "aiProofreadingMergedContent": "Possible merged chapters",
+  "aiProofreadingNumberingSuspect": "Possible numbering error",
+  "aiProofreadingAuthorNote": "Author's note",
+  "aiProofreadingStoryQuote": "Quotation in story",
+  "aiProofreadingNotAdvertisement": "Not an advertisement",
+  "aiProofreadingObserved": "Finding",
+  "aiTestConnection": "Test connection",
+  "aiTesting": "Testing connection…",
+  "aiCancelTest": "Cancel test",
+  "aiTestPassed": "The test passed. You can save this configuration. Changes to format, address, key or model require a new test.",
+  "aiNotTested": "This configuration has not been tested.",
+  "aiSaved": "The current AI configuration was saved.",
+  "aiSave": "Save configuration",
+  "aiClear": "Clear AI configuration and key",
+  "aiClearTitle": "Clear AI configuration?",
+  "aiClearDescription": "Disable AI and delete the key linked to the current configuration. Manuscripts are unchanged.",
+  "aiClearConfirm": "Clear",
+  "aiCleared": "AI is disabled. The current configuration and linked key were cleared.",
+  "aiCleanupWarning": "The current configuration was safely committed, but the old key still needs cleanup. Retry without affecting manuscripts.",
+  "aiRetryCleanup": "Retry old-key cleanup",
+  "aiCleanupDone": "The old key was removed.",
+  "aiLoadFailed": "Could not load AI settings. Try again; networking will not be enabled as a fallback.",
+  "aiReload": "Reload configuration",
+  "aiBusy": "The previous operation has not finished. Try again shortly.",
+  "aiInvalidConfiguration": "Check the address, model and key. Test the current configuration before enabling it.",
+  "aiMissingCredential": "Enter a key. Changing the address or format cannot automatically reuse the old key.",
+  "aiCredentialUnavailable": "System secure storage is unavailable. Check that the keyring is unlocked and retry; keys will not be stored in plaintext.",
+  "aiStaleConfiguration": "Another operation changed this configuration. Reload before saving.",
+  "aiProofRequired": "This configuration has not passed a connection test, or changed after testing. Test it again.",
+  "aiConnectionFailed": "The service did not return the expected test result. Check the model and API format.",
+  "aiCancelled": "The test was cancelled. Server-side processing or charges already incurred cannot be undone.",
+  "aiSaveFailed": "Could not save. The previous configuration is retained; try again.",
+  "aiCommitUnknown": "The save status could not be confirmed. Reload before continuing.",
+  "aiCleanupFailed": "The old key could not be removed. Retry later; a key still in use will not be deleted.",
+  "aiAuthenticationFailed": "Authentication failed. Check the key and its permissions.",
+  "aiRateLimited": "The service is rate limiting requests. Retry manually later; no automatic retry will be sent.",
+  "aiTimedOut": "The test timed out. Check the service address and retry.",
+  "aiRedirectRejected": "The service redirected the request. Key forwarding was blocked; enter the final address.",
+  "aiBudgetExceeded": "The request or response exceeded its safety budget. Check the service endpoint.",
+  "aiProtocolFailed": "The response does not match the selected protocol, was refused or was truncated. Check the model and format.",
+  "aiNetworkFailed": "Could not connect. Check the network, address and certificate.",
   "settingsThemeMode": "Theme",
   "themeSystem": "System",
   "themeLight": "Light",
@@ -207,11 +636,28 @@
     }
   },
   "importAddToLibrary": "Add to library and edit",
+  "importTaskTitle": "Import manuscript",
+  "importPreparing": "Preparing",
+  "importCancelling": "Cancelling…",
+  "importProgressPercent": "{percent}%",
+  "@importProgressPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "importSaving": "Saving manuscript…",
+  "importSavingNotice": "Saving in progress. Do not exit.",
   "importStagePrepare": "Preparing…",
   "importStageDecode": "Detecting encoding…",
   "importStageParse": "Organizing chapters…",
+  "importStageConvert": "Converting text…",
   "importStageReady": "Parsing complete",
+  "importStageSavePrepare": "Preparing to save…",
+  "importStageSaveChapters": "Saving chapters…",
+  "importStageSaveBlocks": "Saving text…",
+  "importStageSaveFinalize": "Finishing save…",
   "importPickFailed": "Could not choose a file. Check permissions and retry.",
   "importAnalyzeFailed": "Parsing failed. Check the file or try another encoding.",
   "importSaveFailed": "Saving failed. The preview is still available; retry.",
@@ -346,6 +792,7 @@
   "editorWorkbenchAuditTitle": "Manuscript check",
   "editorWorkbenchAuditDesc": "Checks numbering, empty chapters, duplicate titles and ad traces; short chapters (<120 characters) and long chapters (>30,000) are heuristic notices.",
   "editorWorkbenchAuditRun": "Check this manuscript",
+  "editorWorkbenchAnalyzeGapWithAi": "Analyze with AI",
   "editorWorkbenchAuditTotal": "{count} notices in total",
   "@editorWorkbenchAuditTotal": {
     "placeholders": {
@@ -441,6 +888,8 @@
   "editorWorkbenchIssueTooShort": "Short chapter",
   "editorWorkbenchIssueEmptyVolume": "Empty volume",
   "editorWorkbenchIssueAdLeftover": "Ad traces",
+  "editorWorkbenchIssueTitleFormat": "Inconsistent title format",
+  "editorWorkbenchIssueDuplicateContent": "Duplicate content",
   "editorWorkbenchReparseInvalidRuleUtf8": "The rules JSON is not valid UTF-8 text.",
   "editorWorkbenchReparseFailed": "Reparsing failed. Check the source text and rules, then retry.",
   "editorWorkbenchOriginalCacheFailed": "Could not clean up the selected source file. Retry later.",
@@ -529,6 +978,10 @@
   "bookWorkbenchSettings": "Book settings",
   "bookWorkbenchMetadata": "Metadata",
   "bookWorkbenchLayoutFonts": "Layout and fonts",
+  "bookWorkbenchLayoutSampleTitle": "Live layout sample",
+  "bookWorkbenchLayoutSampleScope": "This sample, reading preview, and visually formatted exports use these settings. The body editor keeps the original text and does not display first-line indents.",
+  "bookWorkbenchLayoutSampleFirst": "After the rain, lamplight crossed the wet stones.",
+  "bookWorkbenchLayoutSampleSecond": "A new page begins.",
   "bookWorkbenchCover": "Cover",
   "bookWorkbenchReadingPreview": "Reading preview",
   "bookWorkbenchTitleRequired": "Title is required",
@@ -768,6 +1221,41 @@
       }
     }
   },
+  "dataWorkbenchBackupSavedWithRules": "Backup saved with {count} book-scoped rules.",
+  "@dataWorkbenchBackupSavedWithRules": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBackupRules": "This backup contains {count} book-scoped rules. Restore only adds missing definitions; existing rules are never overwritten, enabled, or run.",
+  "@dataWorkbenchBackupRules": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBackupRulesMerged": "Rules restored: {added} added, {skipped} already present.",
+  "@dataWorkbenchBackupRulesMerged": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "dataWorkbenchBackupRulesFailed": "Books were restored, but rules were not: {message}",
+  "@dataWorkbenchBackupRulesFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "dataWorkbenchBackupEstimatedSpace": "Estimated required space: {size}",
   "@dataWorkbenchBackupEstimatedSpace": {
     "placeholders": {
@@ -863,7 +1351,7 @@
   "permissionsSystemUnavailable": "The system permission status could not be read. Try again or check the app’s system settings.",
   "permissionsGranted": "Allowed",
   "permissionsNotGranted": "Not allowed",
-  "permissionsInternetDeclared": "This build declares network access.",
+  "permissionsInternetDeclared": "Network access supports optional AI, which is off by default. Explicit connection tests send a fixed small sample, not your manuscript.",
   "permissionsStorageDeclared": "This build declares broad storage access. Review it in system settings.",
   "permissionsOpenSystemSettings": "Open app system settings",
   "permissionsSettingsFailed": "Could not open app settings. Open Bookloom from your system settings.",
@@ -885,5 +1373,31 @@
   "permissionsShareDesktop": "Local editing and conversion work offline. You decide whether to transfer exported files with other tools. External links open in your browser and do not grant a website access to your library.",
   "permissionsScopeNote": "Results apply only to current app folders or the file and destination selected for this check. Other permissions are not requested automatically.",
   "permissionsRuntimePolicy": "Some systems list additional permissions. Current manuscript features do not need or request the runtime permissions below. They can remain off while you import and save through system pickers.",
-  "permissionsRuntimeNotRequired": "Not needed by manuscript features. It is not requested and can remain off."
+  "permissionsRuntimeNotRequired": "Not needed by manuscript features. It is not requested and can remain off.",
+  "ruleWorkbenchRulesCopyConflicts": "If an ID already exists, save it as a new rule (otherwise skip)",
+  "ruleWorkbenchDuplicate": "Duplicate rule",
+  "ruleWorkbenchCopySuffix": " (copy)",
+  "ruleWorkbenchDuplicated": "Created “{name}”.",
+  "@ruleWorkbenchDuplicated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ruleWorkbenchSearch": "Search rules",
+  "ruleWorkbenchNoMatches": "No matching rules.",
+  "ruleWorkbenchClearSearch": "Clear search",
+  "ruleWorkbenchExportSelectTitle": "Select rules to export",
+  "ruleWorkbenchSelectAll": "Select all",
+  "ruleWorkbenchExportSelected": "Export selected ({count})",
+  "@ruleWorkbenchExportSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ruleWorkbenchImportPreview": "Rules to import",
+  "ruleWorkbenchImportWillSkip": "already exists, will be skipped"
 }

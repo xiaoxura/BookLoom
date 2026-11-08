@@ -8,7 +8,16 @@ import 'package:uuid/uuid.dart';
 
 const _uuid = Uuid();
 const _maxParagraphLength = 20000;
+const _maxDescriptionLength = 2000;
+const _maxDescriptionLines = 30;
 const _chineseNumerals = '零〇一二三四五六七八九十百千万两壹贰叁肆伍陆柒捌玖拾佰仟';
+
+final _descriptionHeader = RegExp(
+  r'^([内內]容[简簡]介|作品[简簡]介|[图圖][书書][简簡]介|[简簡]介|文案)(?:[ \t\u3000]*[:：][ \t\u3000]*(.*)|[ \t\u3000]+(.*))?$',
+);
+final _descriptionBoundary = RegExp(
+  r'^(?:(?:[书書]名|[书書]籍名[称稱]|作品名[称稱]|作者|著者|分[类類]|[类類][别別]|[类類]型|[标標][签籤]|[状狀][态態]|字[数數]|出版社|出版[时時][间間]|[内內]容[标標][签籤]|主角|配角)\s*[:：]|目[录錄]$|正文$|作品信息$|[图圖][书書]信息$|[书書]籍信息$)',
+);
 
 final _volume = RegExp(
   '^(?:正文[\\s·:：\\-—]*)?第\\s*[$_chineseNumerals\\d]{1,8}\\s*[卷部篇集](?:\\s*[、.．:：·\\-—]\\s*)?[^。]{0,30}\$',
@@ -17,19 +26,31 @@ final _volumeAlternate = RegExp(
   '^[卷部篇集]\\s*[$_chineseNumerals\\d]{1,6}(?:\\s*[、.．:：·\\-—]\\s*)?[^。]{0,24}\$',
 );
 final _chapter = RegExp(
-  '^(?:正文[\\s·:：\\-—]*)?第\\s*[$_chineseNumerals\\d]{1,8}\\s*[章节回话](?:\\s*[、.．:：·\\-—]\\s*)?[^。]{0,30}\$',
+  '^(?:正文[\\s·:：\\-—]*)?第\\s*[$_chineseNumerals\\d]{1,8}(?:\\s*[~～\\-—]\\s*[$_chineseNumerals\\d]{1,8})?\\s*[章节回话](?:\\s*[、.．:：·\\-—]\\s*)?[^。]{0,30}\$',
+);
+final _chapterRange = RegExp(
+  '^(?:正文[\\s·:：\\-—]*)?第\\s*[$_chineseNumerals\\d]{1,8}\\s*[~～\\-—]\\s*[$_chineseNumerals\\d]{1,8}\\s*[章节回话]',
+);
+final _chapterNumber = RegExp(
+  '^(?:正文[\\s·:：\\-—]*)?第\\s*([$_chineseNumerals\\d]{1,8})(?:\\s*[~～\\-—]\\s*([$_chineseNumerals\\d]{1,8}))?\\s*[章节回话]',
+);
+final _chapterReference = RegExp(
+  r'^的(?:故事|草稿|内容|情节|标题|正文)(?:仍|还|已经|整理|讲述|提到|写|是|在)',
 );
 final _excludedPart = RegExp(
   '^第\\s*[$_chineseNumerals\\d]{1,8}\\s*部(?:门|队|属|分|件|落)',
 );
 final _special = RegExp(
-  r'^(?:序章|序言|序|楔子|引子|前言|引言|后记|尾声|终章|最终章|完本感言|大结局|番外(?:篇)?(?:[\s:：·、.．\-—]?\s*[0-9一二三四五六七八九十百千]{0,6})?|附录|作者的话|内容简介|作品简介)(?:[\s:：·、.．\-—].{0,30})?$',
+  r'^(?:序章|序言|序|楔子|引子|前言|引言|后记|尾声|终章|最终章|完本感言|大结局|番外(?:篇)?(?:[\s:：·、.．\-—]?\s*[0-9一二三四五六七八九十百千]{0,6})?|附录|作者的话|[内內]容[简簡]介|作品[简簡]介)(?:[\s:：·、.．\-—].{0,30})?$',
 );
 final _english = RegExp(
   r'^(?:chapter|part|volume|section|page|prologue|epilogue)\b[\s.:：\-—]*.{0,40}$',
   caseSensitive: false,
 );
-final _headingCore = RegExp('第\\s*[$_chineseNumerals\\d]{1,8}\\s*[章节回卷部篇集]');
+final _headingCore = RegExp(
+  '第\\s*[$_chineseNumerals\\d]{1,8}(?:\\s*[~～\\-—]\\s*[$_chineseNumerals\\d]{1,8})?\\s*[章节回卷部篇集]',
+);
+final _terminalQuestion = RegExp(r'[！？!?]$');
 final _inlineJunk = RegExp(
   r'内容还在处理中|正在手打中|正在更新中|本章未完|请稍后|请稍候|加载中|手机用户|手机阅读|记住本站|求月票|求推荐票|更新最快|无弹窗|笔趣阁|最新章节|电子书|txt',
   caseSensitive: false,
@@ -175,9 +196,11 @@ ParseResult parseTxtText(
       first.lineIndex,
     );
     if (_buildParagraphs(frontLines, filterAds: options.filterAds).isNotEmpty) {
-      final text = frontLines.take(8).map((line) => line.text).join('');
+      final hasDescription = frontLines
+          .take(8)
+          .any((line) => _descriptionHeader.hasMatch(line.text.trim()));
       appendChapter(
-        title: RegExp(r'内容简介|作品简介|图书简介|文案').hasMatch(text) ? '内容简介' : '前言',
+        title: hasDescription ? '内容简介' : '前言',
         level: 2,
         frontMatter: true,
         bodyLines: frontLines,
@@ -189,11 +212,21 @@ ParseResult parseTxtText(
       final bodyEnd = i + 1 < headings.length
           ? headings[i + 1].lineIndex
           : lines.length;
+      final intro = _descriptionHeader.firstMatch(
+        lines[heading.lineIndex].text.trim(),
+      );
+      final inlineBody = (intro?[2] ?? intro?[3])?.trim();
       appendChapter(
-        title: heading.title,
+        title: inlineBody != null && inlineBody.isNotEmpty
+            ? intro![1]!
+            : heading.title,
         level: heading.level,
         frontMatter: _isFrontMatterHeading(heading.title),
-        bodyLines: lines.sublist(heading.lineIndex + 1, bodyEnd),
+        bodyLines: <_Line>[
+          if (inlineBody != null && inlineBody.isNotEmpty)
+            _Line(inlineBody, lines[heading.lineIndex].line),
+          ...lines.sublist(heading.lineIndex + 1, bodyEnd),
+        ],
         headingLine: lines[heading.lineIndex].line,
       );
     }
@@ -212,7 +245,16 @@ ParseResult parseTxtText(
     format: ImportFormat.txt,
     actualEncoding: actualEncoding,
     encodingConfidence: encodingConfidence,
-    suggestedMeta: BookMeta(title: info.title, author: info.author),
+    suggestedMeta: BookMeta(
+      title: info.title,
+      author: info.author,
+      description: _inferDescription(
+        lines,
+        headings,
+        tocEnd,
+        options.filterAds,
+      ),
+    ),
     chapters: chapters,
     warnings: warnings,
     sourceLocations: locations,
@@ -376,7 +418,105 @@ List<_Heading> _detectHeadings(List<_Line> lines, CompiledTxtRules rules) {
       headings.add(_Heading(i, classified.$1, classified.$2, classified.$3));
     }
   }
-  return headings;
+  final kept = <_Heading>[];
+  for (var index = 0; index < headings.length; index++) {
+    if (_keepHeading(headings, kept, index)) kept.add(headings[index]);
+  }
+  return kept;
+}
+
+int? _parseChapterNumber(String text) {
+  final arabic = int.tryParse(text);
+  if (arabic != null) return arabic;
+  const digits = '零一二三四五六七八九';
+  const variants = <String, String>{
+    '〇': '零',
+    '两': '二',
+    '壹': '一',
+    '贰': '二',
+    '叁': '三',
+    '肆': '四',
+    '伍': '五',
+    '陆': '六',
+    '柒': '七',
+    '捌': '八',
+    '玖': '九',
+    '拾': '十',
+    '佰': '百',
+    '仟': '千',
+  };
+  const units = <String, int>{'十': 10, '百': 100, '千': 1000, '万': 10000};
+  var total = 0;
+  var section = 0;
+  var number = 0;
+  for (final character in text.split('')) {
+    final normalized = variants[character] ?? character;
+    final digit = digits.indexOf(normalized);
+    if (digit >= 0) {
+      number = number * 10 + digit;
+      continue;
+    }
+    final unit = units[normalized];
+    if (unit == null) return null;
+    if (unit == 10000) {
+      total += (section + number) * unit;
+      section = 0;
+    } else {
+      section += (number == 0 ? 1 : number) * unit;
+    }
+    number = 0;
+  }
+  return total + section + number;
+}
+
+({int start, int end})? _headingNumbers(_Heading heading) {
+  if (heading.level != 2) return null;
+  final match = _chapterNumber.firstMatch(heading.title);
+  if (match == null) return null;
+  final start = _parseChapterNumber(match[1]!);
+  final end = _parseChapterNumber(match[2] ?? match[1]!);
+  if (start == null || end == null || start < 1 || end < start) return null;
+  return (start: start, end: end);
+}
+
+bool _keepHeading(List<_Heading> headings, List<_Heading> kept, int index) {
+  final heading = headings[index];
+  if (heading.score != 95 || !_terminalQuestion.hasMatch(heading.title)) {
+    return true;
+  }
+  final number = _headingNumbers(heading);
+  if (number == null) return heading.lineIndex == 0;
+  final start = number.start;
+  final end = number.end;
+  if (heading.lineIndex == 0 ||
+      start == 1 &&
+          headings
+              .take(index)
+              .every(
+                (other) =>
+                    other.level == 1 || _isFrontMatterHeading(other.title),
+              )) {
+    return true;
+  }
+  for (final other in kept.reversed) {
+    final otherNumber = _headingNumbers(other);
+    if (otherNumber == null) continue;
+    if (otherNumber.end + 1 == start) {
+      return true;
+    }
+    break;
+  }
+  for (var next = index + 1; next < headings.length; next++) {
+    final other = headings[next];
+    if (_terminalQuestion.hasMatch(other.title)) continue;
+    final otherNumber = _headingNumbers(other);
+    if (otherNumber == null) continue;
+    if (end + 1 == otherNumber.start) {
+      return true;
+    }
+    break;
+  }
+  return false;
 }
 
 (String, int, int)? _classify(String text, CompiledTxtRules rules) {
@@ -384,9 +524,18 @@ List<_Heading> _detectHeadings(List<_Line> lines, CompiledTxtRules rules) {
   final customTitle = _cleanTitle(text);
   if (rules.volume?.hasMatch(text) ?? false) return (customTitle, 1, 110);
   if (rules.chapter?.hasMatch(text) ?? false) return (customTitle, 2, 105);
+  final number = _chapterNumber.firstMatch(text);
+  if (number != null &&
+      _chapterReference.hasMatch(text.substring(number.end))) {
+    return null;
+  }
   if (text.length > 42 ||
       _excludedPart.hasMatch(text) ||
-      RegExp(r'[。！？!?]$').hasMatch(text)) {
+      RegExp(r'。$').hasMatch(text)) {
+    return null;
+  }
+  if (_terminalQuestion.hasMatch(text) &&
+      (text.length > 26 || !_chapter.hasMatch(text))) {
     return null;
   }
   if (text.length > 26 && RegExp(r'[，,；;]').hasMatch(text)) return null;
@@ -413,6 +562,7 @@ String _cleanTitle(String text) {
         '',
       )
       .trim();
+  if (_chapterRange.hasMatch(stripped)) return stripped;
   return (stripped.isEmpty ? compact : stripped).replaceFirstMapped(
     _titleMarker,
     (match) => '${match[1]} ${match[2]}',
@@ -420,7 +570,8 @@ String _cleanTitle(String text) {
 }
 
 bool _isFrontMatterHeading(String title) =>
-    RegExp(r'^(?:序章|序言|序|楔子|引子|前言|引言|内容简介|作品简介)').hasMatch(title);
+    _descriptionHeader.hasMatch(title) ||
+    RegExp(r'^(?:序章|序言|序|楔子|引子|前言|引言)').hasMatch(title);
 
 List<_Heading> _pruneHeadingOnlyDocument(
   List<_Heading> headings,
@@ -485,6 +636,54 @@ List<_Heading> _fallbackHeadings(List<_Line> lines) {
     for (final span in candidates)
       _Heading(span.$1, _cleanTitle(lines[span.$1].text), 2, 40),
   ];
+}
+
+String _inferDescription(
+  List<_Line> lines,
+  List<_Heading> headings,
+  int tocEnd,
+  bool filterAds,
+) {
+  final headingAt = <int, _Heading>{
+    for (final heading in headings) heading.lineIndex: heading,
+  };
+  for (var index = tocEnd + 1; index < lines.length; index++) {
+    final heading = headingAt[index];
+    if (heading != null && !_isFrontMatterHeading(heading.title)) break;
+    final intro = _descriptionHeader.firstMatch(lines[index].text.trim());
+    if (intro == null) continue;
+
+    final body = <_Line>[];
+    final inlineBody = (intro[2] ?? intro[3])?.trim();
+    if (inlineBody != null && inlineBody.isNotEmpty) {
+      body.add(_Line(inlineBody, lines[index].line));
+    }
+    var length = inlineBody?.length ?? 0;
+    if (length > _maxDescriptionLength) return '';
+    var contentLines = inlineBody == null || inlineBody.isEmpty ? 0 : 1;
+    for (var next = index + 1; next < lines.length; next++) {
+      final value = lines[next].text.trim();
+      if (headingAt.containsKey(next) ||
+          _descriptionHeader.hasMatch(value) ||
+          _descriptionBoundary.hasMatch(value)) {
+        break;
+      }
+      if (value.isNotEmpty) {
+        length += value.length;
+        contentLines++;
+        if (length > _maxDescriptionLength ||
+            contentLines > _maxDescriptionLines) {
+          return '';
+        }
+      }
+      body.add(lines[next]);
+    }
+    return _buildParagraphs(
+      body,
+      filterAds: filterAds,
+    ).map((paragraph) => paragraph.text).join('\n\n');
+  }
+  return '';
 }
 
 ({String title, String author}) _inferMetadata(String filename, String text) {

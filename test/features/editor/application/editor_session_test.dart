@@ -9,6 +9,7 @@ import 'package:bookloom/core/model/layout_options.dart';
 import 'package:bookloom/core/model/metadata.dart';
 import 'package:bookloom/core/model/parse_options.dart';
 import 'package:bookloom/core/text/word_count.dart';
+import 'package:bookloom/features/editor/application/ai_advertisement_request.dart';
 import 'package:bookloom/features/editor/application/editor_session.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -43,6 +44,249 @@ void main() {
     expect(store.loadedChapterIds, <String>['a', 'b']);
     expect(session.activeChapterId, 'b');
     expect(session.book!.chapters.first.blocks, isEmpty);
+  });
+
+  test(
+    'selection context loads a distant large chapter without activating it',
+    () async {
+      await session.open('book');
+      final originalSession = session.sessionId;
+      final originalRevision = session.saveSeq;
+      final longText = '正文' * 400000;
+      store._bodies['b'] = store._bodies['b']!.copyWith(
+        blocks: [TextBlock(id: 'p2', text: longText)],
+      );
+      final chapter = await session.readAiSelectionChapter('b');
+      expect(chapter.blocks.single.plainText, longText);
+      expect(session.activeChapterId, 'a');
+      expect(session.activeChapter!.blocks.single.plainText, '原文');
+      expect(session.sessionId, originalSession);
+      expect(session.saveSeq, originalRevision);
+      expect(session.dirty, false);
+      expect(session.canUndo, false);
+      expect(store.saveCalls, 0);
+      expect(store.loadedChapterIds, ['a', 'b']);
+    },
+  );
+
+  test(
+    'selection context drains autosave before loading the remote source',
+    () async {
+      await session.open('book');
+      session.editBlockText('p1', '待保存修改');
+      final revision = session.saveSeq;
+      final gate = Completer<void>();
+      store.saveGate = gate;
+      final saving = session.flush();
+      final reading = session.readAiSelectionChapter('b');
+      await Future<void>.delayed(Duration.zero);
+      expect(store.loadedChapterIds, ['a']);
+      gate.complete();
+      await saving;
+      await reading;
+      final request = AiAdvertisementRequest.fromSelection(
+        book: session.book!,
+        sessionId: session.sessionId!,
+        sessionRevision: revision,
+        chapterId: 'b',
+        blockId: 'p2',
+        startUtf16: 0,
+        endUtf16: 2,
+        original: '后文',
+      );
+      await session.flush();
+      request.validate(
+        book: session.book!,
+        sessionId: session.sessionId!,
+        sessionRevision: session.saveSeq,
+      );
+      expect(session.activeChapterId, 'a');
+      expect(session.activeChapter!.blocks.single.plainText, '待保存修改');
+      expect(session.saveSeq, revision);
+      expect(session.dirty, false);
+      expect(store.saveCalls, 1);
+    },
+  );
+
+  test('selection context refuses cancellation and concurrent edits', () async {
+    await session.open('book');
+    await expectLater(
+      session.readAiSelectionChapter('b', isCancelled: () => true),
+      throwsA(isA<TaskCancelled>()),
+    );
+    expect(store.loadedChapterIds, ['a']);
+    final gate = Completer<void>();
+    store.loadGate = gate;
+    final reading = session.readAiSelectionChapter('b');
+    await Future<void>.delayed(Duration.zero);
+    session.editBlockText('p1', '继续编辑');
+    gate.complete();
+    await expectLater(reading, throwsA(isA<ValidationFailure>()));
+    expect(session.activeChapterId, 'a');
+    expect(session.activeChapter!.blocks.single.plainText, '继续编辑');
+    await session.flush();
+  });
+
+  test(
+    'AI snapshot preserves ordered local resources without sending them',
+    () async {
+      const mixed = <Block>[
+        ImageBlock(
+          id: 'before-image',
+          assetId: 'private-image',
+          caption: '本地图注',
+        ),
+        TextBlock(id: 'p2', text: '第三章 标题\n远章正文'),
+        FootnoteBlock(id: 'note', text: '不外发的脚注', marker: '①'),
+        DividerBlock(id: 'divider'),
+        TextBlock(id: 'tail', text: '末段'),
+      ];
+      store._bodies['b'] = store._bodies['b']!.copyWith(blocks: mixed);
+      await session.open('book');
+      final revision = session.saveSeq;
+      final snapshot = await session.readAiContextSnapshot(['b']);
+      expect(snapshot.blocks.map((block) => block.text), [
+        '第三章 标题\n远章正文',
+        '末段',
+      ]);
+      expect(snapshot.chapters.keys, ['b']);
+      expect(snapshot.chapters['b']!.blocks, mixed);
+      expect(session.activeChapterId, 'a');
+      expect(session.saveSeq, revision);
+      expect(session.canUndo, false);
+      expect(store.saveCalls, 0);
+      expect(snapshot.blocks.clear, throwsUnsupportedError);
+      expect(snapshot.chapters.clear, throwsUnsupportedError);
+      expect(
+        () => snapshot.chapters['b']!.blocks.clear(),
+        throwsUnsupportedError,
+      );
+      session.editBlockText('p1', '触发自动保存与远章淘汰');
+      await session.flush();
+      expect(
+        session.book!.chapters
+            .singleWhere((chapter) => chapter.id == 'b')
+            .blocks,
+        isEmpty,
+      );
+      expect(snapshot.chapters['b']!.blocks, mixed);
+    },
+  );
+
+  test(
+    'AI snapshot waits for an in-flight save before remote loading',
+    () async {
+      await session.open('book');
+      session.editBlockText('p1', '待保存正文');
+      final gate = Completer<void>();
+      store.saveGate = gate;
+      final saving = session.flush();
+      final reading = session.readAiContextSnapshot(['a', 'b']);
+      await Future<void>.delayed(Duration.zero);
+      expect(store.loadedChapterIds, ['a']);
+      gate.complete();
+      await saving;
+      final snapshot = await reading;
+      expect(snapshot.blocks.map((block) => block.text), ['待保存正文', '后文']);
+      expect(snapshot.chapters.keys, ['a', 'b']);
+      expect(store.saveCalls, 1);
+      expect(session.activeChapterId, 'a');
+    },
+  );
+
+  test(
+    'AI snapshot releases clean remote bodies across batches and cancellation',
+    () async {
+      final chapters = <Chapter>[
+        for (var index = 0; index < 3; index++)
+          Chapter(
+            id: 'remote-$index',
+            bookId: 'book',
+            title: '远章$index',
+            order: index + 2,
+            blocks: [TextBlock(id: 'remote-body-$index', text: '远章正文$index')],
+          ),
+      ];
+      store._book = store._book.copyWith(
+        chapters: [
+          ...store._book.chapters,
+          ...chapters.map((chapter) => chapter.copyWith(blocks: const [])),
+        ],
+      );
+      store._bodies.addEntries(
+        chapters.map((chapter) => MapEntry(chapter.id, chapter)),
+      );
+      await session.open('book');
+      for (final chapter in chapters) {
+        final snapshot = await session.readAiContextSnapshot([chapter.id]);
+        expect(snapshot.chapters[chapter.id]!.blocks, chapter.blocks);
+        expect(
+          session.book!.chapters
+              .where((item) => item.id != 'a')
+              .every((item) => item.blocks.isEmpty),
+          true,
+        );
+        expect(session.activeChapter!.blocks.single.plainText, '原文');
+      }
+      final gate = Completer<void>();
+      store.loadGate = gate;
+      var cancelled = false;
+      final reading = session.readAiContextSnapshot([
+        'b',
+      ], isCancelled: () => cancelled);
+      await Future<void>.delayed(Duration.zero);
+      cancelled = true;
+      gate.complete();
+      await expectLater(reading, throwsA(isA<TaskCancelled>()));
+      expect(
+        session.book!.chapters
+            .singleWhere((chapter) => chapter.id == 'b')
+            .blocks,
+        isEmpty,
+      );
+      expect(store.saveCalls, 0);
+      expect(session.canUndo, false);
+    },
+  );
+
+  test('AI snapshot refuses cancelled, changed and unsaved input', () async {
+    await session.open('book');
+    await expectLater(
+      session.readAiContextSnapshot(['b'], isCancelled: () => true),
+      throwsA(isA<TaskCancelled>()),
+    );
+    expect(store.loadedChapterIds, ['a']);
+    final gate = Completer<void>();
+    store.loadGate = gate;
+    final reading = session.readAiContextSnapshot(['b']);
+    await Future<void>.delayed(Duration.zero);
+    session.editBlockText('p1', '并发编辑');
+    gate.complete();
+    await expectLater(reading, throwsA(isA<ValidationFailure>()));
+    store.failNext = true;
+    await expectLater(
+      session.readAiContextSnapshot(['b']),
+      throwsA(isA<StorageFailure>()),
+    );
+    expect(session.dirty, true);
+    await session.flush();
+  });
+
+  test('AI snapshot bounds non-text blocks as well as network text', () async {
+    store._bodies['b'] = store._bodies['b']!.copyWith(
+      blocks: [
+        const TextBlock(id: 'p2', text: '正文'),
+        for (var index = 0; index < 10000; index++)
+          DividerBlock(id: 'divider-$index'),
+      ],
+    );
+    await session.open('book');
+    await expectLater(
+      session.readAiContextSnapshot(['b']),
+      throwsA(isA<ValidationFailure>()),
+    );
+    expect(store.saveCalls, 0);
+    expect(session.canUndo, false);
   });
 
   test('debounce saves after idle interval', () async {
@@ -544,6 +788,7 @@ class _MemoryStore implements EditorBookStore {
   final List<Set<String>> savedDirtyIds = <Set<String>>[];
   final List<Set<String>> savedDeletedIds = <Set<String>>[];
   Completer<void>? saveGate;
+  Completer<void>? loadGate;
   bool failNext = false;
   int saveCalls = 0;
 
@@ -554,6 +799,9 @@ class _MemoryStore implements EditorBookStore {
   @override
   Future<Chapter?> loadChapter(String bookId, String chapterId) async {
     loadedChapterIds.add(chapterId);
+    final gate = loadGate;
+    loadGate = null;
+    if (gate != null) await gate.future;
     return _bodies[chapterId];
   }
 

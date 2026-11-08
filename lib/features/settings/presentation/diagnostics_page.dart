@@ -79,9 +79,7 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
     final String osName = _prettyOs(Platform.operatingSystem);
-    final String platform = version.toLowerCase().contains(
-      osName.toLowerCase(),
-    )
+    final String platform = version.toLowerCase().contains(osName.toLowerCase())
         ? version
         : '$osName · $version';
 
@@ -123,10 +121,8 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
           const SizedBox(height: AppSpacing.sm),
           Text(
             l10n.settingsRuntimeRefresh,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: context.colors.inkMuted,
-              fontSize: 11,
-            ),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: context.colors.inkMuted, fontSize: 11),
           ),
           const SizedBox(height: AppSpacing.md),
           _StatCard(
@@ -274,4 +270,3 @@ class _StatCard extends StatelessWidget {
     return SizedBox(width: double.infinity, child: card);
   }
 }
-

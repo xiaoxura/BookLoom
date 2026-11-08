@@ -1,0 +1,1987 @@
+{
+  "schema_version": 1,
+  "provenance": {
+    "kind": "assistant_authored_synthetic",
+    "contains_user_manuscripts": false,
+    "human_reviewed": false,
+    "notes": "完全原创合成场景；反馈标题只保留格式特征，不复制小说正文。标注由开发代理编写，尚未人工复核。固定规则故意保留误报／漏报挑战，不以本语料推断真实模型质量。2026-11-07 追加 3 个移除整块广告与 3 个目录标题修正的合成场景，原有 25 例标注未改；追加部分同样未人工复核。"
+  },
+  "rules": [
+    {
+      "id": "site-promo",
+      "definition": {
+        "schema_version": 1,
+        "name": "固定站点推广标记",
+        "kind": "advertisement",
+        "target": "paragraph",
+        "match": {
+          "mode": "literal",
+          "pattern": "【本站推广：收藏星河书屋】",
+          "case_sensitive": true
+        },
+        "action": "exact_deletion",
+        "positive_examples": [
+          "【本站推广：收藏星河书屋】"
+        ],
+        "negative_examples": [
+          "她继续阅读。"
+        ],
+        "reason": "固定基准规则，仅评估其已声明覆盖；不代表默认规则或真实模型质量。"
+      }
+    },
+    {
+      "id": "arabic-heading",
+      "definition": {
+        "schema_version": 1,
+        "name": "行首阿拉伯数字章",
+        "kind": "chapter",
+        "target": "heading_line",
+        "match": {
+          "mode": "safe_regex",
+          "pattern": "^第[0-9]{1,4}章",
+          "case_sensitive": true
+        },
+        "action": "chapter_candidate",
+        "positive_examples": [
+          "第12章 夜航"
+        ],
+        "negative_examples": [
+          "她说第12章很好看。"
+        ],
+        "reason": "固定基准规则，仅评估其已声明覆盖；不代表默认规则或真实模型质量。"
+      }
+    },
+    {
+      "id": "range-heading",
+      "definition": {
+        "schema_version": 1,
+        "name": "四位合章标记",
+        "kind": "chapter",
+        "target": "heading_line",
+        "match": {
+          "mode": "safe_regex",
+          "pattern": "^第[0-9]{4}~[0-9]{4}章",
+          "case_sensitive": true
+        },
+        "action": "chapter_candidate",
+        "positive_examples": [
+          "第1045~1046章现代番，一百三十"
+        ],
+        "negative_examples": [
+          "第12章 夜航"
+        ],
+        "reason": "固定基准规则，仅评估其已声明覆盖；不代表默认规则或真实模型质量。"
+      }
+    },
+    {
+      "id": "decorated-heading",
+      "definition": {
+        "schema_version": 1,
+        "name": "装饰标题固定样式",
+        "kind": "chapter",
+        "target": "heading_line",
+        "match": {
+          "mode": "literal",
+          "pattern": "【卷二·第十三回】",
+          "case_sensitive": true
+        },
+        "action": "chapter_candidate",
+        "positive_examples": [
+          "【卷二·第十三回】夜雨入城"
+        ],
+        "negative_examples": [
+          "夜雨入城"
+        ],
+        "reason": "固定基准规则，仅评估其已声明覆盖；不代表默认规则或真实模型质量。"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "site-banner",
+      "description": "独立站点推广应精确删除",
+      "tags": [
+        "standalone",
+        "advertisement"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "【本站推广：收藏星河书屋】"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 0,
+          "end_utf16": 13,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "advertisement"
+          ],
+          "action": "delete_text",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mixed-paragraph",
+      "description": "广告前后剧情必须逐字保留",
+      "tags": [
+        "mixed",
+        "exact-range"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "她推开门。【本站推广：收藏星河书屋】雨停了。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 5,
+          "end_utf16": 18,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "advertisement"
+          ],
+          "action": "delete_text",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "她推开门。雨停了。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "author-note",
+      "description": "作者更新说明不是站点广告",
+      "tags": [
+        "protected",
+        "author-note"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "作者的话：明晚更新，感谢大家耐心等候。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 0,
+          "end_utf16": 19,
+          "original": "作者的话：明晚更新，感谢大家耐心等候。",
+          "acceptable_assessments": [
+            "author_note"
+          ],
+          "action": "none",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "作者的话：明晚更新，感谢大家耐心等候。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "story-quote",
+      "description": "剧情引用与广告字样完全相同仍不应删除",
+      "tags": [
+        "protected",
+        "known-rule-false-positive"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "他指着旧招牌念道：“【本站推广：收藏星河书屋】”，随后摇了摇头。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 10,
+          "end_utf16": 23,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "story_quote"
+          ],
+          "action": "none",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "他指着旧招牌念道：“【本站推广：收藏星河书屋】”，随后摇了摇头。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ordinary-reading",
+      "description": "阅读和收藏可属于正常剧情",
+      "tags": [
+        "protected",
+        "ordinary-prose"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "她把借来的书收入收藏柜，继续阅读父亲留下的信。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 0,
+          "end_utf16": 23,
+          "original": "她把借来的书收入收藏柜，继续阅读父亲留下的信。",
+          "acceptable_assessments": [
+            "not_advertisement"
+          ],
+          "action": "none",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "她把借来的书收入收藏柜，继续阅读父亲留下的信。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ambiguous-note",
+      "description": "无法确认宣传语来源时不修改",
+      "tags": [
+        "protected",
+        "uncertain"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "纸角写着“请记得支持这里”，墨迹已经模糊。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 5,
+          "end_utf16": 12,
+          "original": "请记得支持这里",
+          "acceptable_assessments": [
+            "undetermined"
+          ],
+          "action": "none",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "纸角写着“请记得支持这里”，墨迹已经模糊。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unseen-promotion",
+      "description": "未覆盖的推广变体必须计为漏报",
+      "tags": [
+        "known-rule-false-negative",
+        "variant"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "正文结束。请访问月港阅读站领取完整章节。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 5,
+          "end_utf16": 20,
+          "original": "请访问月港阅读站领取完整章节。",
+          "acceptable_assessments": [
+            "advertisement"
+          ],
+          "action": "delete_text",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "正文结束。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "emoji-crlf",
+      "description": "UTF-16 非 BMP 和 CRLF 不改变定位",
+      "tags": [
+        "utf16",
+        "crlf"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "😀开场\r\n【本站推广：收藏星河书屋】\r\n她说：“走吧🙂”。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 6,
+          "end_utf16": 19,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "advertisement"
+          ],
+          "action": "delete_text",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "😀开场\r\n\r\n她说：“走吧🙂”。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "two-deletions",
+      "description": "同块两个独立删除应一次编译",
+      "tags": [
+        "multi-edit"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "前文。【本站推广：收藏星河书屋】中间正文。【本站推广：收藏星河书屋】后文。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 3,
+          "end_utf16": 16,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "advertisement"
+          ],
+          "action": "delete_text",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        },
+        {
+          "id": "label-2",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 21,
+          "end_utf16": 34,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "advertisement"
+          ],
+          "action": "delete_text",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "前文。中间正文。后文。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "same-text-different-role",
+      "description": "相同原文依靠偏移区分剧情引用和实际广告",
+      "tags": [
+        "duplicate-anchor",
+        "protected",
+        "known-rule-false-positive"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "她念道：“【本站推广：收藏星河书屋】”。\n【本站推广：收藏星河书屋】"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 5,
+          "end_utf16": 18,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "story_quote"
+          ],
+          "action": "none",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        },
+        {
+          "id": "label-2",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 21,
+          "end_utf16": 34,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "advertisement"
+          ],
+          "action": "delete_text",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "她念道：“【本站推广：收藏星河书屋】”。\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "standard-heading",
+      "description": "可靠独立标题行应拆章且不补写正文",
+      "tags": [
+        "heading",
+        "arabic"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "arabic-heading",
+        "range-heading",
+        "decorated-heading"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "前章正文。\n第12章 夜航\n新章正文。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 6,
+          "end_utf16": 13,
+          "original": "第12章 夜航",
+          "acceptable_assessments": [
+            "missed_heading"
+          ],
+          "action": "split_chapter",
+          "title": "第12章 夜航",
+          "remove_title_line": true,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "前章正文。\n"
+            }
+          ]
+        },
+        {
+          "title": "第12章 夜航",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "新章正文。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "punctuation-heading",
+      "description": "可靠独立标题行应拆章且不补写正文",
+      "tags": [
+        "heading",
+        "feedback-shape"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "arabic-heading",
+        "range-heading",
+        "decorated-heading"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "前章正文。\n第849章教训小媳妇?\n新章正文。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 6,
+          "end_utf16": 17,
+          "original": "第849章教训小媳妇?",
+          "acceptable_assessments": [
+            "missed_heading"
+          ],
+          "action": "split_chapter",
+          "title": "第849章教训小媳妇?",
+          "remove_title_line": true,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "前章正文。\n"
+            }
+          ]
+        },
+        {
+          "title": "第849章教训小媳妇?",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "新章正文。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "combined-range-heading",
+      "description": "可靠独立标题行应拆章且不补写正文",
+      "tags": [
+        "heading",
+        "combined-range",
+        "feedback-shape"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "arabic-heading",
+        "range-heading",
+        "decorated-heading"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "前章正文。\n第1045~1046章现代番，一百三十\n新章正文。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 6,
+          "end_utf16": 25,
+          "original": "第1045~1046章现代番，一百三十",
+          "acceptable_assessments": [
+            "missed_heading"
+          ],
+          "action": "split_chapter",
+          "title": "第1045~1046章现代番，一百三十",
+          "remove_title_line": true,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "前章正文。\n"
+            }
+          ]
+        },
+        {
+          "title": "第1045~1046章现代番，一百三十",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "新章正文。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "decorated-heading",
+      "description": "可靠独立标题行应拆章且不补写正文",
+      "tags": [
+        "heading",
+        "decorated"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "arabic-heading",
+        "range-heading",
+        "decorated-heading"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "前章正文。\n【卷二·第十三回】夜雨入城\n新章正文。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 6,
+          "end_utf16": 19,
+          "original": "【卷二·第十三回】夜雨入城",
+          "acceptable_assessments": [
+            "missed_heading"
+          ],
+          "action": "split_chapter",
+          "title": "【卷二·第十三回】夜雨入城",
+          "remove_title_line": true,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "前章正文。\n"
+            }
+          ]
+        },
+        {
+          "title": "【卷二·第十三回】夜雨入城",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "新章正文。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "split-emoji-crlf",
+      "description": "可靠独立标题行应拆章且不补写正文",
+      "tags": [
+        "utf16",
+        "crlf",
+        "heading"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "arabic-heading",
+        "range-heading",
+        "decorated-heading"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "😀旧章\r\n第13章 星灯\n🙂新章\r\n下一段。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 6,
+          "end_utf16": 13,
+          "original": "第13章 星灯",
+          "acceptable_assessments": [
+            "missed_heading"
+          ],
+          "action": "split_chapter",
+          "title": "第13章 星灯",
+          "remove_title_line": true,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "😀旧章\r\n"
+            }
+          ]
+        },
+        {
+          "title": "第13章 星灯",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "🙂新章\r\n下一段。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "inline-title-not-heading",
+      "description": "行内提及标题不是独立边界",
+      "tags": [
+        "protected",
+        "inline-title"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "arabic-heading",
+        "range-heading",
+        "decorated-heading"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "她在信中写道：第12章 夜航，指的是那本旧书。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 7,
+          "end_utf16": 14,
+          "original": "第12章 夜航",
+          "acceptable_assessments": [
+            "undetermined"
+          ],
+          "action": "none",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "她在信中写道：第12章 夜航，指的是那本旧书。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "heading-shaped-story",
+      "description": "形似标题的整行剧情不应盲目拆章",
+      "tags": [
+        "protected",
+        "known-rule-false-positive"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "arabic-heading",
+        "range-heading",
+        "decorated-heading"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "第12章 是他随口编出的暗号，不是目录。\n故事继续。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 0,
+          "end_utf16": 20,
+          "original": "第12章 是他随口编出的暗号，不是目录。",
+          "acceptable_assessments": [
+            "undetermined"
+          ],
+          "action": "none",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "第12章 是他随口编出的暗号，不是目录。\n故事继续。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "number-gap-diagnostic",
+      "description": "编号跳跃仅提示疑似缺失，不补写",
+      "tags": [
+        "protected",
+        "no-invention"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "arabic-heading",
+        "range-heading",
+        "decorated-heading"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "此处从第三章直接跳到第五章；无法判断文件是否缺失。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 0,
+          "end_utf16": 25,
+          "original": "此处从第三章直接跳到第五章；无法判断文件是否缺失。",
+          "acceptable_assessments": [
+            "suspected_missing"
+          ],
+          "action": "none",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "此处从第三章直接跳到第五章；无法判断文件是否缺失。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "numbering-diagnostic",
+      "description": "编号疑点不自动改号",
+      "tags": [
+        "protected",
+        "no-renumber"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "arabic-heading",
+        "range-heading",
+        "decorated-heading"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "目录把本章写作第六章，正文却标为第七章。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 0,
+          "end_utf16": 20,
+          "original": "目录把本章写作第六章，正文却标为第七章。",
+          "acceptable_assessments": [
+            "numbering_suspect"
+          ],
+          "action": "none",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "目录把本章写作第六章，正文却标为第七章。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "merged-without-heading",
+      "description": "合并内容无可靠标题时仅诊断",
+      "tags": [
+        "protected",
+        "no-heading"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "arabic-heading",
+        "range-heading",
+        "decorated-heading"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "前半场景落幕。随后故事转到北岸，但没有明确标题。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 0,
+          "end_utf16": 24,
+          "original": "前半场景落幕。随后故事转到北岸，但没有明确标题。",
+          "acceptable_assessments": [
+            "merged_content"
+          ],
+          "action": "none",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "前半场景落幕。随后故事转到北岸，但没有明确标题。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "volume-resources",
+      "description": "拆章保持卷父级、资源身份和后续文本顺序",
+      "tags": [
+        "volume",
+        "image",
+        "footnote",
+        "divider"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "arabic-heading",
+        "range-heading",
+        "decorated-heading"
+      ],
+      "chapters": [
+        {
+          "id": "volume",
+          "title": "卷一 远航",
+          "level": 1,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": []
+        },
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": "volume",
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "卷内旧章。\n第14章 灯塔\n新章正文。"
+            },
+            {
+              "id": "art",
+              "kind": "image",
+              "asset_id": "cover-asset",
+              "caption": "灯塔示意",
+              "alt": "夜间灯塔"
+            },
+            {
+              "id": "note",
+              "kind": "footnote",
+              "text": "此处为虚构地名。",
+              "marker": "①"
+            },
+            {
+              "id": "divider",
+              "kind": "divider"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 6,
+          "end_utf16": 13,
+          "original": "第14章 灯塔",
+          "acceptable_assessments": [
+            "missed_heading"
+          ],
+          "action": "split_chapter",
+          "title": "第14章 灯塔",
+          "remove_title_line": true,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "卷一 远航",
+          "level": 1,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": []
+        },
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": 0,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "卷内旧章。\n"
+            }
+          ]
+        },
+        {
+          "title": "第14章 灯塔",
+          "level": 2,
+          "parent_index": 0,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "新章正文。"
+            },
+            {
+              "id": "art",
+              "kind": "image",
+              "asset_id": "cover-asset",
+              "caption": "灯塔示意",
+              "alt": "夜间灯塔"
+            },
+            {
+              "id": "note",
+              "kind": "footnote",
+              "text": "此处为虚构地名。",
+              "marker": "①"
+            },
+            {
+              "id": "divider",
+              "kind": "divider"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chunk-boundary",
+      "description": "跨多个小上下文块仍定位唯一广告",
+      "tags": [
+        "chunked",
+        "long-block"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 512,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "起始。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。【本站推广：收藏星河书屋】结尾。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 843,
+          "end_utf16": 856,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "advertisement"
+          ],
+          "action": "delete_text",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：按本例明确语境保留剧情，仅执行可定位的广告删除或现存标题拆章。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "起始。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。海风拂过桅杆。结尾。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "block-remove-site-ad",
+      "description": "整块只有站点推广时应移除整块而不是只清空文字",
+      "tags": [
+        "block-removal",
+        "standalone"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "【本站推广：收藏星河书屋】"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 0,
+          "end_utf16": 13,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "advertisement"
+          ],
+          "action": "remove_block",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：整块只含站点推广，应移除整块并保留章节。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": []
+        }
+      ]
+    },
+    {
+      "id": "block-remove-between-resources",
+      "description": "整块广告移除后图片、脚注和分隔符保持原序",
+      "tags": [
+        "block-removal",
+        "resources"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "door",
+              "kind": "paragraph",
+              "text": "推开门。"
+            },
+            {
+              "id": "scene",
+              "kind": "image",
+              "asset_id": "scene-asset",
+              "caption": "门前雨景",
+              "alt": "雨景"
+            },
+            {
+              "id": "promo",
+              "kind": "paragraph",
+              "text": "【本站推广：收藏星河书屋】"
+            },
+            {
+              "id": "note",
+              "kind": "footnote",
+              "text": "此处为虚构地点。",
+              "marker": "①"
+            },
+            {
+              "id": "divider",
+              "kind": "divider"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "promo",
+          "start_utf16": 0,
+          "end_utf16": 13,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "advertisement"
+          ],
+          "action": "remove_block",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：完全广告块可移除，相邻资源不受影响。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "推开门。"
+            },
+            {
+              "id": "scene",
+              "kind": "image",
+              "asset_id": "scene-asset",
+              "caption": "门前雨景",
+              "alt": "雨景"
+            },
+            {
+              "id": "note",
+              "kind": "footnote",
+              "text": "此处为虚构地点。",
+              "marker": "①"
+            },
+            {
+              "id": "divider",
+              "kind": "divider"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "block-mixed-ad-stays-text",
+      "description": "混合段落只删除可定位广告文字而不是移除整块",
+      "tags": [
+        "mixed",
+        "exact-range",
+        "block-removal-contrast"
+      ],
+      "intent": "advertisement",
+      "chunk_characters": 16384,
+      "rule_ids": [
+        "site-promo"
+      ],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "雨停了。【本站推广：收藏星河书屋】她合上书。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 4,
+          "end_utf16": 17,
+          "original": "【本站推广：收藏星河书屋】",
+          "acceptable_assessments": [
+            "advertisement"
+          ],
+          "action": "delete_text",
+          "title": "",
+          "remove_title_line": false,
+          "reason": "合成标注：广告与剧情同块时必须保留剧情并只删除精确范围。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "雨停了。她合上书。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rename-wrong-directory-title",
+      "description": "目录标题有错字时按首行原文修正标题并保留正文",
+      "tags": [
+        "rename",
+        "exact-heading"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "第一章 启程",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "第一章 起程\n她推开门。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 0,
+          "end_utf16": 6,
+          "original": "第一章 起程",
+          "acceptable_assessments": [
+            "missed_heading"
+          ],
+          "action": "rename_chapter",
+          "title": "第一章 起程",
+          "remove_title_line": false,
+          "reason": "合成标注：目录标题有错字，首行独立标题才是可靠原文。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "第一章 起程\n她推开门。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rename-empty-directory-title",
+      "description": "目录标题为空时可用首个独立标题行补正",
+      "tags": [
+        "rename",
+        "empty-title"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "第一章 起程\n正文继续。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 0,
+          "end_utf16": 6,
+          "original": "第一章 起程",
+          "acceptable_assessments": [
+            "missed_heading"
+          ],
+          "action": "rename_chapter",
+          "title": "第一章 起程",
+          "remove_title_line": false,
+          "reason": "合成标注：空目录标题由首个独立标题行补正，正文不改。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第一章 起程",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "第一章 起程\n正文继续。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rename-emoji-heading",
+      "description": "含 emoji 的独立标题行可精确修正目录标题",
+      "tags": [
+        "rename",
+        "emoji"
+      ],
+      "intent": "missing_chapter",
+      "chunk_characters": 16384,
+      "rule_ids": [],
+      "chapters": [
+        {
+          "id": "chapter",
+          "title": "🌙 夜航",
+          "level": 2,
+          "parent_id": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "id": "body",
+              "kind": "paragraph",
+              "text": "第二章 😀归途\n她合上书。"
+            }
+          ]
+        }
+      ],
+      "labels": [
+        {
+          "id": "label-1",
+          "chapter_id": "chapter",
+          "block_id": "body",
+          "start_utf16": 0,
+          "end_utf16": 8,
+          "original": "第二章 😀归途",
+          "acceptable_assessments": [
+            "missed_heading"
+          ],
+          "action": "rename_chapter",
+          "title": "第二章 😀归途",
+          "remove_title_line": false,
+          "reason": "合成标注：emoji 标题按 UTF-16 长度精确标注，正文保持不变。"
+        }
+      ],
+      "expected_after": [
+        {
+          "title": "第二章 😀归途",
+          "level": 2,
+          "parent_index": null,
+          "front_matter": false,
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "第二章 😀归途\n她合上书。"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

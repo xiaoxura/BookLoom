@@ -72,10 +72,11 @@ final SpringDescription dropletSpring = SpringDescription.withDampingRatio(
 
 /// Spring for things that appear and disappear, matching the 416ms / 0.25
 /// bounce FlClash uses for its bar items.
-final SpringDescription presenceSpring = SpringDescription.withDurationAndBounce(
-  duration: const Duration(milliseconds: 416),
-  bounce: 0.25,
-);
+final SpringDescription presenceSpring =
+    SpringDescription.withDurationAndBounce(
+      duration: const Duration(milliseconds: 416),
+      bounce: 0.25,
+    );
 
 /// Frame interval of the current display, so 120Hz screens do not get
 /// animations tuned for 60Hz.

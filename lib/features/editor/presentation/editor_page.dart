@@ -6,8 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart' hide Block;
 
+import '../../../app/ai_providers.dart';
+import '../../../app/rule_providers.dart';
 import '../../../app/window/window_controls.dart';
 import '../../../app/workbench_providers.dart';
+import '../../../core/editing/proofreading_rule.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/model/block.dart';
 import '../../../core/model/chapter.dart';
@@ -18,12 +21,17 @@ import '../../../design/theme/app_tokens.dart';
 import '../../../design/tokens/app_metrics.dart';
 import '../../../design/tokens/app_typography.dart';
 import '../../../l10n/app_localizations.dart';
+import '../application/ai_advertisement_request.dart';
+import '../application/ai_rule_creation_task.dart';
 import '../application/book_assets.dart';
 import '../application/editor_session.dart';
+import 'ai_proofreading_panel.dart';
+import 'ai_rule_creation_panel.dart';
 import 'book_settings_panel.dart';
 import 'chapter_management_dialogs.dart';
 import 'proofreading_panel.dart';
 import 'reparse_panel.dart';
+import 'rule_workbench_panel.dart';
 
 typedef ExportBook = Future<SaveOutcome> Function(String bookId);
 typedef ShareBook = Future<void> Function(String bookId);
@@ -254,6 +262,10 @@ class _EditorPageState extends ConsumerState<EditorPage>
 
   @override
   Widget build(BuildContext context) {
+    if (_session.book != null) {
+      ref.watch(aiProofreadingTaskProvider(_session).select((task) => null));
+      ref.watch(ruleWorkbenchTaskProvider(_session).select((task) => null));
+    }
     final l10n = AppLocalizations.of(context);
     final width = MediaQuery.sizeOf(context).width;
     final mobile = width < 960;
@@ -295,6 +307,7 @@ class _EditorPageState extends ConsumerState<EditorPage>
                 : null,
             body: AppPage(
               scrollable: false,
+              maxContentWidth: double.infinity,
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _loadError != null
@@ -771,6 +784,7 @@ class _EditorPageState extends ConsumerState<EditorPage>
                     itemBuilder: (_, index) {
                       final chapter = shown[index];
                       final expanded = !_collapsedVolumes.contains(chapter.id);
+                      final selected = chapter.id == _session.activeChapterId;
                       return Semantics(
                         expanded: chapter.isVolume ? expanded : null,
                         child: ListTile(
@@ -783,12 +797,19 @@ class _EditorPageState extends ConsumerState<EditorPage>
                                 : AppSpacing.xl,
                             right: AppSpacing.xs,
                           ),
-                          selected: chapter.id == _session.activeChapterId,
+                          selected: selected,
+                          selectedTileColor: colors.accentSoft,
+                          selectedColor: colors.accent,
                           title: Row(
                             children: [
                               Flexible(
                                 child: Text(
                                   chapter.title,
+                                  style: selected
+                                      ? const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        )
+                                      : null,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -1004,6 +1025,24 @@ class _EditorPageState extends ConsumerState<EditorPage>
               onDisposed: () => _paragraphDisposed(block.id),
               onParagraphAction: (action) =>
                   unawaited(_paragraphAction(chapter.id, block.id, action)),
+              onCreateRule: (start, end, original, kind) => _showRuleCreation(
+                AiRuleSelection(
+                  chapterId: chapter.id,
+                  blockId: block.id,
+                  startUtf16: start,
+                  endUtf16: end,
+                  original: original,
+                ),
+                kind,
+              ),
+              onAnalyzeAdvertisement: (start, end, original) =>
+                  _showAdvertisementSelection(
+                    chapter.id,
+                    block.id,
+                    start,
+                    end,
+                    original,
+                  ),
             ),
     );
   }
@@ -1015,53 +1054,158 @@ class _EditorPageState extends ConsumerState<EditorPage>
   );
 
   void _showMetadata(AppLocalizations l10n) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => SafeArea(
-        child: FractionallySizedBox(
-          heightFactor: 0.82,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: _settingsPane(),
-          ),
-        ),
-      ),
-    );
+    _showWorkbenchPanel((_) => _settingsPane());
   }
 
   void _showProofreading() {
     if (_composing) return;
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheet) => SafeArea(
-        child: FractionallySizedBox(
-          heightFactor: 0.85,
-          child: ProofreadingPanel(
-            session: _session,
-            onLocate: (chapterId, blockId) async {
-              Navigator.of(sheet).pop();
-              await _locate(chapterId, blockId);
-            },
-          ),
-        ),
+    _showWorkbenchPanel(
+      (dialog) => ProofreadingPanel(
+        session: _session,
+        onUseRule: (rule) => _openJointRuleWorkbench(rule, dialog),
+        onLocate: (chapterId, blockId) async {
+          Navigator.of(dialog).pop();
+          await _locate(chapterId, blockId);
+        },
+      ),
+    );
+  }
+
+  void _showRuleCreation(AiRuleSelection selection, ProofreadingRuleKind kind) {
+    if (_composing) return;
+    _showWorkbenchPanel(
+      (dialog) => AiRuleCreationPanel(
+        session: _session,
+        selection: selection,
+        initialKind: kind,
+        onUseRule: (rule) {
+          final sessionId = _session.sessionId;
+          final saveSeq = _session.saveSeq;
+          Navigator.of(dialog).pop();
+          _showWorkbenchPanel(
+            (workbench) => RuleWorkbenchPanel(
+              session: _session,
+              initialRule: rule,
+              initialSessionId: sessionId,
+              initialSaveSeq: saveSeq,
+              onLocate: (chapterId, blockId) async {
+                Navigator.of(workbench).pop();
+                await _locate(chapterId, blockId);
+              },
+              onAnalyzeAdvertisement: (request) async {
+                Navigator.of(workbench).pop();
+                _openAdvertisementPanel(request);
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showAdvertisementSelection(
+    String chapterId,
+    String blockId,
+    int startUtf16,
+    int endUtf16,
+    String original,
+  ) {
+    if (_composing) return;
+    final book = _session.book;
+    final sessionId = _session.sessionId;
+    if (book == null || sessionId == null) return;
+    try {
+      final request = AiAdvertisementRequest.fromSelection(
+        book: book,
+        sessionId: sessionId,
+        sessionRevision: _session.saveSeq,
+        chapterId: chapterId,
+        blockId: blockId,
+        startUtf16: startUtf16,
+        endUtf16: endUtf16,
+        original: original,
+      );
+      _openAdvertisementPanel(request);
+    } on Object {
+      _notice(AppLocalizations.of(context).aiAdvertisementSelectionExpired);
+    }
+  }
+
+  void _openAdvertisementPanel(AiAdvertisementRequest request) {
+    if (!mounted) return;
+    _showWorkbenchPanel(
+      (dialog) => AiProofreadingPanel(
+        session: _session,
+        initialAdvertisementSelection: request,
+        onUseRule: (rule) => _openJointRuleWorkbench(rule, dialog),
+        onLocate: (chapterId, blockId) async {
+          Navigator.of(dialog).pop();
+          await _locate(chapterId, blockId);
+        },
+      ),
+    );
+  }
+
+  void _openJointRuleWorkbench(ProofreadingRule rule, BuildContext source) {
+    if (!mounted) return;
+    final sessionId = _session.sessionId;
+    final saveSeq = _session.saveSeq;
+    _showWorkbenchPanel(
+      (workbench) => RuleWorkbenchPanel(
+        session: _session,
+        initialRule: rule,
+        initialSessionId: sessionId,
+        initialSaveSeq: saveSeq,
+        onLocate: (chapterId, blockId) async {
+          Navigator.of(workbench).pop();
+          if (source.mounted) Navigator.of(source).pop();
+          await _locate(chapterId, blockId);
+        },
+        onAnalyzeAdvertisement: (request) async {
+          Navigator.of(workbench).pop();
+          _openAdvertisementPanel(request);
+        },
       ),
     );
   }
 
   void _showReparse() {
     if (_composing) return;
-    showModalBottomSheet<void>(
+    _showWorkbenchPanel(
+      (_) => ReparsePanel(
+        session: _session,
+        service: ref.read(importServiceProvider),
+        files: ref.read(fileServiceProvider),
+      ),
+    );
+  }
+
+  void _showWorkbenchPanel(WidgetBuilder builder) {
+    showDialog<void>(
       context: context,
-      isScrollControlled: true,
-      builder: (_) => SafeArea(
-        child: FractionallySizedBox(
-          heightFactor: 0.85,
-          child: ReparsePanel(
-            session: _session,
-            service: ref.read(importServiceProvider),
-            files: ref.read(fileServiceProvider),
+      builder: (dialog) => Dialog(
+        insetPadding: const EdgeInsets.all(AppSpacing.lg),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: AppLayout.workbenchDialogMaxWidth,
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            height:
+                MediaQuery.sizeOf(dialog).height *
+                AppLayout.workbenchDialogHeightFraction,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: CloseButton(
+                    onPressed: () => Navigator.of(dialog).pop(),
+                  ),
+                ),
+                Expanded(child: builder(dialog)),
+              ],
+            ),
           ),
         ),
       ),
@@ -1435,6 +1579,8 @@ class _ParagraphField extends StatefulWidget {
     required this.onComposedDraftChanged,
     required this.onDisposed,
     required this.onParagraphAction,
+    required this.onCreateRule,
+    required this.onAnalyzeAdvertisement,
   });
   final String text;
   final bool compact;
@@ -1443,6 +1589,15 @@ class _ParagraphField extends StatefulWidget {
   final ValueChanged<String?> onComposedDraftChanged;
   final VoidCallback onDisposed;
   final ValueChanged<String> onParagraphAction;
+  final void Function(
+    int startUtf16,
+    int endUtf16,
+    String original,
+    ProofreadingRuleKind kind,
+  )
+  onCreateRule;
+  final void Function(int startUtf16, int endUtf16, String original)
+  onAnalyzeAdvertisement;
 
   @override
   State<_ParagraphField> createState() => _ParagraphFieldState();
@@ -1522,6 +1677,21 @@ class _ParagraphFieldState extends State<_ParagraphField> {
     style: AppTypography.reading(context.colors, compact: widget.compact),
     contextMenuBuilder: (context, editableText) {
       final l10n = AppLocalizations.of(context);
+      final selection = _controller.selection;
+      final source = _controller.text;
+      final selected = selection.isValid && !selection.isCollapsed
+          ? selection.textInside(source)
+          : '';
+      final canCreateRule =
+          !_isComposing &&
+          selected.trim().isNotEmpty &&
+          selected.length <= ProofreadingRule.maxExampleUtf16 &&
+          !selected.contains('\n') &&
+          !selected.contains('\r');
+      final canAnalyzeAdvertisement =
+          !_isComposing &&
+          selected.trim().isNotEmpty &&
+          selected.length <= 8192;
       void action(String value) {
         ContextMenuController.removeAny();
         widget.onParagraphAction(value);
@@ -1538,6 +1708,34 @@ class _ParagraphFieldState extends State<_ParagraphField> {
             label: l10n.editorSetAsTitle,
             onPressed: () => action('title'),
           ),
+          if (canCreateRule)
+            for (final kind in ProofreadingRuleKind.values)
+              ContextMenuButtonItem(
+                label: kind == ProofreadingRuleKind.chapter
+                    ? l10n.editorAiCreateChapterRule
+                    : l10n.editorAiCreateAdvertisementRule,
+                onPressed: () {
+                  ContextMenuController.removeAny();
+                  widget.onCreateRule(
+                    selection.start,
+                    selection.end,
+                    selected,
+                    kind,
+                  );
+                },
+              ),
+          if (canAnalyzeAdvertisement)
+            ContextMenuButtonItem(
+              label: l10n.editorAiAnalyzeAdvertisement,
+              onPressed: () {
+                ContextMenuController.removeAny();
+                widget.onAnalyzeAdvertisement(
+                  selection.start,
+                  selection.end,
+                  selected,
+                );
+              },
+            ),
           ...editableText.contextMenuButtonItems,
         ],
       );

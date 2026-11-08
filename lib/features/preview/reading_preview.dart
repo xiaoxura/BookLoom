@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 
 import 'book_cover.dart';
 import 'bounded_asset_read.dart';
+import 'layout_paragraph.dart';
 
 /// A native reading preview of the current session's model. It intentionally
 /// excludes arbitrary export CSS and reader-specific pagination.
@@ -200,16 +201,7 @@ class _ReadingPreviewState extends State<ReadingPreview> {
           );
         }
         final text = block.plainText;
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: textStyle.fontSize! * layout.paragraphSpacing,
-          ),
-          child: Text(
-            layout.indent ? '\u3000\u3000$text' : text,
-            textAlign: layout.justify ? TextAlign.justify : TextAlign.start,
-            style: textStyle,
-          ),
-        );
+        return LayoutParagraph(text: text, layout: layout, style: textStyle);
       },
     );
   }

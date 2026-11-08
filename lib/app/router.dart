@@ -18,6 +18,7 @@ import '../features/export/presentation/export_options.dart';
 import '../features/import/presentation/batch_page.dart';
 import '../features/import/presentation/import_page.dart';
 import '../features/library/presentation/library_page.dart';
+import '../features/settings/presentation/ai_settings_page.dart';
 import '../features/settings/presentation/appearance_page.dart';
 import '../features/settings/presentation/book_data_page.dart';
 import '../features/settings/presentation/defaults_page.dart';
@@ -84,6 +85,11 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
                     path: 'appearance',
                     pageBuilder: (BuildContext context, GoRouterState state) =>
                         _shellPage(const AppearancePage()),
+                  ),
+                  GoRoute(
+                    path: 'ai',
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _shellPage(const AiSettingsPage()),
                   ),
                   GoRoute(
                     path: 'defaults',

@@ -1,3 +1,4 @@
+import 'package:bookloom/core/editing/rule_heading_mapping.dart';
 import 'package:bookloom/core/editing/safe_regex.dart';
 import 'package:bookloom/core/errors/app_failure.dart';
 import 'package:bookloom/core/model/block.dart';
@@ -10,6 +11,7 @@ const int replaceTextLimit = 500;
 const int replaceHitLimit = 200000;
 const int previewSampleLimit = 20;
 const int previewContextLength = 16;
+const int duplicateContentMinLength = 100;
 
 enum AuditIssueKind {
   missingNumber,
@@ -20,6 +22,8 @@ enum AuditIssueKind {
   tooShort,
   emptyVolume,
   adLeftover,
+  titleFormat,
+  duplicateContent,
 }
 
 class AuditIssue {
@@ -30,6 +34,7 @@ class AuditIssue {
     required this.chapterTitle,
     required this.message,
     this.blockId,
+    this.numberGap,
   });
 
   final AuditIssueKind kind;
@@ -38,6 +43,21 @@ class AuditIssue {
   final String chapterTitle;
   final String? blockId;
   final String message;
+  final AuditNumberGap? numberGap;
+}
+
+class AuditNumberGap {
+  const AuditNumberGap({
+    required this.afterChapterId,
+    required this.firstMissing,
+    required this.lastMissing,
+    this.beforeChapterId,
+  });
+
+  final String? beforeChapterId;
+  final String afterChapterId;
+  final int firstMissing;
+  final int lastMissing;
 }
 
 class AuditReport {
@@ -140,19 +160,23 @@ class ToolPreview {
 }
 
 abstract final class Proofreading {
+  static const _numerals = '０１２３４５６７８９零〇一二三四五六七八九十百千万萬亿億两兩壹贰貳叁參肆伍陆陸柒捌玖拾佰仟';
   static final RegExp _numbered = RegExp(
-    r'^(\s*第\s*)([零〇一二三四五六七八九十百千万两壹贰叁肆伍陆柒捌玖拾佰仟\d]{1,8})(\s*[章节回话])',
+    '^(\\s*(?:正文[\\s·:：\\-—]*)?第\\s*)([$_numerals\\d]{1,32})(?:(\\s*[~～\\-—]\\s*)([$_numerals\\d]{1,32}))?(\\s*[章节節回话話集部])',
   );
   static final RegExp _candidate = RegExp(
-    r'^第\s*[零〇一二三四五六七八九十百千万两壹贰叁肆伍陆柒捌玖拾佰仟\d]{1,8}\s*[章节回卷部篇集]|^(?:序章|序言|楔子|引子|前言|引言|番外|后记|尾声|终章|大结局|完本感言|附录)',
+    '^(?:正文[\\s·:：\\-—]*)?第\\s*[$_numerals\\d]{1,32}(?:\\s*[~～\\-—]\\s*[$_numerals\\d]{1,32})?\\s*[章节節回话話卷部篇集]|^(?:序章|序言|楔子|引子|前言|引言|番外|后记|尾声|终章|大结局|完本感言|附录)',
   );
   static final RegExp _headingSeparator = RegExp(r'[章节回卷部篇集][\s、.．:：·\-—]');
+  static final RegExp _whitespaceRun = RegExp(r'\s+');
+  static final RegExp _blankLine = RegExp(r'\n\s*\n');
+  static final RegExp _terminalQuestion = RegExp(r'[！？!?]$');
   static final RegExp _inlineJunk = RegExp(
     r'内容还在处理中|正在手打中|本章未完|手机阅读|记住本站|求月票|更新最快|无弹窗|笔趣阁|最新章节|电子书|txt',
     caseSensitive: false,
   );
   static final RegExp _inlineHeading = RegExp(
-    r'第\s*[零〇一二三四五六七八九十百千万两壹贰叁肆伍陆柒捌玖拾佰仟\d]{1,8}\s*[章节]',
+    '第\\s*[$_numerals\\d]{1,8}(?:\\s*[~～\\-—]\\s*[$_numerals\\d]{1,8})?\\s*[章节]',
   );
   static final RegExp _adStrong = RegExp(
     r'爱下电子书|ixdzs|苦读书|书友群|txt下载|https?://\S+|www\.[a-z0-9-]+\.(?:com|net|org|cc|info|cn)',
@@ -178,11 +202,19 @@ abstract final class Proofreading {
           continue;
         }
         if (RegExp(r'[。！？!?]$').hasMatch(text) &&
-            !_headingSeparator.hasMatch(text)) {
+            !_headingSeparator.hasMatch(text) &&
+            !(_terminalQuestion.hasMatch(text) &&
+                _adjacentQuestionHeading(book.chapters, chapterIndex, text))) {
           continue;
         }
         if (!_candidate.hasMatch(text) &&
             !(_inlineJunk.hasMatch(text) && _inlineHeading.hasMatch(text))) {
+          continue;
+        }
+        final numbered = _numbered.firstMatch(text);
+        if (numbered != null &&
+            (!_validNumberedRange(numbered) ||
+                numbered[4] != null && _narrativeAfterNumber(numbered, text))) {
           continue;
         }
         found.add(
@@ -209,6 +241,7 @@ abstract final class Proofreading {
       int index,
       String message, {
       String? blockId,
+      AuditNumberGap? numberGap,
     }) {
       final count = counts[kind]! + 1;
       counts[kind] = count;
@@ -221,40 +254,20 @@ abstract final class Proofreading {
             chapterTitle: chapter.title,
             blockId: blockId,
             message: message,
+            numberGap: numberGap,
           ),
         );
       }
     }
 
-    final numbered = _numberedGroups(book.chapters);
-    for (final entries in numbered.values) {
-      final first = <int, _NumberedEntry>{};
-      for (final entry in entries) {
-        if (first.containsKey(entry.value)) {
-          add(
-            AuditIssueKind.duplicateNumber,
-            entry.chapter,
-            entry.index,
-            '同卷章号重复：第 ${entry.value} 章，建议核对或重编号。',
-          );
-        } else {
-          first[entry.value] = entry;
-        }
-      }
-      final values = first.keys.toList()..sort();
-      var previous = 0;
-      for (final value in values) {
-        if (value > previous + 1) {
-          final entry = first[value]!;
-          add(
-            AuditIssueKind.missingNumber,
-            entry.chapter,
-            entry.index,
-            '同卷章号缺少 ${previous + 1} 至 ${value - 1}，建议检查漏章候选。',
-          );
-        }
-        previous = value;
-      }
+    for (final issue in _numberIssues(book.chapters)) {
+      add(
+        issue.kind,
+        book.chapters[issue.chapterIndex],
+        issue.chapterIndex,
+        issue.message,
+        numberGap: issue.numberGap,
+      );
     }
 
     final childCounts = <String, int>{};
@@ -265,6 +278,69 @@ abstract final class Proofreading {
           (value) => value + 1,
           ifAbsent: () => 1,
         );
+      }
+    }
+    final firstBlock =
+        <String, ({int index, String chapterId, String title})>{};
+    for (final (index, chapter) in book.chapters.indexed) {
+      if (chapter.isVolume) continue;
+      for (final block in chapter.blocks) {
+        if (block is! TextBlock) continue;
+        for (final paragraph in block.text.split(_blankLine)) {
+          final normalized = paragraph.replaceAll(_whitespaceRun, ' ').trim();
+          if (normalized.length < duplicateContentMinLength) continue;
+          final previous = firstBlock[normalized];
+          if (previous == null) {
+            firstBlock[normalized] = (
+              index: index,
+              chapterId: chapter.id,
+              title: chapter.title,
+            );
+            continue;
+          }
+          add(
+            AuditIssueKind.duplicateContent,
+            chapter,
+            index,
+            '本段与第 ${previous.index + 1} 项《${previous.title}》的正文段落完全重复，'
+            '建议核对是否重复粘贴。',
+            blockId: block.id,
+          );
+        }
+      }
+    }
+    final titleStyles = <int, ({bool arabic, String marker})>{};
+    for (final (index, chapter) in book.chapters.indexed) {
+      if (chapter.isVolume || chapter.frontMatter) continue;
+      final match = _numbered.firstMatch(chapter.title);
+      if (match == null) continue;
+      titleStyles[index] = (
+        arabic: RegExp(r'[0-9０-９]').hasMatch(match.group(2) ?? ''),
+        marker: match.group(5) ?? '',
+      );
+    }
+    if (titleStyles.length >= 3) {
+      final styleCounts = <({bool arabic, String marker}), int>{};
+      for (final style in titleStyles.values) {
+        styleCounts.update(style, (value) => value + 1, ifAbsent: () => 1);
+      }
+      final ranked = styleCounts.entries.toList()
+        ..sort((left, right) => right.value.compareTo(left.value));
+      final top = ranked.first;
+      final tied = ranked.length > 1 && ranked[1].value == top.value;
+      if (!tied && top.value * 2 > titleStyles.length) {
+        String styleLabel(({bool arabic, String marker}) style) =>
+            '${style.arabic ? '阿拉伯数字' : '中文数字'}·${style.marker}';
+        for (final entry in titleStyles.entries) {
+          if (entry.value == top.key) continue;
+          add(
+            AuditIssueKind.titleFormat,
+            book.chapters[entry.key],
+            entry.key,
+            '本章标题为「${styleLabel(entry.value)}」，'
+            '与本书多数「${styleLabel(top.key)}」不一致，建议统一标题格式。',
+          );
+        }
       }
     }
     final firstTitle = <String, int>{};
@@ -286,8 +362,14 @@ abstract final class Proofreading {
         for (final line in block.text.split('\n')) {
           final text = line.trim();
           if (_isAdLine(text)) {
+            var excerptEnd = text.length > 32 ? 32 : text.length;
+            if (excerptEnd > 0 &&
+                excerptEnd < text.length &&
+                _isHighSurrogate(text.codeUnitAt(excerptEnd - 1))) {
+              excerptEnd--;
+            }
             final excerpt = text.length > 32
-                ? '${text.substring(0, 32)}…'
+                ? '${text.substring(0, excerptEnd)}…'
                 : text;
             add(
               AuditIssueKind.adLeftover,
@@ -332,21 +414,27 @@ abstract final class Proofreading {
   static ToolPreview previewRenumber(Book book, {required int baseRevision}) {
     final patches = <TextPatch>[];
     final samples = <ReplaceSample>[];
-    for (final entries in _numberedGroups(book.chapters).values) {
+    for (final entries in _numberedGroups(
+      book.chapters,
+      rejectInvalidRanges: true,
+    ).values) {
       var next = 0;
       for (final entry in entries) {
         next++;
-        final numeral = entry.arabic
-            ? next.toString().padLeft(
-                entry.raw.startsWith('0') ? entry.raw.length : 0,
-                '0',
-              )
-            : _numberToChinese(next);
-        final title = entry.chapter.title.replaceRange(
-          entry.match.start + entry.match[1]!.length,
-          entry.match.start + entry.match[1]!.length + entry.raw.length,
-          numeral,
-        );
+        final end = next + entry.end - entry.value;
+        if (end > 99999999) {
+          throw const ValidationFailure('重编号结果超过八位章号上限，请先调整章节范围。');
+        }
+        final endRaw = entry.match[4];
+        final range = endRaw == null
+            ? ''
+            : '${entry.match[3]}${_renumberedNumeral(endRaw, end)}';
+        final replacement =
+            '${entry.match[1]}'
+            '${_renumberedNumeral(entry.raw, next)}$range${entry.match[5]}';
+        final title =
+            replacement + entry.chapter.title.substring(entry.match.end);
+        next = end;
         if (title == entry.chapter.title) continue;
         patches.add(
           TextPatch(
@@ -364,7 +452,10 @@ abstract final class Proofreading {
               chapterTitle: entry.chapter.title,
               field: ReplaceField.title,
               before: entry.match[1]!,
-              match: entry.raw,
+              match: entry.match[0]!.substring(
+                entry.match[1]!.length,
+                entry.match[0]!.length - entry.match[5]!.length,
+              ),
               after: entry.chapter.title.substring(entry.match.end),
             ),
           );
@@ -476,28 +567,144 @@ abstract final class Proofreading {
     );
   }
 
+  static List<AuditNumberGap> numberGaps(List<Chapter> chapters) =>
+      List<AuditNumberGap>.unmodifiable(
+        _numberIssues(chapters)
+            .map((issue) => issue.numberGap)
+            .whereType<AuditNumberGap>(),
+      );
+
+  static Iterable<AuditIssue> _numberIssues(List<Chapter> chapters) sync* {
+    for (final entries in _numberedGroups(chapters).values) {
+      final ordered = entries.toList()
+        ..sort((left, right) {
+          final byNumber = left.value.compareTo(right.value);
+          return byNumber != 0 ? byNumber : left.index.compareTo(right.index);
+        });
+      var coveredThrough = 0;
+      _NumberedEntry? covering;
+      for (final entry in ordered) {
+        if (entry.value <= coveredThrough) {
+          yield AuditIssue(
+            kind: AuditIssueKind.duplicateNumber,
+            chapterId: entry.chapter.id,
+            chapterIndex: entry.index,
+            chapterTitle: entry.chapter.title,
+            message: entry.value == entry.end
+                ? '同卷章号重复：第 ${entry.value} 章，建议核对或重编号。'
+                : '同卷章号范围重叠：第 ${entry.value} 至 ${entry.end} 章，建议核对或重编号。',
+          );
+        }
+        if (entry.value > coveredThrough + 1) {
+          yield AuditIssue(
+            kind: AuditIssueKind.missingNumber,
+            chapterId: entry.chapter.id,
+            chapterIndex: entry.index,
+            chapterTitle: entry.chapter.title,
+            message:
+                '同卷章号缺少 ${coveredThrough + 1} 至 ${entry.value - 1}，建议检查漏章候选。',
+            numberGap: AuditNumberGap(
+              beforeChapterId: covering?.chapter.id,
+              afterChapterId: entry.chapter.id,
+              firstMissing: coveredThrough + 1,
+              lastMissing: entry.value - 1,
+            ),
+          );
+        }
+        if (entry.end > coveredThrough) {
+          coveredThrough = entry.end;
+          covering = entry;
+        }
+      }
+    }
+  }
+
   static Map<String?, List<_NumberedEntry>> _numberedGroups(
-    List<Chapter> chapters,
-  ) {
+    List<Chapter> chapters, {
+    bool rejectInvalidRanges = false,
+  }) {
     final groups = <String?, List<_NumberedEntry>>{};
     for (final (index, chapter) in chapters.indexed) {
       if (chapter.isVolume || chapter.frontMatter) continue;
       final match = _numbered.firstMatch(chapter.title);
       if (match == null) continue;
       final raw = match[2]!;
-      final arabic = RegExp(r'^\d+$').hasMatch(raw);
-      final value = arabic ? int.tryParse(raw) : _parseChinese(raw);
-      if (value == null || value < 1) continue;
+      final value = _parseNumber(raw);
+      if (value == null || value < 1) {
+        if (rejectInvalidRanges && match[4] != null) {
+          throw ValidationFailure('章节「${chapter.title}」的章号范围无效，请先修改标题。');
+        }
+        continue;
+      }
+      final end = match[4] == null ? value : _parseNumber(match[4]!);
+      if (end == null || end < value) {
+        if (rejectInvalidRanges) {
+          throw ValidationFailure('章节「${chapter.title}」的章号范围无效，请先修改标题。');
+        }
+        continue;
+      }
       groups
           .putIfAbsent(chapter.parentId, () => <_NumberedEntry>[])
-          .add(_NumberedEntry(chapter, index, match, raw, value, arabic));
+          .add(_NumberedEntry(chapter, index, match, raw, value, end));
     }
     return groups;
   }
 
+  static int? _parseNumber(String raw) =>
+      RuleHeadingMapping.parseNumber(raw) ??
+      int.tryParse(raw) ??
+      _parseChinese(raw);
+
+  static bool _validNumberedRange(RegExpMatch match) {
+    final start = _parseNumber(match[2]!);
+    final end = match[4] == null ? start : _parseNumber(match[4]!);
+    return start != null && start > 0 && end != null && end >= start;
+  }
+
+  static bool _narrativeAfterNumber(RegExpMatch match, String title) =>
+      RegExp(r'^[的里中内]').hasMatch(title.substring(match.end).trimLeft());
+
+  static bool _adjacentQuestionHeading(
+    List<Chapter> chapters,
+    int chapterIndex,
+    String title,
+  ) {
+    final match = _numbered.firstMatch(title);
+    if (match == null || !_validNumberedRange(match)) return false;
+    if (_narrativeAfterNumber(match, title)) return false;
+    final start = _parseNumber(match[2]!)!;
+    final end = _parseNumber(match[4] ?? match[2]!)!;
+    final current = chapters[chapterIndex];
+    final currentMatch = _numbered.firstMatch(current.title);
+    final currentEnd = currentMatch != null && _validNumberedRange(currentMatch)
+        ? _parseNumber(currentMatch[4] ?? currentMatch[2]!)
+        : null;
+    int? nextStart;
+    for (var index = chapterIndex + 1; index < chapters.length; index++) {
+      final next = chapters[index];
+      if (next.isVolume) break;
+      if (next.parentId != current.parentId) continue;
+      final nextMatch = _numbered.firstMatch(next.title);
+      if (nextMatch != null && _validNumberedRange(nextMatch)) {
+        nextStart = _parseNumber(nextMatch[2]!);
+        break;
+      }
+    }
+    final followsCurrent = currentEnd != null && currentEnd + 1 == start;
+    final precedesNext = nextStart != null && end + 1 == nextStart;
+    return currentEnd != null && nextStart != null
+        ? followsCurrent && precedesNext
+        : followsCurrent || precedesNext;
+  }
+
+  static String _renumberedNumeral(String raw, int value) =>
+      RegExp(r'^\d+$').hasMatch(raw)
+      ? value.toString().padLeft(raw.startsWith('0') ? raw.length : 0, '0')
+      : _numberToChinese(value);
+
   static int? _parseChinese(String raw) {
-    const digits = '零〇一二三四五六七八九';
-    const formal = '零〇壹贰叁肆伍陆柒捌玖';
+    const digits = '零一二三四五六七八九';
+    const formal = '零壹贰叁肆伍陆柒捌玖';
     const units = <String, int>{
       '十': 10,
       '拾': 10,
@@ -511,7 +718,8 @@ abstract final class Proofreading {
     var section = 0;
     var digit = 0;
     for (final rune in raw.runes) {
-      final char = String.fromCharCode(rune);
+      final character = String.fromCharCode(rune);
+      final char = character == '〇' ? '零' : character;
       final number = digits.indexOf(char);
       final formalNumber = formal.indexOf(char);
       if (number >= 0 || formalNumber >= 0 || char == '两') {
@@ -649,12 +857,12 @@ class _NumberedEntry {
     this.match,
     this.raw,
     this.value,
-    this.arabic,
+    this.end,
   );
   final Chapter chapter;
   final int index;
   final RegExpMatch match;
   final String raw;
   final int value;
-  final bool arabic;
+  final int end;
 }

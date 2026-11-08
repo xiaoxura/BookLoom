@@ -182,6 +182,1962 @@ abstract class AppLocalizations {
   /// **'外观'**
   String get settingsAppearance;
 
+  /// No description provided for @aiSettingsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 服务'**
+  String get aiSettingsTitle;
+
+  /// No description provided for @aiSettingsDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'可选联网能力，默认关闭。由你选择服务，并主动发起每次任务。'**
+  String get aiSettingsDescription;
+
+  /// No description provided for @aiEnabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用 AI 辅助'**
+  String get aiEnabled;
+
+  /// No description provided for @aiOfflineNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭时不发送 AI 请求；导入、编辑、规则扫描与导出仍可离线使用。'**
+  String get aiOfflineNotice;
+
+  /// No description provided for @aiFormat.
+  ///
+  /// In zh, this message translates to:
+  /// **'接口格式'**
+  String get aiFormat;
+
+  /// No description provided for @aiAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'API 地址'**
+  String get aiAddress;
+
+  /// No description provided for @aiOpenAiAddressHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'https://api.example.com/v1'**
+  String get aiOpenAiAddressHint;
+
+  /// No description provided for @aiClaudeAddressHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'https://api.example.com（无需填写 /v1）'**
+  String get aiClaudeAddressHint;
+
+  /// No description provided for @aiApiKey.
+  ///
+  /// In zh, this message translates to:
+  /// **'API 密钥'**
+  String get aiApiKey;
+
+  /// No description provided for @aiKeyNewHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入密钥，仅保存到系统安全存储'**
+  String get aiKeyNewHint;
+
+  /// No description provided for @aiKeyReuseHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'留空沿用已保存密钥；不会把密钥填回表单'**
+  String get aiKeyReuseHint;
+
+  /// No description provided for @aiKeyChangedAddressHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'地址或格式已改变，请重新输入密钥'**
+  String get aiKeyChangedAddressHint;
+
+  /// No description provided for @aiShowKey.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示密钥'**
+  String get aiShowKey;
+
+  /// No description provided for @aiHideKey.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏密钥'**
+  String get aiHideKey;
+
+  /// No description provided for @aiModel.
+  ///
+  /// In zh, this message translates to:
+  /// **'模型标识'**
+  String get aiModel;
+
+  /// No description provided for @aiModelHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'手动填写服务支持的模型名称'**
+  String get aiModelHint;
+
+  /// No description provided for @aiNormalizedAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'规范化基础地址'**
+  String get aiNormalizedAddress;
+
+  /// No description provided for @aiRequestAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'最终请求地址'**
+  String get aiRequestAddress;
+
+  /// No description provided for @aiEndpointInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'请检查协议、地址、端口与接口格式。'**
+  String get aiEndpointInvalid;
+
+  /// No description provided for @aiRemoteHttpConsent.
+  ///
+  /// In zh, this message translates to:
+  /// **'我了解远程 HTTP 会明文传输密钥和内容，仍使用此地址'**
+  String get aiRemoteHttpConsent;
+
+  /// No description provided for @aiTestDisclosure.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接测试只发送固定小样例，不读取或发送书稿，可能产生少量费用。书稿分析需在校对工具中另行确认。'**
+  String get aiTestDisclosure;
+
+  /// No description provided for @aiProofreadingTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 校对'**
+  String get aiProofreadingTitle;
+
+  /// No description provided for @editorAiCreateChapterRule.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 创建章节识别规则'**
+  String get editorAiCreateChapterRule;
+
+  /// No description provided for @editorAiCreateAdvertisementRule.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 创建广告清理规则'**
+  String get editorAiCreateAdvertisementRule;
+
+  /// No description provided for @editorAiAnalyzeAdvertisement.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 广告判断'**
+  String get editorAiAnalyzeAdvertisement;
+
+  /// No description provided for @aiJointRuleRequest.
+  ///
+  /// In zh, this message translates to:
+  /// **'同时请求规则候选'**
+  String get aiJointRuleRequest;
+
+  /// No description provided for @aiJointRuleHelp.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅基于你提供的样例生成规则候选，不会自动保存或应用；请在规则工作台独立检查并试跑。'**
+  String get aiJointRuleHelp;
+
+  /// No description provided for @aiJointRuleLimits.
+  ///
+  /// In zh, this message translates to:
+  /// **'每行一个样例：正例 1–12 条、反例 0–12 条；每条最多 2048 个 UTF-16 单元，总计最多 8192。所有正例必须完整位于同一个实际发送分块中。'**
+  String get aiJointRuleLimits;
+
+  /// No description provided for @aiJointRuleAuthorization.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则候选显式授权'**
+  String get aiJointRuleAuthorization;
+
+  /// No description provided for @aiJointRuleChunk.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅第 {index} 个分块允许返回规则（从 1 开始编号）。'**
+  String aiJointRuleChunk(int index);
+
+  /// No description provided for @aiJointRuleNotRequested.
+  ///
+  /// In zh, this message translates to:
+  /// **'本次未请求规则候选，分析无权生成规则。'**
+  String get aiJointRuleNotRequested;
+
+  /// No description provided for @aiJointRuleCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'独立规则候选：{count}'**
+  String aiJointRuleCount(int count);
+
+  /// No description provided for @aiRuleTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 样例建规则'**
+  String get aiRuleTitle;
+
+  /// No description provided for @aiRuleSelected.
+  ///
+  /// In zh, this message translates to:
+  /// **'所选原文'**
+  String get aiRuleSelected;
+
+  /// No description provided for @aiRuleIntent.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则意图'**
+  String get aiRuleIntent;
+
+  /// No description provided for @aiRuleNegative.
+  ///
+  /// In zh, this message translates to:
+  /// **'不得命中的反例'**
+  String get aiRuleNegative;
+
+  /// No description provided for @aiRuleChapterTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'所在章节标题'**
+  String get aiRuleChapterTitle;
+
+  /// No description provided for @aiRuleBefore.
+  ///
+  /// In zh, this message translates to:
+  /// **'选区前文'**
+  String get aiRuleBefore;
+
+  /// No description provided for @aiRuleAfter.
+  ///
+  /// In zh, this message translates to:
+  /// **'选区后文'**
+  String get aiRuleAfter;
+
+  /// No description provided for @aiRuleRelated.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送的相关规则摘要（最多 16 条）'**
+  String get aiRuleRelated;
+
+  /// No description provided for @aiRuleRunning.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在生成候选'**
+  String get aiRuleRunning;
+
+  /// No description provided for @aiRuleCompleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'候选生成完成'**
+  String get aiRuleCompleted;
+
+  /// No description provided for @aiRuleNoProposals.
+  ///
+  /// In zh, this message translates to:
+  /// **'未生成规则候选。可调整意图或反例后重新准备。'**
+  String get aiRuleNoProposals;
+
+  /// No description provided for @aiRuleCheckAndTrial.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查并试跑'**
+  String get aiRuleCheckAndTrial;
+
+  /// No description provided for @ruleWorkbenchTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义规则'**
+  String get ruleWorkbenchTitle;
+
+  /// No description provided for @ruleWorkbenchNumberCaptureGroup.
+  ///
+  /// In zh, this message translates to:
+  /// **'章号来自捕获组（可选）'**
+  String get ruleWorkbenchNumberCaptureGroup;
+
+  /// No description provided for @ruleWorkbenchNumberCaptureHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'须同时设置标题捕获组；仅提取原文明示数字，不自动编号。留空不映射；0=整体匹配，1 起为捕获组。清空标题捕获组或切换为字面量/广告时会清除此章号设置。'**
+  String get ruleWorkbenchNumberCaptureHelper;
+
+  /// No description provided for @ruleWorkbenchNumberCaptureInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先设置标题捕获组，并输入可用编号内的非负整数。'**
+  String get ruleWorkbenchNumberCaptureInvalid;
+
+  /// No description provided for @ruleWorkbenchNumberToken.
+  ///
+  /// In zh, this message translates to:
+  /// **'原文章号数字'**
+  String get ruleWorkbenchNumberToken;
+
+  /// No description provided for @ruleWorkbenchParsedNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'解析后的章号'**
+  String get ruleWorkbenchParsedNumber;
+
+  /// No description provided for @ruleWorkbenchDefinition.
+  ///
+  /// In zh, this message translates to:
+  /// **'完整规则定义'**
+  String get ruleWorkbenchDefinition;
+
+  /// No description provided for @ruleWorkbenchId.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则 ID'**
+  String get ruleWorkbenchId;
+
+  /// No description provided for @ruleWorkbenchBookId.
+  ///
+  /// In zh, this message translates to:
+  /// **'书稿 ID'**
+  String get ruleWorkbenchBookId;
+
+  /// No description provided for @ruleWorkbenchSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'来源'**
+  String get ruleWorkbenchSource;
+
+  /// No description provided for @ruleWorkbenchInitialRejected.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则候选已过期或与现有规则冲突，请重新选择样例生成。'**
+  String get ruleWorkbenchInitialRejected;
+
+  /// No description provided for @ruleWorkbenchOffline.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地规则全书试跑；不会调用 AI。选定规则和命中后才会修改书稿。'**
+  String get ruleWorkbenchOffline;
+
+  /// No description provided for @ruleWorkbenchImportRules.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入内置规则（只读）'**
+  String get ruleWorkbenchImportRules;
+
+  /// No description provided for @ruleWorkbenchImportPreset.
+  ///
+  /// In zh, this message translates to:
+  /// **'预设：{name}'**
+  String ruleWorkbenchImportPreset(String name);
+
+  /// No description provided for @ruleWorkbenchImportCustom.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义'**
+  String get ruleWorkbenchImportCustom;
+
+  /// No description provided for @ruleWorkbenchImportAutoNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动识别由导入器内置启发式与广告规则完成；工作台不复制这部分逻辑，也不会在试跑中重放。'**
+  String get ruleWorkbenchImportAutoNote;
+
+  /// No description provided for @ruleWorkbenchImportCustomNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入时还附加了自定义规则；它们同样只读展示，不参与本次试跑。'**
+  String get ruleWorkbenchImportCustomNote;
+
+  /// No description provided for @ruleWorkbenchImportInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法解析当前导入规则（预设或自定义规则无效），请检查导入设置。'**
+  String get ruleWorkbenchImportInvalid;
+
+  /// No description provided for @ruleWorkbenchImportReadOnly.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入规则只在导入或重新解析时执行，不会在本次试跑中运行；工作台只运行上面显式勾选的已保存规则。如需在书中复用，请新建规则。'**
+  String get ruleWorkbenchImportReadOnly;
+
+  /// No description provided for @ruleWorkbenchImportEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'该预设没有可展示的章节、卷或丢弃规则。'**
+  String get ruleWorkbenchImportEmpty;
+
+  /// No description provided for @ruleWorkbenchImportEntryChapter.
+  ///
+  /// In zh, this message translates to:
+  /// **'章节标题规则（整行匹配）'**
+  String get ruleWorkbenchImportEntryChapter;
+
+  /// No description provided for @ruleWorkbenchImportEntryVolume.
+  ///
+  /// In zh, this message translates to:
+  /// **'卷标题规则（整行匹配）'**
+  String get ruleWorkbenchImportEntryVolume;
+
+  /// No description provided for @ruleWorkbenchImportEntryDrop.
+  ///
+  /// In zh, this message translates to:
+  /// **'整行丢弃规则'**
+  String get ruleWorkbenchImportEntryDrop;
+
+  /// No description provided for @ruleWorkbenchImportEntryInlineJunk.
+  ///
+  /// In zh, this message translates to:
+  /// **'行内推广清理规则'**
+  String get ruleWorkbenchImportEntryInlineJunk;
+
+  /// No description provided for @ruleWorkbenchRules.
+  ///
+  /// In zh, this message translates to:
+  /// **'本次规则集'**
+  String get ruleWorkbenchRules;
+
+  /// No description provided for @ruleWorkbenchEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有规则。可以先创建一条本书规则。'**
+  String get ruleWorkbenchEmpty;
+
+  /// No description provided for @ruleWorkbenchBookScope.
+  ///
+  /// In zh, this message translates to:
+  /// **'本书'**
+  String get ruleWorkbenchBookScope;
+
+  /// No description provided for @ruleWorkbenchGlobalScope.
+  ///
+  /// In zh, this message translates to:
+  /// **'跨书'**
+  String get ruleWorkbenchGlobalScope;
+
+  /// No description provided for @ruleWorkbenchEnabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用'**
+  String get ruleWorkbenchEnabled;
+
+  /// No description provided for @ruleWorkbenchDisabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'停用'**
+  String get ruleWorkbenchDisabled;
+
+  /// No description provided for @ruleWorkbenchUnsaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'未保存'**
+  String get ruleWorkbenchUnsaved;
+
+  /// No description provided for @ruleWorkbenchCurrent.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前规则'**
+  String get ruleWorkbenchCurrent;
+
+  /// No description provided for @ruleWorkbenchBuiltIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'内置'**
+  String get ruleWorkbenchBuiltIn;
+
+  /// No description provided for @ruleWorkbenchUser.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户'**
+  String get ruleWorkbenchUser;
+
+  /// No description provided for @ruleWorkbenchAiSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 来源'**
+  String get ruleWorkbenchAiSource;
+
+  /// No description provided for @ruleWorkbenchActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则操作'**
+  String get ruleWorkbenchActions;
+
+  /// No description provided for @ruleWorkbenchEdit.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get ruleWorkbenchEdit;
+
+  /// No description provided for @ruleWorkbenchEnable.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用规则'**
+  String get ruleWorkbenchEnable;
+
+  /// No description provided for @ruleWorkbenchDisable.
+  ///
+  /// In zh, this message translates to:
+  /// **'停用规则'**
+  String get ruleWorkbenchDisable;
+
+  /// No description provided for @ruleWorkbenchDelete.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除规则'**
+  String get ruleWorkbenchDelete;
+
+  /// No description provided for @ruleWorkbenchDeleteTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认删除规则？'**
+  String get ruleWorkbenchDeleteTitle;
+
+  /// No description provided for @ruleWorkbenchNew.
+  ///
+  /// In zh, this message translates to:
+  /// **'新建规则'**
+  String get ruleWorkbenchNew;
+
+  /// No description provided for @ruleWorkbenchScan.
+  ///
+  /// In zh, this message translates to:
+  /// **'试跑全书'**
+  String get ruleWorkbenchScan;
+
+  /// No description provided for @ruleWorkbenchIdentify.
+  ///
+  /// In zh, this message translates to:
+  /// **'识别什么'**
+  String get ruleWorkbenchIdentify;
+
+  /// No description provided for @ruleWorkbenchExclude.
+  ///
+  /// In zh, this message translates to:
+  /// **'排除什么'**
+  String get ruleWorkbenchExclude;
+
+  /// No description provided for @ruleWorkbenchExcludePattern.
+  ///
+  /// In zh, this message translates to:
+  /// **'命中排除文本（可选）'**
+  String get ruleWorkbenchExcludePattern;
+
+  /// No description provided for @ruleWorkbenchExcludePatternHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'匹配所在行包含该文本时跳过该命中；区分大小写沿用上方设置。'**
+  String get ruleWorkbenchExcludePatternHelper;
+
+  /// No description provided for @ruleWorkbenchExcludePatternInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'排除文本不能跨行，且不超过 256 个 UTF-16 字符。'**
+  String get ruleWorkbenchExcludePatternInvalid;
+
+  /// No description provided for @ruleWorkbenchWholeLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅整行匹配'**
+  String get ruleWorkbenchWholeLine;
+
+  /// No description provided for @ruleWorkbenchNoGlobalRules.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有可导出的规则。'**
+  String get ruleWorkbenchNoGlobalRules;
+
+  /// No description provided for @ruleWorkbenchRulesNoSharedInFile.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件中没有可用规则。'**
+  String get ruleWorkbenchRulesNoSharedInFile;
+
+  /// No description provided for @ruleWorkbenchExportSharedRules.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出规则文件'**
+  String get ruleWorkbenchExportSharedRules;
+
+  /// No description provided for @ruleWorkbenchImportSharedRules.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入规则文件'**
+  String get ruleWorkbenchImportSharedRules;
+
+  /// No description provided for @ruleWorkbenchRulesExported.
+  ///
+  /// In zh, this message translates to:
+  /// **'已导出 {count} 条规则。'**
+  String ruleWorkbenchRulesExported(int count);
+
+  /// No description provided for @ruleWorkbenchRulesImportTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入规则文件'**
+  String get ruleWorkbenchRulesImportTitle;
+
+  /// No description provided for @ruleWorkbenchRulesImportBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件含 {global} 条跨书规则、{book} 条本书规则（复制到当前书）；{existing} 条同 ID 已存在将跳过。只补充缺失定义，不覆盖、不自动启用或运行。'**
+  String ruleWorkbenchRulesImportBody(int global, int book, int existing);
+
+  /// No description provided for @ruleWorkbenchRulesImported.
+  ///
+  /// In zh, this message translates to:
+  /// **'已导入：新增 {added} 条，跳过已有 {skipped} 条。'**
+  String ruleWorkbenchRulesImported(int added, int skipped);
+
+  /// No description provided for @ruleWorkbenchRulesImportInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则文件无效或版本不兼容。'**
+  String get ruleWorkbenchRulesImportInvalid;
+
+  /// No description provided for @ruleWorkbenchWholeLineHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'忽略首尾空白后，命中必须覆盖整行；仅适用于标题行和正文行。'**
+  String get ruleWorkbenchWholeLineHelper;
+
+  /// No description provided for @ruleWorkbenchEffect.
+  ///
+  /// In zh, this message translates to:
+  /// **'会改什么'**
+  String get ruleWorkbenchEffect;
+
+  /// No description provided for @ruleWorkbenchName.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则名称'**
+  String get ruleWorkbenchName;
+
+  /// No description provided for @ruleWorkbenchKind.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则类型'**
+  String get ruleWorkbenchKind;
+
+  /// No description provided for @ruleWorkbenchChapter.
+  ///
+  /// In zh, this message translates to:
+  /// **'章节识别'**
+  String get ruleWorkbenchChapter;
+
+  /// No description provided for @ruleWorkbenchHeadingLevel.
+  ///
+  /// In zh, this message translates to:
+  /// **'识别层级'**
+  String get ruleWorkbenchHeadingLevel;
+
+  /// No description provided for @ruleWorkbenchVolumeLevel.
+  ///
+  /// In zh, this message translates to:
+  /// **'卷'**
+  String get ruleWorkbenchVolumeLevel;
+
+  /// No description provided for @ruleWorkbenchChapterLevel.
+  ///
+  /// In zh, this message translates to:
+  /// **'章节'**
+  String get ruleWorkbenchChapterLevel;
+
+  /// No description provided for @ruleWorkbenchVolumeCandidate.
+  ///
+  /// In zh, this message translates to:
+  /// **'卷识别'**
+  String get ruleWorkbenchVolumeCandidate;
+
+  /// No description provided for @ruleWorkbenchVolumeEffect.
+  ///
+  /// In zh, this message translates to:
+  /// **'将完整标题行及换行从正文移除并建立顶层卷。边界后内容保留为不另拟目录标题的卷前内容，后续连续同归属章节移入新卷；无内容时不创建空章节。'**
+  String get ruleWorkbenchVolumeEffect;
+
+  /// No description provided for @ruleWorkbenchNewVolumeTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'新卷标题'**
+  String get ruleWorkbenchNewVolumeTitle;
+
+  /// No description provided for @ruleWorkbenchVolumeFrontMatter.
+  ///
+  /// In zh, this message translates to:
+  /// **'卷前内容（不另拟章节标题）'**
+  String get ruleWorkbenchVolumeFrontMatter;
+
+  /// No description provided for @ruleWorkbenchVolumePreview.
+  ///
+  /// In zh, this message translates to:
+  /// **'这是单项卷边界预览。新卷是顶层目录项，本身不承载正文。原章边界前内容保留；边界后的正文、图片、脚注与分隔符按原序归入新卷的卷前内容，目录中不另拟标题，无内容时不创建空章节。后续连续且与原章同归属的章节移入新卷，遇到卷或不同归属时停止。批量应用时按各卷边界分配，一次撤销。'**
+  String get ruleWorkbenchVolumePreview;
+
+  /// No description provided for @ruleWorkbenchVolumeFollowingBlockCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'归入卷前内容的后续块数'**
+  String get ruleWorkbenchVolumeFollowingBlockCount;
+
+  /// No description provided for @ruleWorkbenchVolumeFollowingBlocks.
+  ///
+  /// In zh, this message translates to:
+  /// **'展开卷前内容的后续全部块'**
+  String get ruleWorkbenchVolumeFollowingBlocks;
+
+  /// No description provided for @ruleWorkbenchVolumeFollowingChapterCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'单项应用将移入新卷的后续章节数'**
+  String get ruleWorkbenchVolumeFollowingChapterCount;
+
+  /// No description provided for @ruleWorkbenchVolumeFollowingChapters.
+  ///
+  /// In zh, this message translates to:
+  /// **'展开将移入新卷的后续章节列表'**
+  String get ruleWorkbenchVolumeFollowingChapters;
+
+  /// No description provided for @ruleWorkbenchMoreChapters.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载更多章节'**
+  String get ruleWorkbenchMoreChapters;
+
+  /// No description provided for @ruleWorkbenchAdvertisement.
+  ///
+  /// In zh, this message translates to:
+  /// **'广告识别'**
+  String get ruleWorkbenchAdvertisement;
+
+  /// No description provided for @ruleWorkbenchTarget.
+  ///
+  /// In zh, this message translates to:
+  /// **'匹配目标'**
+  String get ruleWorkbenchTarget;
+
+  /// No description provided for @ruleWorkbenchHeadingLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'匹配目标：标题行'**
+  String get ruleWorkbenchHeadingLine;
+
+  /// No description provided for @ruleWorkbenchBodyLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'正文行'**
+  String get ruleWorkbenchBodyLine;
+
+  /// No description provided for @ruleWorkbenchParagraph.
+  ///
+  /// In zh, this message translates to:
+  /// **'段落'**
+  String get ruleWorkbenchParagraph;
+
+  /// No description provided for @ruleWorkbenchMode.
+  ///
+  /// In zh, this message translates to:
+  /// **'匹配方式'**
+  String get ruleWorkbenchMode;
+
+  /// No description provided for @ruleWorkbenchLiteral.
+  ///
+  /// In zh, this message translates to:
+  /// **'普通文本'**
+  String get ruleWorkbenchLiteral;
+
+  /// No description provided for @ruleWorkbenchSafeRegex.
+  ///
+  /// In zh, this message translates to:
+  /// **'受限正则（高级）'**
+  String get ruleWorkbenchSafeRegex;
+
+  /// No description provided for @ruleWorkbenchPattern.
+  ///
+  /// In zh, this message translates to:
+  /// **'识别文本或表达式'**
+  String get ruleWorkbenchPattern;
+
+  /// No description provided for @ruleWorkbenchAdvanced.
+  ///
+  /// In zh, this message translates to:
+  /// **'高级选项'**
+  String get ruleWorkbenchAdvanced;
+
+  /// No description provided for @ruleWorkbenchTitleCaptureGroup.
+  ///
+  /// In zh, this message translates to:
+  /// **'目录标题来自捕获组'**
+  String get ruleWorkbenchTitleCaptureGroup;
+
+  /// No description provided for @ruleWorkbenchTitleCaptureHelper.
+  ///
+  /// In zh, this message translates to:
+  /// **'留空=完整标题行；0=整体匹配；1 起为捕获组。'**
+  String get ruleWorkbenchTitleCaptureHelper;
+
+  /// No description provided for @ruleWorkbenchAvailableGroups.
+  ///
+  /// In zh, this message translates to:
+  /// **'可用编号'**
+  String get ruleWorkbenchAvailableGroups;
+
+  /// No description provided for @ruleWorkbenchTitleCaptureInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入可用编号内的非负整数。'**
+  String get ruleWorkbenchTitleCaptureInvalid;
+
+  /// No description provided for @ruleWorkbenchFullHeadingLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'完整标题行'**
+  String get ruleWorkbenchFullHeadingLine;
+
+  /// No description provided for @ruleWorkbenchCaseSensitive.
+  ///
+  /// In zh, this message translates to:
+  /// **'区分大小写'**
+  String get ruleWorkbenchCaseSensitive;
+
+  /// No description provided for @ruleWorkbenchPositive.
+  ///
+  /// In zh, this message translates to:
+  /// **'必命中的正例（至少一行）'**
+  String get ruleWorkbenchPositive;
+
+  /// No description provided for @ruleWorkbenchNegative.
+  ///
+  /// In zh, this message translates to:
+  /// **'不得命中的反例（可多行）'**
+  String get ruleWorkbenchNegative;
+
+  /// No description provided for @ruleWorkbenchOnePerLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'每行一个样例；单行内不换行'**
+  String get ruleWorkbenchOnePerLine;
+
+  /// No description provided for @ruleWorkbenchAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'动作'**
+  String get ruleWorkbenchAction;
+
+  /// No description provided for @ruleWorkbenchCandidate.
+  ///
+  /// In zh, this message translates to:
+  /// **'标记广告候选（不删除）'**
+  String get ruleWorkbenchCandidate;
+
+  /// No description provided for @ruleWorkbenchExactDeletion.
+  ///
+  /// In zh, this message translates to:
+  /// **'精确删除命中文本'**
+  String get ruleWorkbenchExactDeletion;
+
+  /// No description provided for @ruleWorkbenchChapterEffect.
+  ///
+  /// In zh, this message translates to:
+  /// **'将完整标题行及换行从正文移除；新目录标题默认取整行，可映射捕获组。'**
+  String get ruleWorkbenchChapterEffect;
+
+  /// No description provided for @ruleWorkbenchScope.
+  ///
+  /// In zh, this message translates to:
+  /// **'作用域'**
+  String get ruleWorkbenchScope;
+
+  /// No description provided for @ruleWorkbenchPriority.
+  ///
+  /// In zh, this message translates to:
+  /// **'优先级（-1000 至 1000）'**
+  String get ruleWorkbenchPriority;
+
+  /// No description provided for @ruleWorkbenchPriorityInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'优先级必须为整数。'**
+  String get ruleWorkbenchPriorityInvalid;
+
+  /// No description provided for @ruleWorkbenchOpenBook.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先打开书稿。'**
+  String get ruleWorkbenchOpenBook;
+
+  /// No description provided for @ruleWorkbenchUseDefinition.
+  ///
+  /// In zh, this message translates to:
+  /// **'加入规则集'**
+  String get ruleWorkbenchUseDefinition;
+
+  /// No description provided for @ruleWorkbenchGlobalConfirmTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'改为跨书规则？'**
+  String get ruleWorkbenchGlobalConfirmTitle;
+
+  /// No description provided for @ruleWorkbenchGlobalConfirmBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则将出现在其他书稿的规则列表中，但不会自动参与试跑或修改正文。'**
+  String get ruleWorkbenchGlobalConfirmBody;
+
+  /// No description provided for @ruleWorkbenchConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认'**
+  String get ruleWorkbenchConfirm;
+
+  /// No description provided for @ruleWorkbenchLoading.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加载规则'**
+  String get ruleWorkbenchLoading;
+
+  /// No description provided for @ruleWorkbenchScanning.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在试跑全书'**
+  String get ruleWorkbenchScanning;
+
+  /// No description provided for @ruleWorkbenchReady.
+  ///
+  /// In zh, this message translates to:
+  /// **'试跑完成'**
+  String get ruleWorkbenchReady;
+
+  /// No description provided for @ruleWorkbenchSaving.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在保存规则'**
+  String get ruleWorkbenchSaving;
+
+  /// No description provided for @ruleWorkbenchSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则已保存；试跑结果已失效，请重新试跑后再应用。'**
+  String get ruleWorkbenchSaved;
+
+  /// No description provided for @ruleWorkbenchDeleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则已删除。'**
+  String get ruleWorkbenchDeleted;
+
+  /// No description provided for @ruleWorkbenchResults.
+  ///
+  /// In zh, this message translates to:
+  /// **'全书试跑结果'**
+  String get ruleWorkbenchResults;
+
+  /// No description provided for @ruleWorkbenchCoverage.
+  ///
+  /// In zh, this message translates to:
+  /// **'覆盖'**
+  String get ruleWorkbenchCoverage;
+
+  /// No description provided for @ruleWorkbenchChapters.
+  ///
+  /// In zh, this message translates to:
+  /// **'卷章节点'**
+  String get ruleWorkbenchChapters;
+
+  /// No description provided for @ruleWorkbenchBlocks.
+  ///
+  /// In zh, this message translates to:
+  /// **'文本块'**
+  String get ruleWorkbenchBlocks;
+
+  /// No description provided for @ruleWorkbenchLines.
+  ///
+  /// In zh, this message translates to:
+  /// **'正文行'**
+  String get ruleWorkbenchLines;
+
+  /// No description provided for @ruleWorkbenchTotalMatches.
+  ///
+  /// In zh, this message translates to:
+  /// **'总命中'**
+  String get ruleWorkbenchTotalMatches;
+
+  /// No description provided for @ruleWorkbenchDistinctMatches.
+  ///
+  /// In zh, this message translates to:
+  /// **'去重命中'**
+  String get ruleWorkbenchDistinctMatches;
+
+  /// No description provided for @ruleWorkbenchConflicts.
+  ///
+  /// In zh, this message translates to:
+  /// **'冲突总数'**
+  String get ruleWorkbenchConflicts;
+
+  /// No description provided for @ruleWorkbenchConflictSamples.
+  ///
+  /// In zh, this message translates to:
+  /// **'冲突样本'**
+  String get ruleWorkbenchConflictSamples;
+
+  /// No description provided for @ruleWorkbenchTruncated.
+  ///
+  /// In zh, this message translates to:
+  /// **'未展示'**
+  String get ruleWorkbenchTruncated;
+
+  /// No description provided for @ruleWorkbenchShown.
+  ///
+  /// In zh, this message translates to:
+  /// **'已展示命中'**
+  String get ruleWorkbenchShown;
+
+  /// No description provided for @ruleWorkbenchExecuted.
+  ///
+  /// In zh, this message translates to:
+  /// **'已执行，命中'**
+  String get ruleWorkbenchExecuted;
+
+  /// No description provided for @ruleWorkbenchNotExecuted.
+  ///
+  /// In zh, this message translates to:
+  /// **'未执行（已停用）'**
+  String get ruleWorkbenchNotExecuted;
+
+  /// No description provided for @ruleWorkbenchConflictDetails.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看冲突样本'**
+  String get ruleWorkbenchConflictDetails;
+
+  /// No description provided for @ruleWorkbenchChapterConflict.
+  ///
+  /// In zh, this message translates to:
+  /// **'同一行多个拆章边界'**
+  String get ruleWorkbenchChapterConflict;
+
+  /// No description provided for @ruleWorkbenchDeleteChapterConflict.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除与拆章冲突'**
+  String get ruleWorkbenchDeleteChapterConflict;
+
+  /// No description provided for @ruleWorkbenchDeletionConflict.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除范围重叠'**
+  String get ruleWorkbenchDeletionConflict;
+
+  /// No description provided for @ruleWorkbenchMaxApply.
+  ///
+  /// In zh, this message translates to:
+  /// **'每批最多应用 100 项。'**
+  String get ruleWorkbenchMaxApply;
+
+  /// No description provided for @ruleWorkbenchSaveOnly.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅保存当前规则'**
+  String get ruleWorkbenchSaveOnly;
+
+  /// No description provided for @ruleWorkbenchApplySelected.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用所选变更（一次撤销）'**
+  String get ruleWorkbenchApplySelected;
+
+  /// No description provided for @ruleWorkbenchSaveApply.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存并应用所选本规则命中'**
+  String get ruleWorkbenchSaveApply;
+
+  /// No description provided for @ruleWorkbenchCandidateNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'广告候选仅供核对，不能勾选删除。'**
+  String get ruleWorkbenchCandidateNotice;
+
+  /// No description provided for @aiAdvertisementAnalyze.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 判断广告'**
+  String get aiAdvertisementAnalyze;
+
+  /// No description provided for @aiAdvertisementSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'来自规则候选：{name}'**
+  String aiAdvertisementSource(String name);
+
+  /// No description provided for @aiAdvertisementSelectedText.
+  ///
+  /// In zh, this message translates to:
+  /// **'精确选区（仅此范围允许修改）'**
+  String get aiAdvertisementSelectedText;
+
+  /// No description provided for @aiAdvertisementReadOnlyContext.
+  ///
+  /// In zh, this message translates to:
+  /// **'实际发送的只读相邻正文'**
+  String get aiAdvertisementReadOnlyContext;
+
+  /// No description provided for @aiAdvertisementSelectionScope.
+  ///
+  /// In zh, this message translates to:
+  /// **'选区最多 8192 个 UTF-16 单元；仅分析所选文字及只读相邻上下文。更改章节范围将取消此选区请求。'**
+  String get aiAdvertisementSelectionScope;
+
+  /// No description provided for @aiAdvertisementSelectionLimit.
+  ///
+  /// In zh, this message translates to:
+  /// **'选区超过 8192 个 UTF-16 单元，请缩小后再分析。'**
+  String get aiAdvertisementSelectionLimit;
+
+  /// No description provided for @aiAdvertisementSelectionExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'此广告选区已失效，请重新选择内容后再分析。'**
+  String get aiAdvertisementSelectionExpired;
+
+  /// No description provided for @ruleWorkbenchMore.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载更多命中'**
+  String get ruleWorkbenchMore;
+
+  /// No description provided for @ruleWorkbenchReload.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新载入已保存规则'**
+  String get ruleWorkbenchReload;
+
+  /// No description provided for @ruleWorkbenchReloadTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新载入规则？'**
+  String get ruleWorkbenchReloadTitle;
+
+  /// No description provided for @ruleWorkbenchReloadWarning.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前未保存的规则定义、表单内容与试跑结果将被丢弃。'**
+  String get ruleWorkbenchReloadWarning;
+
+  /// No description provided for @ruleWorkbenchLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'行'**
+  String get ruleWorkbenchLine;
+
+  /// No description provided for @ruleWorkbenchRule.
+  ///
+  /// In zh, this message translates to:
+  /// **'命中规则'**
+  String get ruleWorkbenchRule;
+
+  /// No description provided for @ruleWorkbenchOffset.
+  ///
+  /// In zh, this message translates to:
+  /// **'范围'**
+  String get ruleWorkbenchOffset;
+
+  /// No description provided for @ruleWorkbenchSplitPrefix.
+  ///
+  /// In zh, this message translates to:
+  /// **'原章保留的边界块内容'**
+  String get ruleWorkbenchSplitPrefix;
+
+  /// No description provided for @ruleWorkbenchRemoveHeadingLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'将移除的完整标题行'**
+  String get ruleWorkbenchRemoveHeadingLine;
+
+  /// No description provided for @ruleWorkbenchSplitTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'新目录标题'**
+  String get ruleWorkbenchSplitTitle;
+
+  /// No description provided for @ruleWorkbenchUnsupportedCrLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'孤立 CR 标题行暂不支持拆章，请调整换行后重新试跑。'**
+  String get ruleWorkbenchUnsupportedCrLine;
+
+  /// No description provided for @ruleWorkbenchSplitSuffix.
+  ///
+  /// In zh, this message translates to:
+  /// **'新章边界块剩余正文'**
+  String get ruleWorkbenchSplitSuffix;
+
+  /// No description provided for @ruleWorkbenchFollowingCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'按原序移入新章的后续块数'**
+  String get ruleWorkbenchFollowingCount;
+
+  /// No description provided for @ruleWorkbenchFollowingBlocks.
+  ///
+  /// In zh, this message translates to:
+  /// **'展开新章后续全部内容'**
+  String get ruleWorkbenchFollowingBlocks;
+
+  /// No description provided for @ruleWorkbenchTextBlock.
+  ///
+  /// In zh, this message translates to:
+  /// **'正文块'**
+  String get ruleWorkbenchTextBlock;
+
+  /// No description provided for @ruleWorkbenchImageBlock.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片块'**
+  String get ruleWorkbenchImageBlock;
+
+  /// No description provided for @ruleWorkbenchFootnoteBlock.
+  ///
+  /// In zh, this message translates to:
+  /// **'脚注块'**
+  String get ruleWorkbenchFootnoteBlock;
+
+  /// No description provided for @ruleWorkbenchDividerBlock.
+  ///
+  /// In zh, this message translates to:
+  /// **'分隔块'**
+  String get ruleWorkbenchDividerBlock;
+
+  /// No description provided for @ruleWorkbenchAssetId.
+  ///
+  /// In zh, this message translates to:
+  /// **'资源标识'**
+  String get ruleWorkbenchAssetId;
+
+  /// No description provided for @ruleWorkbenchDeleteExact.
+  ///
+  /// In zh, this message translates to:
+  /// **'精确移除'**
+  String get ruleWorkbenchDeleteExact;
+
+  /// No description provided for @ruleWorkbenchAfter.
+  ///
+  /// In zh, this message translates to:
+  /// **'改后完整文本块'**
+  String get ruleWorkbenchAfter;
+
+  /// No description provided for @aiProofreadingIntro.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择分析目的与章节；准备范围不会发送书稿。'**
+  String get aiProofreadingIntro;
+
+  /// No description provided for @aiAuditGapSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'来自书稿体检：章节编号断档'**
+  String get aiAuditGapSource;
+
+  /// No description provided for @aiAuditGapRange.
+  ///
+  /// In zh, this message translates to:
+  /// **'缺失章号：{first}–{last}'**
+  String aiAuditGapRange(int first, int last);
+
+  /// No description provided for @aiAuditGapBefore.
+  ///
+  /// In zh, this message translates to:
+  /// **'前一章：{title}'**
+  String aiAuditGapBefore(String title);
+
+  /// No description provided for @aiAuditGapAfter.
+  ///
+  /// In zh, this message translates to:
+  /// **'后一章：{title}'**
+  String aiAuditGapAfter(String title);
+
+  /// No description provided for @aiAuditGapNoBefore.
+  ///
+  /// In zh, this message translates to:
+  /// **'本卷没有前一章，仅分析首个编号章节。'**
+  String get aiAuditGapNoBefore;
+
+  /// No description provided for @aiAuditGapNoAutoSend.
+  ///
+  /// In zh, this message translates to:
+  /// **'进入分析不会自动上传；请先核对请求范围，再确认发送。'**
+  String get aiAuditGapNoAutoSend;
+
+  /// No description provided for @aiAuditGapExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'此体检断档已失效，请重新体检后再分析。'**
+  String get aiAuditGapExpired;
+
+  /// No description provided for @aiProofreadingAdvertisement.
+  ///
+  /// In zh, this message translates to:
+  /// **'广告判断'**
+  String get aiProofreadingAdvertisement;
+
+  /// No description provided for @aiProofreadingMissingChapter.
+  ///
+  /// In zh, this message translates to:
+  /// **'缺章诊断'**
+  String get aiProofreadingMissingChapter;
+
+  /// No description provided for @aiProofreadingChapters.
+  ///
+  /// In zh, this message translates to:
+  /// **'分析章节'**
+  String get aiProofreadingChapters;
+
+  /// No description provided for @aiProofreadingScope.
+  ///
+  /// In zh, this message translates to:
+  /// **'可选当前章或多个章节；选中的正文完整分块分析。'**
+  String get aiProofreadingScope;
+
+  /// No description provided for @aiProofreadingMissingScope.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认取相邻两章；可调整章对。选中章节完整覆盖，不固定截取首尾。'**
+  String get aiProofreadingMissingScope;
+
+  /// No description provided for @aiProofreadingCurrentChapter.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前章'**
+  String get aiProofreadingCurrentChapter;
+
+  /// No description provided for @aiProofreadingSelectedChapters.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选章节'**
+  String get aiProofreadingSelectedChapters;
+
+  /// No description provided for @aiProofreadingPrepare.
+  ///
+  /// In zh, this message translates to:
+  /// **'准备并预览发送内容'**
+  String get aiProofreadingPrepare;
+
+  /// No description provided for @aiProofreadingPhase.
+  ///
+  /// In zh, this message translates to:
+  /// **'任务状态'**
+  String get aiProofreadingPhase;
+
+  /// No description provided for @aiProofreadingIdle.
+  ///
+  /// In zh, this message translates to:
+  /// **'待开始'**
+  String get aiProofreadingIdle;
+
+  /// No description provided for @aiProofreadingPreparing.
+  ///
+  /// In zh, this message translates to:
+  /// **'准备中'**
+  String get aiProofreadingPreparing;
+
+  /// No description provided for @aiProofreadingAwaitingConsent.
+  ///
+  /// In zh, this message translates to:
+  /// **'待确认发送'**
+  String get aiProofreadingAwaitingConsent;
+
+  /// No description provided for @aiProofreadingRunning.
+  ///
+  /// In zh, this message translates to:
+  /// **'分析中'**
+  String get aiProofreadingRunning;
+
+  /// No description provided for @aiProofreadingCompleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'分析完成'**
+  String get aiProofreadingCompleted;
+
+  /// No description provided for @aiProofreadingApplying.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用中'**
+  String get aiProofreadingApplying;
+
+  /// No description provided for @aiProofreadingApplied.
+  ///
+  /// In zh, this message translates to:
+  /// **'已应用'**
+  String get aiProofreadingApplied;
+
+  /// No description provided for @aiProofreadingCancelled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消'**
+  String get aiProofreadingCancelled;
+
+  /// No description provided for @aiProofreadingStale.
+  ///
+  /// In zh, this message translates to:
+  /// **'书稿已变化，结果失效'**
+  String get aiProofreadingStale;
+
+  /// No description provided for @aiProofreadingFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'失败'**
+  String get aiProofreadingFailed;
+
+  /// No description provided for @aiProofreadingCompletedChunks.
+  ///
+  /// In zh, this message translates to:
+  /// **'已完成分块'**
+  String get aiProofreadingCompletedChunks;
+
+  /// No description provided for @aiProofreadingReview.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送前确认'**
+  String get aiProofreadingReview;
+
+  /// No description provided for @aiProofreadingCharacters.
+  ///
+  /// In zh, this message translates to:
+  /// **'原文字符数'**
+  String get aiProofreadingCharacters;
+
+  /// No description provided for @aiProofreadingBlocks.
+  ///
+  /// In zh, this message translates to:
+  /// **'段落数'**
+  String get aiProofreadingBlocks;
+
+  /// No description provided for @aiProofreadingChunks.
+  ///
+  /// In zh, this message translates to:
+  /// **'请求分块数'**
+  String get aiProofreadingChunks;
+
+  /// No description provided for @aiProofreadingSystemPrompt.
+  ///
+  /// In zh, this message translates to:
+  /// **'完整系统提示词'**
+  String get aiProofreadingSystemPrompt;
+
+  /// No description provided for @aiProofreadingChunk.
+  ///
+  /// In zh, this message translates to:
+  /// **'完整发送内容，分块'**
+  String get aiProofreadingChunk;
+
+  /// No description provided for @aiProofreadingCompleteScope.
+  ///
+  /// In zh, this message translates to:
+  /// **'以下各块展示完整 userContext JSON；请求还会附带上方系统提示词。'**
+  String get aiProofreadingCompleteScope;
+
+  /// No description provided for @aiProofreadingStart.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认并开始发送'**
+  String get aiProofreadingStart;
+
+  /// No description provided for @aiProofreadingCancelCost.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消只能停止后续处理；已发送请求和可能产生的费用无法撤回。'**
+  String get aiProofreadingCancelCost;
+
+  /// No description provided for @aiProofreadingAppliedCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'已应用变更'**
+  String get aiProofreadingAppliedCount;
+
+  /// No description provided for @aiProofreadingNoFindings.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到可确认的异常或变更；缺章不等于原稿一定完整。'**
+  String get aiProofreadingNoFindings;
+
+  /// No description provided for @aiProofreadingApplicableChanges.
+  ///
+  /// In zh, this message translates to:
+  /// **'可应用变更'**
+  String get aiProofreadingApplicableChanges;
+
+  /// No description provided for @aiProofreadingPending.
+  ///
+  /// In zh, this message translates to:
+  /// **'待判断发现'**
+  String get aiProofreadingPending;
+
+  /// No description provided for @aiProofreadingIgnoredCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'已忽略 {count} 项（仅本轮结果）'**
+  String aiProofreadingIgnoredCount(int count);
+
+  /// No description provided for @aiProofreadingRestoreIgnored.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复本轮全部忽略项'**
+  String get aiProofreadingRestoreIgnored;
+
+  /// No description provided for @aiProofreadingIgnoreFinding.
+  ///
+  /// In zh, this message translates to:
+  /// **'忽略此发现及关联建议'**
+  String get aiProofreadingIgnoreFinding;
+
+  /// No description provided for @aiProofreadingRulesUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则提案尚未启用。'**
+  String get aiProofreadingRulesUnavailable;
+
+  /// No description provided for @aiProofreadingConflict.
+  ///
+  /// In zh, this message translates to:
+  /// **'所选变更相互冲突，请取消其中一项。'**
+  String get aiProofreadingConflict;
+
+  /// No description provided for @aiProofreadingApplySelected.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用所选变更'**
+  String get aiProofreadingApplySelected;
+
+  /// No description provided for @aiProofreadingOriginal.
+  ///
+  /// In zh, this message translates to:
+  /// **'完整原文'**
+  String get aiProofreadingOriginal;
+
+  /// No description provided for @aiProofreadingOriginalEvidence.
+  ///
+  /// In zh, this message translates to:
+  /// **'完整原文证据'**
+  String get aiProofreadingOriginalEvidence;
+
+  /// No description provided for @aiProofreadingOriginalChapterTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'原目录标题'**
+  String get aiProofreadingOriginalChapterTitle;
+
+  /// No description provided for @aiProofreadingNewChapterTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'新目录标题'**
+  String get aiProofreadingNewChapterTitle;
+
+  /// No description provided for @aiProofreadingReplacement.
+  ///
+  /// In zh, this message translates to:
+  /// **'替换内容'**
+  String get aiProofreadingReplacement;
+
+  /// No description provided for @aiProofreadingDelete.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除所示文字（保留正文块）'**
+  String get aiProofreadingDelete;
+
+  /// No description provided for @aiProofreadingRemoveBlock.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除整个正文块'**
+  String get aiProofreadingRemoveBlock;
+
+  /// No description provided for @aiProofreadingRemoveBlockImpact.
+  ///
+  /// In zh, this message translates to:
+  /// **'此正文块会移除，不保留空段落；章节及其他文字块、图片、脚注、分隔符不删除。'**
+  String get aiProofreadingRemoveBlockImpact;
+
+  /// No description provided for @aiProofreadingReplace.
+  ///
+  /// In zh, this message translates to:
+  /// **'替换原文'**
+  String get aiProofreadingReplace;
+
+  /// No description provided for @aiProofreadingRenameChapter.
+  ///
+  /// In zh, this message translates to:
+  /// **'修正章节标题'**
+  String get aiProofreadingRenameChapter;
+
+  /// No description provided for @aiProofreadingRenameChapterImpact.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅修改本章目录标题；正文中的标题行保留，其他文字、图片、脚注、分隔符和层级不变。'**
+  String get aiProofreadingRenameChapterImpact;
+
+  /// No description provided for @aiProofreadingSplit.
+  ///
+  /// In zh, this message translates to:
+  /// **'拆分并恢复章节'**
+  String get aiProofreadingSplit;
+
+  /// No description provided for @aiProofreadingSplitSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'原章节保留的边界段落'**
+  String get aiProofreadingSplitSource;
+
+  /// No description provided for @aiProofreadingSplitNew.
+  ///
+  /// In zh, this message translates to:
+  /// **'新章节及其正文'**
+  String get aiProofreadingSplitNew;
+
+  /// No description provided for @aiProofreadingSplitRemoveTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'从正文移除整行标题（含行尾换行），作为新章节标题。'**
+  String get aiProofreadingSplitRemoveTitle;
+
+  /// No description provided for @aiProofreadingSplitKeepTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'同时保留正文中的标题行，不删除任何原文。'**
+  String get aiProofreadingSplitKeepTitle;
+
+  /// No description provided for @aiProofreadingSplitResources.
+  ///
+  /// In zh, this message translates to:
+  /// **'这是单项拆分影响预览。原章前置块与边界前正文保留，边界后正文及后续块按原序归入新章；后续现有章节不变。批量拆分仍以冲突检查和应用校验为准。'**
+  String get aiProofreadingSplitResources;
+
+  /// No description provided for @aiProofreadingSplitParent.
+  ///
+  /// In zh, this message translates to:
+  /// **'所属卷（新旧章节相同）'**
+  String get aiProofreadingSplitParent;
+
+  /// No description provided for @aiProofreadingSplitTopLevel.
+  ///
+  /// In zh, this message translates to:
+  /// **'顶层章节（新旧章节均无所属卷）'**
+  String get aiProofreadingSplitTopLevel;
+
+  /// No description provided for @aiProofreadingSplitBeforeCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'原章保留的前置块：{count}'**
+  String aiProofreadingSplitBeforeCount(int count);
+
+  /// No description provided for @aiProofreadingSplitAfterCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'归入新章的后续块：{count}'**
+  String aiProofreadingSplitAfterCount(int count);
+
+  /// No description provided for @aiProofreadingSplitMore.
+  ///
+  /// In zh, this message translates to:
+  /// **'再显示最多 100 块'**
+  String get aiProofreadingSplitMore;
+
+  /// No description provided for @aiProofreadingSplitCaption.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片说明'**
+  String get aiProofreadingSplitCaption;
+
+  /// No description provided for @aiProofreadingSplitAlt.
+  ///
+  /// In zh, this message translates to:
+  /// **'替代文本'**
+  String get aiProofreadingSplitAlt;
+
+  /// No description provided for @aiProofreadingSplitMarker.
+  ///
+  /// In zh, this message translates to:
+  /// **'脚注标记'**
+  String get aiProofreadingSplitMarker;
+
+  /// No description provided for @aiProofreadingReason.
+  ///
+  /// In zh, this message translates to:
+  /// **'原因'**
+  String get aiProofreadingReason;
+
+  /// No description provided for @aiProofreadingLocate.
+  ///
+  /// In zh, this message translates to:
+  /// **'定位原文'**
+  String get aiProofreadingLocate;
+
+  /// No description provided for @aiProofreadingApplyOne.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用此项'**
+  String get aiProofreadingApplyOne;
+
+  /// No description provided for @aiProofreadingUndetermined.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法确定'**
+  String get aiProofreadingUndetermined;
+
+  /// No description provided for @aiProofreadingSuspectedMissing.
+  ///
+  /// In zh, this message translates to:
+  /// **'疑似原稿缺失'**
+  String get aiProofreadingSuspectedMissing;
+
+  /// No description provided for @aiProofreadingMissedHeading.
+  ///
+  /// In zh, this message translates to:
+  /// **'疑似标题漏识别'**
+  String get aiProofreadingMissedHeading;
+
+  /// No description provided for @aiProofreadingMergedContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'疑似章节合并'**
+  String get aiProofreadingMergedContent;
+
+  /// No description provided for @aiProofreadingNumberingSuspect.
+  ///
+  /// In zh, this message translates to:
+  /// **'疑似章号错误'**
+  String get aiProofreadingNumberingSuspect;
+
+  /// No description provided for @aiProofreadingAuthorNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'作者的话'**
+  String get aiProofreadingAuthorNote;
+
+  /// No description provided for @aiProofreadingStoryQuote.
+  ///
+  /// In zh, this message translates to:
+  /// **'正文引用'**
+  String get aiProofreadingStoryQuote;
+
+  /// No description provided for @aiProofreadingNotAdvertisement.
+  ///
+  /// In zh, this message translates to:
+  /// **'非广告'**
+  String get aiProofreadingNotAdvertisement;
+
+  /// No description provided for @aiProofreadingObserved.
+  ///
+  /// In zh, this message translates to:
+  /// **'发现'**
+  String get aiProofreadingObserved;
+
+  /// No description provided for @aiTestConnection.
+  ///
+  /// In zh, this message translates to:
+  /// **'测试连接'**
+  String get aiTestConnection;
+
+  /// No description provided for @aiTesting.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在测试连接…'**
+  String get aiTesting;
+
+  /// No description provided for @aiCancelTest.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消测试'**
+  String get aiCancelTest;
+
+  /// No description provided for @aiTestPassed.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接测试通过，可保存当前配置。修改格式、地址、密钥或模型后需重新测试。'**
+  String get aiTestPassed;
+
+  /// No description provided for @aiNotTested.
+  ///
+  /// In zh, this message translates to:
+  /// **'尚未测试当前配置。'**
+  String get aiNotTested;
+
+  /// No description provided for @aiSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前 AI 配置已保存。'**
+  String get aiSaved;
+
+  /// No description provided for @aiSave.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存配置'**
+  String get aiSave;
+
+  /// No description provided for @aiClear.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除 AI 配置与密钥'**
+  String get aiClear;
+
+  /// No description provided for @aiClearTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除 AI 配置？'**
+  String get aiClearTitle;
+
+  /// No description provided for @aiClearDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'停用 AI 并删除当前配置关联的密钥，不修改书稿。'**
+  String get aiClearDescription;
+
+  /// No description provided for @aiClearConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除'**
+  String get aiClearConfirm;
+
+  /// No description provided for @aiCleared.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 已停用，当前配置与关联密钥已清除。'**
+  String get aiCleared;
+
+  /// No description provided for @aiCleanupWarning.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前配置已安全提交，但旧密钥清理尚未完成。可以重试，不影响书稿。'**
+  String get aiCleanupWarning;
+
+  /// No description provided for @aiRetryCleanup.
+  ///
+  /// In zh, this message translates to:
+  /// **'重试清理旧密钥'**
+  String get aiRetryCleanup;
+
+  /// No description provided for @aiCleanupDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'旧密钥已清理。'**
+  String get aiCleanupDone;
+
+  /// No description provided for @aiLoadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法读取 AI 配置，请重试；不会据此启用联网。'**
+  String get aiLoadFailed;
+
+  /// No description provided for @aiReload.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新读取配置'**
+  String get aiReload;
+
+  /// No description provided for @aiBusy.
+  ///
+  /// In zh, this message translates to:
+  /// **'上一项操作尚未结束，请稍后再试。'**
+  String get aiBusy;
+
+  /// No description provided for @aiInvalidConfiguration.
+  ///
+  /// In zh, this message translates to:
+  /// **'请检查地址、模型与密钥；启用前需完成当前配置的连接测试。'**
+  String get aiInvalidConfiguration;
+
+  /// No description provided for @aiMissingCredential.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入密钥；更换地址或格式后不能自动沿用旧密钥。'**
+  String get aiMissingCredential;
+
+  /// No description provided for @aiCredentialUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法访问系统安全存储。请检查密钥环是否已解锁后重试，不会改用明文保存。'**
+  String get aiCredentialUnavailable;
+
+  /// No description provided for @aiStaleConfiguration.
+  ///
+  /// In zh, this message translates to:
+  /// **'配置已被其他操作修改，请重新读取后再保存。'**
+  String get aiStaleConfiguration;
+
+  /// No description provided for @aiProofRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前配置尚未通过连接测试，或测试后已经修改，请重新测试。'**
+  String get aiProofRequired;
+
+  /// No description provided for @aiConnectionFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务没有返回符合要求的连接测试结果，请核对模型与接口格式。'**
+  String get aiConnectionFailed;
+
+  /// No description provided for @aiCancelled.
+  ///
+  /// In zh, this message translates to:
+  /// **'测试已取消；服务端已经发生的处理或费用无法撤回。'**
+  String get aiCancelled;
+
+  /// No description provided for @aiSaveFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'配置保存失败，原配置仍保留，请重试。'**
+  String get aiSaveFailed;
+
+  /// No description provided for @aiCommitUnknown.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法确认配置保存状态，请重新读取配置后再操作。'**
+  String get aiCommitUnknown;
+
+  /// No description provided for @aiCleanupFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'旧密钥尚未清理，请稍后重试；不会删除当前仍在使用的密钥。'**
+  String get aiCleanupFailed;
+
+  /// No description provided for @aiAuthenticationFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务拒绝鉴权，请检查密钥及其权限。'**
+  String get aiAuthenticationFailed;
+
+  /// No description provided for @aiRateLimited.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务暂时限流，请稍后手动重试；不会自动重复发送。'**
+  String get aiRateLimited;
+
+  /// No description provided for @aiTimedOut.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接测试超时，请检查服务地址后重试。'**
+  String get aiTimedOut;
+
+  /// No description provided for @aiRedirectRejected.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务返回了重定向，已阻止转发密钥；请填写最终服务地址。'**
+  String get aiRedirectRejected;
+
+  /// No description provided for @aiBudgetExceeded.
+  ///
+  /// In zh, this message translates to:
+  /// **'请求或响应超过安全预算，请核对服务端点。'**
+  String get aiBudgetExceeded;
+
+  /// No description provided for @aiProtocolFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'响应不符合所选协议，或已拒答、截断，请检查模型和接口格式。'**
+  String get aiProtocolFailed;
+
+  /// No description provided for @aiNetworkFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法连接服务，请检查网络、地址及证书。'**
+  String get aiNetworkFailed;
+
   /// No description provided for @settingsThemeMode.
   ///
   /// In zh, this message translates to:
@@ -1010,11 +2966,41 @@ abstract class AppLocalizations {
   /// **'加入书架并编辑'**
   String get importAddToLibrary;
 
+  /// No description provided for @importTaskTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入书稿'**
+  String get importTaskTitle;
+
+  /// No description provided for @importPreparing.
+  ///
+  /// In zh, this message translates to:
+  /// **'准备中'**
+  String get importPreparing;
+
+  /// No description provided for @importCancelling.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在取消…'**
+  String get importCancelling;
+
+  /// No description provided for @importProgressPercent.
+  ///
+  /// In zh, this message translates to:
+  /// **'{percent}%'**
+  String importProgressPercent(int percent);
+
   /// No description provided for @importSaving.
   ///
   /// In zh, this message translates to:
   /// **'正在保存书稿…'**
   String get importSaving;
+
+  /// No description provided for @importSavingNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在保存，请勿退出。'**
+  String get importSavingNotice;
 
   /// No description provided for @importStagePrepare.
   ///
@@ -1034,11 +3020,41 @@ abstract class AppLocalizations {
   /// **'正在整理章节…'**
   String get importStageParse;
 
+  /// No description provided for @importStageConvert.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在转换文字…'**
+  String get importStageConvert;
+
   /// No description provided for @importStageReady.
   ///
   /// In zh, this message translates to:
   /// **'解析完成'**
   String get importStageReady;
+
+  /// No description provided for @importStageSavePrepare.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在准备保存…'**
+  String get importStageSavePrepare;
+
+  /// No description provided for @importStageSaveChapters.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在保存章节…'**
+  String get importStageSaveChapters;
+
+  /// No description provided for @importStageSaveBlocks.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在保存正文…'**
+  String get importStageSaveBlocks;
+
+  /// No description provided for @importStageSaveFinalize.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在完成保存…'**
+  String get importStageSaveFinalize;
 
   /// No description provided for @importPickFailed.
   ///
@@ -1574,6 +3590,12 @@ abstract class AppLocalizations {
   /// **'检查当前书稿'**
   String get editorWorkbenchAuditRun;
 
+  /// No description provided for @editorWorkbenchAnalyzeGapWithAi.
+  ///
+  /// In zh, this message translates to:
+  /// **'用 AI 分析'**
+  String get editorWorkbenchAnalyzeGapWithAi;
+
   /// No description provided for @editorWorkbenchAuditTotal.
   ///
   /// In zh, this message translates to:
@@ -1837,6 +3859,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'广告痕迹'**
   String get editorWorkbenchIssueAdLeftover;
+
+  /// No description provided for @editorWorkbenchIssueTitleFormat.
+  ///
+  /// In zh, this message translates to:
+  /// **'标题格式不一致'**
+  String get editorWorkbenchIssueTitleFormat;
+
+  /// No description provided for @editorWorkbenchIssueDuplicateContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'内容重复'**
+  String get editorWorkbenchIssueDuplicateContent;
 
   /// No description provided for @editorWorkbenchReparseInvalidRuleUtf8.
   ///
@@ -2179,6 +4213,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'排版与字体'**
   String get bookWorkbenchLayoutFonts;
+
+  /// No description provided for @bookWorkbenchLayoutSampleTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'即时排版样例'**
+  String get bookWorkbenchLayoutSampleTitle;
+
+  /// No description provided for @bookWorkbenchLayoutSampleScope.
+  ///
+  /// In zh, this message translates to:
+  /// **'此处样例、阅读预览和支持视觉排版的导出使用这些设置；正文编辑区保留原文，首行缩进不会显示在编辑区。'**
+  String get bookWorkbenchLayoutSampleScope;
+
+  /// No description provided for @bookWorkbenchLayoutSampleFirst.
+  ///
+  /// In zh, this message translates to:
+  /// **'雨停后，街灯映在石板路上，书声渐近。'**
+  String get bookWorkbenchLayoutSampleFirst;
+
+  /// No description provided for @bookWorkbenchLayoutSampleSecond.
+  ///
+  /// In zh, this message translates to:
+  /// **'新的一页徐徐展开。'**
+  String get bookWorkbenchLayoutSampleSecond;
 
   /// No description provided for @bookWorkbenchCover.
   ///
@@ -2960,6 +5018,30 @@ abstract class AppLocalizations {
   /// **'已校验 {count} 本；数据 {size}'**
   String dataWorkbenchBackupValidated(int count, String size);
 
+  /// No description provided for @dataWorkbenchBackupSavedWithRules.
+  ///
+  /// In zh, this message translates to:
+  /// **'已保存书稿备份，包含 {count} 条本书规则。'**
+  String dataWorkbenchBackupSavedWithRules(int count);
+
+  /// No description provided for @dataWorkbenchBackupRules.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份包含 {count} 条本书规则；恢复时只补充缺失定义，不覆盖现有规则，也不会自动启用或试跑。'**
+  String dataWorkbenchBackupRules(int count);
+
+  /// No description provided for @dataWorkbenchBackupRulesMerged.
+  ///
+  /// In zh, this message translates to:
+  /// **'规则恢复：新增 {added} 条，跳过已有 {skipped} 条。'**
+  String dataWorkbenchBackupRulesMerged(int added, int skipped);
+
+  /// No description provided for @dataWorkbenchBackupRulesFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'书稿已恢复，但规则恢复失败：{message}'**
+  String dataWorkbenchBackupRulesFailed(String message);
+
   /// No description provided for @dataWorkbenchBackupEstimatedSpace.
   ///
   /// In zh, this message translates to:
@@ -3287,7 +5369,7 @@ abstract class AppLocalizations {
   /// No description provided for @permissionsInternetDeclared.
   ///
   /// In zh, this message translates to:
-  /// **'安装包声明了网络访问权限。'**
+  /// **'安装包声明网络权限，用于可选 AI；默认关闭，仅主动测试连接时发送固定小样本，不发送书稿。'**
   String get permissionsInternetDeclared;
 
   /// No description provided for @permissionsStorageDeclared.
@@ -3421,6 +5503,78 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'非书稿功能所需，不会主动申请，可保持关闭。'**
   String get permissionsRuntimeNotRequired;
+
+  /// No description provided for @ruleWorkbenchRulesCopyConflicts.
+  ///
+  /// In zh, this message translates to:
+  /// **'同 ID 冲突时另存为新规则（否则跳过）'**
+  String get ruleWorkbenchRulesCopyConflicts;
+
+  /// No description provided for @ruleWorkbenchDuplicate.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制规则'**
+  String get ruleWorkbenchDuplicate;
+
+  /// No description provided for @ruleWorkbenchCopySuffix.
+  ///
+  /// In zh, this message translates to:
+  /// **'（副本）'**
+  String get ruleWorkbenchCopySuffix;
+
+  /// No description provided for @ruleWorkbenchDuplicated.
+  ///
+  /// In zh, this message translates to:
+  /// **'已创建「{name}」。'**
+  String ruleWorkbenchDuplicated(String name);
+
+  /// No description provided for @ruleWorkbenchSearch.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索规则'**
+  String get ruleWorkbenchSearch;
+
+  /// No description provided for @ruleWorkbenchNoMatches.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有匹配的规则。'**
+  String get ruleWorkbenchNoMatches;
+
+  /// No description provided for @ruleWorkbenchClearSearch.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除搜索'**
+  String get ruleWorkbenchClearSearch;
+
+  /// No description provided for @ruleWorkbenchExportSelectTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择要导出的规则'**
+  String get ruleWorkbenchExportSelectTitle;
+
+  /// No description provided for @ruleWorkbenchSelectAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全选'**
+  String get ruleWorkbenchSelectAll;
+
+  /// No description provided for @ruleWorkbenchExportSelected.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出所选（{count}）'**
+  String ruleWorkbenchExportSelected(int count);
+
+  /// No description provided for @ruleWorkbenchImportPreview.
+  ///
+  /// In zh, this message translates to:
+  /// **'将导入的规则'**
+  String get ruleWorkbenchImportPreview;
+
+  /// No description provided for @ruleWorkbenchImportWillSkip.
+  ///
+  /// In zh, this message translates to:
+  /// **'已存在，将跳过'**
+  String get ruleWorkbenchImportWillSkip;
 }
 
 class _AppLocalizationsDelegate

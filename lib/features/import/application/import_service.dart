@@ -174,9 +174,15 @@ class ImportService {
       try {
         await sink.addStream(_boundedInput(input));
         await sink.flush();
-      } finally {
-        await sink.close();
+      } on Object catch (error, stack) {
+        try {
+          await sink.close();
+        } on Object {
+          _logger.fine('import sink close failed after read error');
+        }
+        Error.throwWithStackTrace(error, stack);
       }
+      await sink.close();
       if (_cancelled) throw const TaskCancelled();
       if (expectedSourceHash != null &&
           (await sha256.bind(source.openRead()).first).toString() !=
@@ -243,13 +249,32 @@ class ImportService {
     }
   }
 
-  Future<Book> commit(PreparedImport prepared) async {
+  Future<Book> commit(
+    PreparedImport prepared, {
+    void Function(JobProgress)? onProgress,
+  }) async {
     if (prepared.isReparse) throw const ValidationFailure('重新识别结果只能在原书稿中应用。');
     if (prepared._finished || prepared._committing) {
       throw const ValidationFailure('导入已完成或正在保存，请返回书架。');
     }
     prepared._committing = true;
+    final totalWatch = Stopwatch()..start();
+    final chapterCount = prepared.result.chapters.length;
+    final blockCount = prepared.result.chapters.fold<int>(
+      0,
+      (count, chapter) => count + chapter.blocks.length,
+    );
+    final totalSteps = chapterCount + blockCount + 3;
+    void report(int completedSteps, String stage) {
+      try {
+        onProgress?.call(JobProgress(0, 0, completedSteps / totalSteps, stage));
+      } on Object {
+        return;
+      }
+    }
+
     try {
+      report(0, 'save_prepare');
       final now = DateTime.now().toUtc();
       final coverId = prepared.cover == null ? null : const Uuid().v4();
       final book = Book(
@@ -264,6 +289,7 @@ class ImportService {
         createdAt: now,
         updatedAt: now,
       );
+      final storageWatch = Stopwatch()..start();
       final stored = await repository.createBook(
         book,
         assets: [
@@ -283,14 +309,32 @@ class ImportService {
           originalName: prepared.originalName,
           openRead: prepared._source.openRead,
         ),
+        onProgress: (chaptersWritten, blocksWritten, stage) {
+          final completedSteps = switch (stage) {
+            'save_prepare' => 1,
+            'save_finalize' => totalSteps - 1,
+            _ => 1 + chaptersWritten + blocksWritten,
+          };
+          report(completedSteps, stage);
+        },
       );
+      storageWatch.stop();
       prepared._finished = true;
+      final cleanupWatch = Stopwatch()..start();
       try {
         await _clean(prepared);
       } on Object {
         // A committed book stays successful even if cache reclamation fails.
         _logger.warning('import cache cleanup deferred');
       }
+      cleanupWatch.stop();
+      report(totalSteps, 'save_finalize');
+      totalWatch.stop();
+      _logger.info(
+        'import commit success chapters=$chapterCount blocks=$blockCount '
+        'words=${book.wordCount} storage_ms=${storageWatch.elapsedMilliseconds} '
+        'cleanup_ms=${cleanupWatch.elapsedMilliseconds} total_ms=${totalWatch.elapsedMilliseconds}',
+      );
       return stored;
     } on AppFailure {
       rethrow;
@@ -426,6 +470,7 @@ StructuredImport _parse(
       suggestedMeta: original.suggestedMeta.copyWith(
         title: convert(original.suggestedMeta.title),
         author: convert(original.suggestedMeta.author),
+        description: convert(original.suggestedMeta.description),
       ),
       chapters: [
         for (final chapter in original.chapters)

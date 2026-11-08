@@ -73,6 +73,14 @@ abstract final class AppLayout {
 
   static const double editorCompactBreakpoint = 600;
 
+  static const double workbenchDialogMaxWidth = 900;
+
+  static const double workbenchDialogHeightFraction = 0.88;
+
+  static const double aiChapterSelectionMaxHeight = 216;
+
+  static const double noticeMaxWidth = 440;
+
   /// Below this width, segmented theme labels take priority over their icons.
   static const double themeControlIconBreakpoint = 400;
 }

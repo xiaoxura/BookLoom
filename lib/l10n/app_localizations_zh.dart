@@ -52,6 +52,1025 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAppearance => '外观';
 
   @override
+  String get aiSettingsTitle => 'AI 服务';
+
+  @override
+  String get aiSettingsDescription => '可选联网能力，默认关闭。由你选择服务，并主动发起每次任务。';
+
+  @override
+  String get aiEnabled => '启用 AI 辅助';
+
+  @override
+  String get aiOfflineNotice => '关闭时不发送 AI 请求；导入、编辑、规则扫描与导出仍可离线使用。';
+
+  @override
+  String get aiFormat => '接口格式';
+
+  @override
+  String get aiAddress => 'API 地址';
+
+  @override
+  String get aiOpenAiAddressHint => 'https://api.example.com/v1';
+
+  @override
+  String get aiClaudeAddressHint => 'https://api.example.com（无需填写 /v1）';
+
+  @override
+  String get aiApiKey => 'API 密钥';
+
+  @override
+  String get aiKeyNewHint => '输入密钥，仅保存到系统安全存储';
+
+  @override
+  String get aiKeyReuseHint => '留空沿用已保存密钥；不会把密钥填回表单';
+
+  @override
+  String get aiKeyChangedAddressHint => '地址或格式已改变，请重新输入密钥';
+
+  @override
+  String get aiShowKey => '显示密钥';
+
+  @override
+  String get aiHideKey => '隐藏密钥';
+
+  @override
+  String get aiModel => '模型标识';
+
+  @override
+  String get aiModelHint => '手动填写服务支持的模型名称';
+
+  @override
+  String get aiNormalizedAddress => '规范化基础地址';
+
+  @override
+  String get aiRequestAddress => '最终请求地址';
+
+  @override
+  String get aiEndpointInvalid => '请检查协议、地址、端口与接口格式。';
+
+  @override
+  String get aiRemoteHttpConsent => '我了解远程 HTTP 会明文传输密钥和内容，仍使用此地址';
+
+  @override
+  String get aiTestDisclosure =>
+      '连接测试只发送固定小样例，不读取或发送书稿，可能产生少量费用。书稿分析需在校对工具中另行确认。';
+
+  @override
+  String get aiProofreadingTitle => 'AI 校对';
+
+  @override
+  String get editorAiCreateChapterRule => 'AI 创建章节识别规则';
+
+  @override
+  String get editorAiCreateAdvertisementRule => 'AI 创建广告清理规则';
+
+  @override
+  String get editorAiAnalyzeAdvertisement => 'AI 广告判断';
+
+  @override
+  String get aiJointRuleRequest => '同时请求规则候选';
+
+  @override
+  String get aiJointRuleHelp => '仅基于你提供的样例生成规则候选，不会自动保存或应用；请在规则工作台独立检查并试跑。';
+
+  @override
+  String get aiJointRuleLimits =>
+      '每行一个样例：正例 1–12 条、反例 0–12 条；每条最多 2048 个 UTF-16 单元，总计最多 8192。所有正例必须完整位于同一个实际发送分块中。';
+
+  @override
+  String get aiJointRuleAuthorization => '规则候选显式授权';
+
+  @override
+  String aiJointRuleChunk(int index) {
+    return '仅第 $index 个分块允许返回规则（从 1 开始编号）。';
+  }
+
+  @override
+  String get aiJointRuleNotRequested => '本次未请求规则候选，分析无权生成规则。';
+
+  @override
+  String aiJointRuleCount(int count) {
+    return '独立规则候选：$count';
+  }
+
+  @override
+  String get aiRuleTitle => 'AI 样例建规则';
+
+  @override
+  String get aiRuleSelected => '所选原文';
+
+  @override
+  String get aiRuleIntent => '规则意图';
+
+  @override
+  String get aiRuleNegative => '不得命中的反例';
+
+  @override
+  String get aiRuleChapterTitle => '所在章节标题';
+
+  @override
+  String get aiRuleBefore => '选区前文';
+
+  @override
+  String get aiRuleAfter => '选区后文';
+
+  @override
+  String get aiRuleRelated => '发送的相关规则摘要（最多 16 条）';
+
+  @override
+  String get aiRuleRunning => '正在生成候选';
+
+  @override
+  String get aiRuleCompleted => '候选生成完成';
+
+  @override
+  String get aiRuleNoProposals => '未生成规则候选。可调整意图或反例后重新准备。';
+
+  @override
+  String get aiRuleCheckAndTrial => '检查并试跑';
+
+  @override
+  String get ruleWorkbenchTitle => '自定义规则';
+
+  @override
+  String get ruleWorkbenchNumberCaptureGroup => '章号来自捕获组（可选）';
+
+  @override
+  String get ruleWorkbenchNumberCaptureHelper =>
+      '须同时设置标题捕获组；仅提取原文明示数字，不自动编号。留空不映射；0=整体匹配，1 起为捕获组。清空标题捕获组或切换为字面量/广告时会清除此章号设置。';
+
+  @override
+  String get ruleWorkbenchNumberCaptureInvalid => '请先设置标题捕获组，并输入可用编号内的非负整数。';
+
+  @override
+  String get ruleWorkbenchNumberToken => '原文章号数字';
+
+  @override
+  String get ruleWorkbenchParsedNumber => '解析后的章号';
+
+  @override
+  String get ruleWorkbenchDefinition => '完整规则定义';
+
+  @override
+  String get ruleWorkbenchId => '规则 ID';
+
+  @override
+  String get ruleWorkbenchBookId => '书稿 ID';
+
+  @override
+  String get ruleWorkbenchSource => '来源';
+
+  @override
+  String get ruleWorkbenchInitialRejected => '规则候选已过期或与现有规则冲突，请重新选择样例生成。';
+
+  @override
+  String get ruleWorkbenchOffline => '本地规则全书试跑；不会调用 AI。选定规则和命中后才会修改书稿。';
+
+  @override
+  String get ruleWorkbenchImportRules => '导入内置规则（只读）';
+
+  @override
+  String ruleWorkbenchImportPreset(String name) {
+    return '预设：$name';
+  }
+
+  @override
+  String get ruleWorkbenchImportCustom => '自定义';
+
+  @override
+  String get ruleWorkbenchImportAutoNote =>
+      '自动识别由导入器内置启发式与广告规则完成；工作台不复制这部分逻辑，也不会在试跑中重放。';
+
+  @override
+  String get ruleWorkbenchImportCustomNote => '导入时还附加了自定义规则；它们同样只读展示，不参与本次试跑。';
+
+  @override
+  String get ruleWorkbenchImportInvalid => '无法解析当前导入规则（预设或自定义规则无效），请检查导入设置。';
+
+  @override
+  String get ruleWorkbenchImportReadOnly =>
+      '导入规则只在导入或重新解析时执行，不会在本次试跑中运行；工作台只运行上面显式勾选的已保存规则。如需在书中复用，请新建规则。';
+
+  @override
+  String get ruleWorkbenchImportEmpty => '该预设没有可展示的章节、卷或丢弃规则。';
+
+  @override
+  String get ruleWorkbenchImportEntryChapter => '章节标题规则（整行匹配）';
+
+  @override
+  String get ruleWorkbenchImportEntryVolume => '卷标题规则（整行匹配）';
+
+  @override
+  String get ruleWorkbenchImportEntryDrop => '整行丢弃规则';
+
+  @override
+  String get ruleWorkbenchImportEntryInlineJunk => '行内推广清理规则';
+
+  @override
+  String get ruleWorkbenchRules => '本次规则集';
+
+  @override
+  String get ruleWorkbenchEmpty => '还没有规则。可以先创建一条本书规则。';
+
+  @override
+  String get ruleWorkbenchBookScope => '本书';
+
+  @override
+  String get ruleWorkbenchGlobalScope => '跨书';
+
+  @override
+  String get ruleWorkbenchEnabled => '启用';
+
+  @override
+  String get ruleWorkbenchDisabled => '停用';
+
+  @override
+  String get ruleWorkbenchUnsaved => '未保存';
+
+  @override
+  String get ruleWorkbenchCurrent => '当前规则';
+
+  @override
+  String get ruleWorkbenchBuiltIn => '内置';
+
+  @override
+  String get ruleWorkbenchUser => '用户';
+
+  @override
+  String get ruleWorkbenchAiSource => 'AI 来源';
+
+  @override
+  String get ruleWorkbenchActions => '规则操作';
+
+  @override
+  String get ruleWorkbenchEdit => '编辑';
+
+  @override
+  String get ruleWorkbenchEnable => '启用规则';
+
+  @override
+  String get ruleWorkbenchDisable => '停用规则';
+
+  @override
+  String get ruleWorkbenchDelete => '删除规则';
+
+  @override
+  String get ruleWorkbenchDeleteTitle => '确认删除规则？';
+
+  @override
+  String get ruleWorkbenchNew => '新建规则';
+
+  @override
+  String get ruleWorkbenchScan => '试跑全书';
+
+  @override
+  String get ruleWorkbenchIdentify => '识别什么';
+
+  @override
+  String get ruleWorkbenchExclude => '排除什么';
+
+  @override
+  String get ruleWorkbenchExcludePattern => '命中排除文本（可选）';
+
+  @override
+  String get ruleWorkbenchExcludePatternHelper =>
+      '匹配所在行包含该文本时跳过该命中；区分大小写沿用上方设置。';
+
+  @override
+  String get ruleWorkbenchExcludePatternInvalid =>
+      '排除文本不能跨行，且不超过 256 个 UTF-16 字符。';
+
+  @override
+  String get ruleWorkbenchWholeLine => '仅整行匹配';
+
+  @override
+  String get ruleWorkbenchNoGlobalRules => '没有可导出的规则。';
+
+  @override
+  String get ruleWorkbenchRulesNoSharedInFile => '文件中没有可用规则。';
+
+  @override
+  String get ruleWorkbenchExportSharedRules => '导出规则文件';
+
+  @override
+  String get ruleWorkbenchImportSharedRules => '导入规则文件';
+
+  @override
+  String ruleWorkbenchRulesExported(int count) {
+    return '已导出 $count 条规则。';
+  }
+
+  @override
+  String get ruleWorkbenchRulesImportTitle => '导入规则文件';
+
+  @override
+  String ruleWorkbenchRulesImportBody(int global, int book, int existing) {
+    return '文件含 $global 条跨书规则、$book 条本书规则（复制到当前书）；$existing 条同 ID 已存在将跳过。只补充缺失定义，不覆盖、不自动启用或运行。';
+  }
+
+  @override
+  String ruleWorkbenchRulesImported(int added, int skipped) {
+    return '已导入：新增 $added 条，跳过已有 $skipped 条。';
+  }
+
+  @override
+  String get ruleWorkbenchRulesImportInvalid => '规则文件无效或版本不兼容。';
+
+  @override
+  String get ruleWorkbenchWholeLineHelper => '忽略首尾空白后，命中必须覆盖整行；仅适用于标题行和正文行。';
+
+  @override
+  String get ruleWorkbenchEffect => '会改什么';
+
+  @override
+  String get ruleWorkbenchName => '规则名称';
+
+  @override
+  String get ruleWorkbenchKind => '规则类型';
+
+  @override
+  String get ruleWorkbenchChapter => '章节识别';
+
+  @override
+  String get ruleWorkbenchHeadingLevel => '识别层级';
+
+  @override
+  String get ruleWorkbenchVolumeLevel => '卷';
+
+  @override
+  String get ruleWorkbenchChapterLevel => '章节';
+
+  @override
+  String get ruleWorkbenchVolumeCandidate => '卷识别';
+
+  @override
+  String get ruleWorkbenchVolumeEffect =>
+      '将完整标题行及换行从正文移除并建立顶层卷。边界后内容保留为不另拟目录标题的卷前内容，后续连续同归属章节移入新卷；无内容时不创建空章节。';
+
+  @override
+  String get ruleWorkbenchNewVolumeTitle => '新卷标题';
+
+  @override
+  String get ruleWorkbenchVolumeFrontMatter => '卷前内容（不另拟章节标题）';
+
+  @override
+  String get ruleWorkbenchVolumePreview =>
+      '这是单项卷边界预览。新卷是顶层目录项，本身不承载正文。原章边界前内容保留；边界后的正文、图片、脚注与分隔符按原序归入新卷的卷前内容，目录中不另拟标题，无内容时不创建空章节。后续连续且与原章同归属的章节移入新卷，遇到卷或不同归属时停止。批量应用时按各卷边界分配，一次撤销。';
+
+  @override
+  String get ruleWorkbenchVolumeFollowingBlockCount => '归入卷前内容的后续块数';
+
+  @override
+  String get ruleWorkbenchVolumeFollowingBlocks => '展开卷前内容的后续全部块';
+
+  @override
+  String get ruleWorkbenchVolumeFollowingChapterCount => '单项应用将移入新卷的后续章节数';
+
+  @override
+  String get ruleWorkbenchVolumeFollowingChapters => '展开将移入新卷的后续章节列表';
+
+  @override
+  String get ruleWorkbenchMoreChapters => '加载更多章节';
+
+  @override
+  String get ruleWorkbenchAdvertisement => '广告识别';
+
+  @override
+  String get ruleWorkbenchTarget => '匹配目标';
+
+  @override
+  String get ruleWorkbenchHeadingLine => '匹配目标：标题行';
+
+  @override
+  String get ruleWorkbenchBodyLine => '正文行';
+
+  @override
+  String get ruleWorkbenchParagraph => '段落';
+
+  @override
+  String get ruleWorkbenchMode => '匹配方式';
+
+  @override
+  String get ruleWorkbenchLiteral => '普通文本';
+
+  @override
+  String get ruleWorkbenchSafeRegex => '受限正则（高级）';
+
+  @override
+  String get ruleWorkbenchPattern => '识别文本或表达式';
+
+  @override
+  String get ruleWorkbenchAdvanced => '高级选项';
+
+  @override
+  String get ruleWorkbenchTitleCaptureGroup => '目录标题来自捕获组';
+
+  @override
+  String get ruleWorkbenchTitleCaptureHelper => '留空=完整标题行；0=整体匹配；1 起为捕获组。';
+
+  @override
+  String get ruleWorkbenchAvailableGroups => '可用编号';
+
+  @override
+  String get ruleWorkbenchTitleCaptureInvalid => '请输入可用编号内的非负整数。';
+
+  @override
+  String get ruleWorkbenchFullHeadingLine => '完整标题行';
+
+  @override
+  String get ruleWorkbenchCaseSensitive => '区分大小写';
+
+  @override
+  String get ruleWorkbenchPositive => '必命中的正例（至少一行）';
+
+  @override
+  String get ruleWorkbenchNegative => '不得命中的反例（可多行）';
+
+  @override
+  String get ruleWorkbenchOnePerLine => '每行一个样例；单行内不换行';
+
+  @override
+  String get ruleWorkbenchAction => '动作';
+
+  @override
+  String get ruleWorkbenchCandidate => '标记广告候选（不删除）';
+
+  @override
+  String get ruleWorkbenchExactDeletion => '精确删除命中文本';
+
+  @override
+  String get ruleWorkbenchChapterEffect => '将完整标题行及换行从正文移除；新目录标题默认取整行，可映射捕获组。';
+
+  @override
+  String get ruleWorkbenchScope => '作用域';
+
+  @override
+  String get ruleWorkbenchPriority => '优先级（-1000 至 1000）';
+
+  @override
+  String get ruleWorkbenchPriorityInvalid => '优先级必须为整数。';
+
+  @override
+  String get ruleWorkbenchOpenBook => '请先打开书稿。';
+
+  @override
+  String get ruleWorkbenchUseDefinition => '加入规则集';
+
+  @override
+  String get ruleWorkbenchGlobalConfirmTitle => '改为跨书规则？';
+
+  @override
+  String get ruleWorkbenchGlobalConfirmBody =>
+      '规则将出现在其他书稿的规则列表中，但不会自动参与试跑或修改正文。';
+
+  @override
+  String get ruleWorkbenchConfirm => '确认';
+
+  @override
+  String get ruleWorkbenchLoading => '正在加载规则';
+
+  @override
+  String get ruleWorkbenchScanning => '正在试跑全书';
+
+  @override
+  String get ruleWorkbenchReady => '试跑完成';
+
+  @override
+  String get ruleWorkbenchSaving => '正在保存规则';
+
+  @override
+  String get ruleWorkbenchSaved => '规则已保存；试跑结果已失效，请重新试跑后再应用。';
+
+  @override
+  String get ruleWorkbenchDeleted => '规则已删除。';
+
+  @override
+  String get ruleWorkbenchResults => '全书试跑结果';
+
+  @override
+  String get ruleWorkbenchCoverage => '覆盖';
+
+  @override
+  String get ruleWorkbenchChapters => '卷章节点';
+
+  @override
+  String get ruleWorkbenchBlocks => '文本块';
+
+  @override
+  String get ruleWorkbenchLines => '正文行';
+
+  @override
+  String get ruleWorkbenchTotalMatches => '总命中';
+
+  @override
+  String get ruleWorkbenchDistinctMatches => '去重命中';
+
+  @override
+  String get ruleWorkbenchConflicts => '冲突总数';
+
+  @override
+  String get ruleWorkbenchConflictSamples => '冲突样本';
+
+  @override
+  String get ruleWorkbenchTruncated => '未展示';
+
+  @override
+  String get ruleWorkbenchShown => '已展示命中';
+
+  @override
+  String get ruleWorkbenchExecuted => '已执行，命中';
+
+  @override
+  String get ruleWorkbenchNotExecuted => '未执行（已停用）';
+
+  @override
+  String get ruleWorkbenchConflictDetails => '查看冲突样本';
+
+  @override
+  String get ruleWorkbenchChapterConflict => '同一行多个拆章边界';
+
+  @override
+  String get ruleWorkbenchDeleteChapterConflict => '删除与拆章冲突';
+
+  @override
+  String get ruleWorkbenchDeletionConflict => '删除范围重叠';
+
+  @override
+  String get ruleWorkbenchMaxApply => '每批最多应用 100 项。';
+
+  @override
+  String get ruleWorkbenchSaveOnly => '仅保存当前规则';
+
+  @override
+  String get ruleWorkbenchApplySelected => '应用所选变更（一次撤销）';
+
+  @override
+  String get ruleWorkbenchSaveApply => '保存并应用所选本规则命中';
+
+  @override
+  String get ruleWorkbenchCandidateNotice => '广告候选仅供核对，不能勾选删除。';
+
+  @override
+  String get aiAdvertisementAnalyze => 'AI 判断广告';
+
+  @override
+  String aiAdvertisementSource(String name) {
+    return '来自规则候选：$name';
+  }
+
+  @override
+  String get aiAdvertisementSelectedText => '精确选区（仅此范围允许修改）';
+
+  @override
+  String get aiAdvertisementReadOnlyContext => '实际发送的只读相邻正文';
+
+  @override
+  String get aiAdvertisementSelectionScope =>
+      '选区最多 8192 个 UTF-16 单元；仅分析所选文字及只读相邻上下文。更改章节范围将取消此选区请求。';
+
+  @override
+  String get aiAdvertisementSelectionLimit => '选区超过 8192 个 UTF-16 单元，请缩小后再分析。';
+
+  @override
+  String get aiAdvertisementSelectionExpired => '此广告选区已失效，请重新选择内容后再分析。';
+
+  @override
+  String get ruleWorkbenchMore => '加载更多命中';
+
+  @override
+  String get ruleWorkbenchReload => '重新载入已保存规则';
+
+  @override
+  String get ruleWorkbenchReloadTitle => '重新载入规则？';
+
+  @override
+  String get ruleWorkbenchReloadWarning => '当前未保存的规则定义、表单内容与试跑结果将被丢弃。';
+
+  @override
+  String get ruleWorkbenchLine => '行';
+
+  @override
+  String get ruleWorkbenchRule => '命中规则';
+
+  @override
+  String get ruleWorkbenchOffset => '范围';
+
+  @override
+  String get ruleWorkbenchSplitPrefix => '原章保留的边界块内容';
+
+  @override
+  String get ruleWorkbenchRemoveHeadingLine => '将移除的完整标题行';
+
+  @override
+  String get ruleWorkbenchSplitTitle => '新目录标题';
+
+  @override
+  String get ruleWorkbenchUnsupportedCrLine => '孤立 CR 标题行暂不支持拆章，请调整换行后重新试跑。';
+
+  @override
+  String get ruleWorkbenchSplitSuffix => '新章边界块剩余正文';
+
+  @override
+  String get ruleWorkbenchFollowingCount => '按原序移入新章的后续块数';
+
+  @override
+  String get ruleWorkbenchFollowingBlocks => '展开新章后续全部内容';
+
+  @override
+  String get ruleWorkbenchTextBlock => '正文块';
+
+  @override
+  String get ruleWorkbenchImageBlock => '图片块';
+
+  @override
+  String get ruleWorkbenchFootnoteBlock => '脚注块';
+
+  @override
+  String get ruleWorkbenchDividerBlock => '分隔块';
+
+  @override
+  String get ruleWorkbenchAssetId => '资源标识';
+
+  @override
+  String get ruleWorkbenchDeleteExact => '精确移除';
+
+  @override
+  String get ruleWorkbenchAfter => '改后完整文本块';
+
+  @override
+  String get aiProofreadingIntro => '选择分析目的与章节；准备范围不会发送书稿。';
+
+  @override
+  String get aiAuditGapSource => '来自书稿体检：章节编号断档';
+
+  @override
+  String aiAuditGapRange(int first, int last) {
+    return '缺失章号：$first–$last';
+  }
+
+  @override
+  String aiAuditGapBefore(String title) {
+    return '前一章：$title';
+  }
+
+  @override
+  String aiAuditGapAfter(String title) {
+    return '后一章：$title';
+  }
+
+  @override
+  String get aiAuditGapNoBefore => '本卷没有前一章，仅分析首个编号章节。';
+
+  @override
+  String get aiAuditGapNoAutoSend => '进入分析不会自动上传；请先核对请求范围，再确认发送。';
+
+  @override
+  String get aiAuditGapExpired => '此体检断档已失效，请重新体检后再分析。';
+
+  @override
+  String get aiProofreadingAdvertisement => '广告判断';
+
+  @override
+  String get aiProofreadingMissingChapter => '缺章诊断';
+
+  @override
+  String get aiProofreadingChapters => '分析章节';
+
+  @override
+  String get aiProofreadingScope => '可选当前章或多个章节；选中的正文完整分块分析。';
+
+  @override
+  String get aiProofreadingMissingScope => '默认取相邻两章；可调整章对。选中章节完整覆盖，不固定截取首尾。';
+
+  @override
+  String get aiProofreadingCurrentChapter => '当前章';
+
+  @override
+  String get aiProofreadingSelectedChapters => '已选章节';
+
+  @override
+  String get aiProofreadingPrepare => '准备并预览发送内容';
+
+  @override
+  String get aiProofreadingPhase => '任务状态';
+
+  @override
+  String get aiProofreadingIdle => '待开始';
+
+  @override
+  String get aiProofreadingPreparing => '准备中';
+
+  @override
+  String get aiProofreadingAwaitingConsent => '待确认发送';
+
+  @override
+  String get aiProofreadingRunning => '分析中';
+
+  @override
+  String get aiProofreadingCompleted => '分析完成';
+
+  @override
+  String get aiProofreadingApplying => '应用中';
+
+  @override
+  String get aiProofreadingApplied => '已应用';
+
+  @override
+  String get aiProofreadingCancelled => '已取消';
+
+  @override
+  String get aiProofreadingStale => '书稿已变化，结果失效';
+
+  @override
+  String get aiProofreadingFailed => '失败';
+
+  @override
+  String get aiProofreadingCompletedChunks => '已完成分块';
+
+  @override
+  String get aiProofreadingReview => '发送前确认';
+
+  @override
+  String get aiProofreadingCharacters => '原文字符数';
+
+  @override
+  String get aiProofreadingBlocks => '段落数';
+
+  @override
+  String get aiProofreadingChunks => '请求分块数';
+
+  @override
+  String get aiProofreadingSystemPrompt => '完整系统提示词';
+
+  @override
+  String get aiProofreadingChunk => '完整发送内容，分块';
+
+  @override
+  String get aiProofreadingCompleteScope =>
+      '以下各块展示完整 userContext JSON；请求还会附带上方系统提示词。';
+
+  @override
+  String get aiProofreadingStart => '确认并开始发送';
+
+  @override
+  String get aiProofreadingCancelCost => '取消只能停止后续处理；已发送请求和可能产生的费用无法撤回。';
+
+  @override
+  String get aiProofreadingAppliedCount => '已应用变更';
+
+  @override
+  String get aiProofreadingNoFindings => '未找到可确认的异常或变更；缺章不等于原稿一定完整。';
+
+  @override
+  String get aiProofreadingApplicableChanges => '可应用变更';
+
+  @override
+  String get aiProofreadingPending => '待判断发现';
+
+  @override
+  String aiProofreadingIgnoredCount(int count) {
+    return '已忽略 $count 项（仅本轮结果）';
+  }
+
+  @override
+  String get aiProofreadingRestoreIgnored => '恢复本轮全部忽略项';
+
+  @override
+  String get aiProofreadingIgnoreFinding => '忽略此发现及关联建议';
+
+  @override
+  String get aiProofreadingRulesUnavailable => '规则提案尚未启用。';
+
+  @override
+  String get aiProofreadingConflict => '所选变更相互冲突，请取消其中一项。';
+
+  @override
+  String get aiProofreadingApplySelected => '应用所选变更';
+
+  @override
+  String get aiProofreadingOriginal => '完整原文';
+
+  @override
+  String get aiProofreadingOriginalEvidence => '完整原文证据';
+
+  @override
+  String get aiProofreadingOriginalChapterTitle => '原目录标题';
+
+  @override
+  String get aiProofreadingNewChapterTitle => '新目录标题';
+
+  @override
+  String get aiProofreadingReplacement => '替换内容';
+
+  @override
+  String get aiProofreadingDelete => '删除所示文字（保留正文块）';
+
+  @override
+  String get aiProofreadingRemoveBlock => '删除整个正文块';
+
+  @override
+  String get aiProofreadingRemoveBlockImpact =>
+      '此正文块会移除，不保留空段落；章节及其他文字块、图片、脚注、分隔符不删除。';
+
+  @override
+  String get aiProofreadingReplace => '替换原文';
+
+  @override
+  String get aiProofreadingRenameChapter => '修正章节标题';
+
+  @override
+  String get aiProofreadingRenameChapterImpact =>
+      '仅修改本章目录标题；正文中的标题行保留，其他文字、图片、脚注、分隔符和层级不变。';
+
+  @override
+  String get aiProofreadingSplit => '拆分并恢复章节';
+
+  @override
+  String get aiProofreadingSplitSource => '原章节保留的边界段落';
+
+  @override
+  String get aiProofreadingSplitNew => '新章节及其正文';
+
+  @override
+  String get aiProofreadingSplitRemoveTitle => '从正文移除整行标题（含行尾换行），作为新章节标题。';
+
+  @override
+  String get aiProofreadingSplitKeepTitle => '同时保留正文中的标题行，不删除任何原文。';
+
+  @override
+  String get aiProofreadingSplitResources =>
+      '这是单项拆分影响预览。原章前置块与边界前正文保留，边界后正文及后续块按原序归入新章；后续现有章节不变。批量拆分仍以冲突检查和应用校验为准。';
+
+  @override
+  String get aiProofreadingSplitParent => '所属卷（新旧章节相同）';
+
+  @override
+  String get aiProofreadingSplitTopLevel => '顶层章节（新旧章节均无所属卷）';
+
+  @override
+  String aiProofreadingSplitBeforeCount(int count) {
+    return '原章保留的前置块：$count';
+  }
+
+  @override
+  String aiProofreadingSplitAfterCount(int count) {
+    return '归入新章的后续块：$count';
+  }
+
+  @override
+  String get aiProofreadingSplitMore => '再显示最多 100 块';
+
+  @override
+  String get aiProofreadingSplitCaption => '图片说明';
+
+  @override
+  String get aiProofreadingSplitAlt => '替代文本';
+
+  @override
+  String get aiProofreadingSplitMarker => '脚注标记';
+
+  @override
+  String get aiProofreadingReason => '原因';
+
+  @override
+  String get aiProofreadingLocate => '定位原文';
+
+  @override
+  String get aiProofreadingApplyOne => '应用此项';
+
+  @override
+  String get aiProofreadingUndetermined => '无法确定';
+
+  @override
+  String get aiProofreadingSuspectedMissing => '疑似原稿缺失';
+
+  @override
+  String get aiProofreadingMissedHeading => '疑似标题漏识别';
+
+  @override
+  String get aiProofreadingMergedContent => '疑似章节合并';
+
+  @override
+  String get aiProofreadingNumberingSuspect => '疑似章号错误';
+
+  @override
+  String get aiProofreadingAuthorNote => '作者的话';
+
+  @override
+  String get aiProofreadingStoryQuote => '正文引用';
+
+  @override
+  String get aiProofreadingNotAdvertisement => '非广告';
+
+  @override
+  String get aiProofreadingObserved => '发现';
+
+  @override
+  String get aiTestConnection => '测试连接';
+
+  @override
+  String get aiTesting => '正在测试连接…';
+
+  @override
+  String get aiCancelTest => '取消测试';
+
+  @override
+  String get aiTestPassed => '连接测试通过，可保存当前配置。修改格式、地址、密钥或模型后需重新测试。';
+
+  @override
+  String get aiNotTested => '尚未测试当前配置。';
+
+  @override
+  String get aiSaved => '当前 AI 配置已保存。';
+
+  @override
+  String get aiSave => '保存配置';
+
+  @override
+  String get aiClear => '清除 AI 配置与密钥';
+
+  @override
+  String get aiClearTitle => '清除 AI 配置？';
+
+  @override
+  String get aiClearDescription => '停用 AI 并删除当前配置关联的密钥，不修改书稿。';
+
+  @override
+  String get aiClearConfirm => '清除';
+
+  @override
+  String get aiCleared => 'AI 已停用，当前配置与关联密钥已清除。';
+
+  @override
+  String get aiCleanupWarning => '当前配置已安全提交，但旧密钥清理尚未完成。可以重试，不影响书稿。';
+
+  @override
+  String get aiRetryCleanup => '重试清理旧密钥';
+
+  @override
+  String get aiCleanupDone => '旧密钥已清理。';
+
+  @override
+  String get aiLoadFailed => '无法读取 AI 配置，请重试；不会据此启用联网。';
+
+  @override
+  String get aiReload => '重新读取配置';
+
+  @override
+  String get aiBusy => '上一项操作尚未结束，请稍后再试。';
+
+  @override
+  String get aiInvalidConfiguration => '请检查地址、模型与密钥；启用前需完成当前配置的连接测试。';
+
+  @override
+  String get aiMissingCredential => '请输入密钥；更换地址或格式后不能自动沿用旧密钥。';
+
+  @override
+  String get aiCredentialUnavailable => '无法访问系统安全存储。请检查密钥环是否已解锁后重试，不会改用明文保存。';
+
+  @override
+  String get aiStaleConfiguration => '配置已被其他操作修改，请重新读取后再保存。';
+
+  @override
+  String get aiProofRequired => '当前配置尚未通过连接测试，或测试后已经修改，请重新测试。';
+
+  @override
+  String get aiConnectionFailed => '服务没有返回符合要求的连接测试结果，请核对模型与接口格式。';
+
+  @override
+  String get aiCancelled => '测试已取消；服务端已经发生的处理或费用无法撤回。';
+
+  @override
+  String get aiSaveFailed => '配置保存失败，原配置仍保留，请重试。';
+
+  @override
+  String get aiCommitUnknown => '无法确认配置保存状态，请重新读取配置后再操作。';
+
+  @override
+  String get aiCleanupFailed => '旧密钥尚未清理，请稍后重试；不会删除当前仍在使用的密钥。';
+
+  @override
+  String get aiAuthenticationFailed => '服务拒绝鉴权，请检查密钥及其权限。';
+
+  @override
+  String get aiRateLimited => '服务暂时限流，请稍后手动重试；不会自动重复发送。';
+
+  @override
+  String get aiTimedOut => '连接测试超时，请检查服务地址后重试。';
+
+  @override
+  String get aiRedirectRejected => '服务返回了重定向，已阻止转发密钥；请填写最终服务地址。';
+
+  @override
+  String get aiBudgetExceeded => '请求或响应超过安全预算，请核对服务端点。';
+
+  @override
+  String get aiProtocolFailed => '响应不符合所选协议，或已拒答、截断，请检查模型和接口格式。';
+
+  @override
+  String get aiNetworkFailed => '无法连接服务，请检查网络、地址及证书。';
+
+  @override
   String get settingsThemeMode => '主题';
 
   @override
@@ -482,7 +1501,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importAddToLibrary => '加入书架并编辑';
 
   @override
+  String get importTaskTitle => '导入书稿';
+
+  @override
+  String get importPreparing => '准备中';
+
+  @override
+  String get importCancelling => '正在取消…';
+
+  @override
+  String importProgressPercent(int percent) {
+    return '$percent%';
+  }
+
+  @override
   String get importSaving => '正在保存书稿…';
+
+  @override
+  String get importSavingNotice => '正在保存，请勿退出。';
 
   @override
   String get importStagePrepare => '正在准备…';
@@ -494,7 +1530,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importStageParse => '正在整理章节…';
 
   @override
+  String get importStageConvert => '正在转换文字…';
+
+  @override
   String get importStageReady => '解析完成';
+
+  @override
+  String get importStageSavePrepare => '正在准备保存…';
+
+  @override
+  String get importStageSaveChapters => '正在保存章节…';
+
+  @override
+  String get importStageSaveBlocks => '正在保存正文…';
+
+  @override
+  String get importStageSaveFinalize => '正在完成保存…';
 
   @override
   String get importPickFailed => '无法选择文件，请检查权限后重试。';
@@ -777,6 +1828,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get editorWorkbenchAuditRun => '检查当前书稿';
 
   @override
+  String get editorWorkbenchAnalyzeGapWithAi => '用 AI 分析';
+
+  @override
   String editorWorkbenchAuditTotal(int count) {
     return '共 $count 项提示';
   }
@@ -919,6 +1973,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get editorWorkbenchIssueAdLeftover => '广告痕迹';
+
+  @override
+  String get editorWorkbenchIssueTitleFormat => '标题格式不一致';
+
+  @override
+  String get editorWorkbenchIssueDuplicateContent => '内容重复';
 
   @override
   String get editorWorkbenchReparseInvalidRuleUtf8 => '规则 JSON 不是有效的 UTF-8 文本。';
@@ -1101,6 +2161,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get bookWorkbenchLayoutFonts => '排版与字体';
+
+  @override
+  String get bookWorkbenchLayoutSampleTitle => '即时排版样例';
+
+  @override
+  String get bookWorkbenchLayoutSampleScope =>
+      '此处样例、阅读预览和支持视觉排版的导出使用这些设置；正文编辑区保留原文，首行缩进不会显示在编辑区。';
+
+  @override
+  String get bookWorkbenchLayoutSampleFirst => '雨停后，街灯映在石板路上，书声渐近。';
+
+  @override
+  String get bookWorkbenchLayoutSampleSecond => '新的一页徐徐展开。';
 
   @override
   String get bookWorkbenchCover => '封面';
@@ -1525,6 +2598,26 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String dataWorkbenchBackupSavedWithRules(int count) {
+    return '已保存书稿备份，包含 $count 条本书规则。';
+  }
+
+  @override
+  String dataWorkbenchBackupRules(int count) {
+    return '备份包含 $count 条本书规则；恢复时只补充缺失定义，不覆盖现有规则，也不会自动启用或试跑。';
+  }
+
+  @override
+  String dataWorkbenchBackupRulesMerged(int added, int skipped) {
+    return '规则恢复：新增 $added 条，跳过已有 $skipped 条。';
+  }
+
+  @override
+  String dataWorkbenchBackupRulesFailed(String message) {
+    return '书稿已恢复，但规则恢复失败：$message';
+  }
+
+  @override
   String dataWorkbenchBackupEstimatedSpace(String size) {
     return '预计所需空间（估算）：$size';
   }
@@ -1711,7 +2804,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get permissionsNotGranted => '未允许';
 
   @override
-  String get permissionsInternetDeclared => '安装包声明了网络访问权限。';
+  String get permissionsInternetDeclared =>
+      '安装包声明网络权限，用于可选 AI；默认关闭，仅主动测试连接时发送固定小样本，不发送书稿。';
 
   @override
   String get permissionsStorageDeclared => '安装包声明了广泛存储访问权限，请在系统设置中核对。';
@@ -1785,4 +2879,44 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get permissionsRuntimeNotRequired => '非书稿功能所需，不会主动申请，可保持关闭。';
+
+  @override
+  String get ruleWorkbenchRulesCopyConflicts => '同 ID 冲突时另存为新规则（否则跳过）';
+
+  @override
+  String get ruleWorkbenchDuplicate => '复制规则';
+
+  @override
+  String get ruleWorkbenchCopySuffix => '（副本）';
+
+  @override
+  String ruleWorkbenchDuplicated(String name) {
+    return '已创建「$name」。';
+  }
+
+  @override
+  String get ruleWorkbenchSearch => '搜索规则';
+
+  @override
+  String get ruleWorkbenchNoMatches => '没有匹配的规则。';
+
+  @override
+  String get ruleWorkbenchClearSearch => '清除搜索';
+
+  @override
+  String get ruleWorkbenchExportSelectTitle => '选择要导出的规则';
+
+  @override
+  String get ruleWorkbenchSelectAll => '全选';
+
+  @override
+  String ruleWorkbenchExportSelected(int count) {
+    return '导出所选（$count）';
+  }
+
+  @override
+  String get ruleWorkbenchImportPreview => '将导入的规则';
+
+  @override
+  String get ruleWorkbenchImportWillSkip => '已存在，将跳过';
 }

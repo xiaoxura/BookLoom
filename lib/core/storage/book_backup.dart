@@ -80,6 +80,8 @@ class RestorePreview {
     required this.includesSources,
     required this.declaredBytes,
     required this.actualBytes,
+    required this.rulesJson,
+    required this.ruleCount,
     required this.estimatedRequiredBytes,
   });
 
@@ -91,6 +93,13 @@ class RestorePreview {
   final bool includesSources;
   final int declaredBytes;
   final int actualBytes;
+
+  /// Validated rule payload carried by a version 3 backup, if any.
+  ///
+  /// Rule definitions are never applied by the backup service itself; callers
+  /// merge them only after the books are restored.
+  final String? rulesJson;
+  final int ruleCount;
 
   /// Approximate peak footprint including the input ZIP, extracted entries,
   /// staged SQLite, target DB growth, and restored resource copies. SQLite
@@ -173,6 +182,7 @@ class BookBackup {
     List<String> ids,
     String outputPath, {
     bool includeSources = true,
+    String? rulesJson,
   }) async {
     _beginOperation();
     try {
@@ -180,6 +190,7 @@ class BookBackup {
         ids,
         outputPath,
         includeSources: includeSources,
+        rulesJson: rulesJson,
       );
     } finally {
       _activeOperation = false;
@@ -190,7 +201,9 @@ class BookBackup {
     List<String> ids,
     String outputPath, {
     required bool includeSources,
+    String? rulesJson,
   }) async {
+    final rulesPayload = _validateRulesPayload(rulesJson);
     // The repository completes pending-operation recovery before its public
     // queries. Direct page reads below must not race that startup sweep.
     await repository.listSummaries();
@@ -233,20 +246,29 @@ class BookBackup {
         throw const FormatException('Backup book index exceeds 8 MiB');
       }
       await library.writeAsBytes(libraryBytes, flush: true);
+      Uint8List? rulesBytes;
+      File? rulesFile;
+      if (rulesPayload != null) {
+        rulesFile = File(p.join(operation.path, 'rules.json'));
+        rulesBytes = utf8.encode(rulesPayload.raw);
+        await rulesFile.writeAsBytes(rulesBytes, flush: true);
+      }
       final payloadBytes =
           await records.length() +
           libraryBytes.length +
+          (rulesBytes?.length ?? 0) +
           resources.fold<int>(0, (total, item) => total + item.byteSize);
       final manifest = File(p.join(operation.path, 'manifest.json'));
       await manifest.writeAsString(
         jsonEncode(<String, Object?>{
           'format': 'bookloom-backup',
-          'formatVersion': 2,
+          'formatVersion': rulesPayload == null ? 2 : 3,
           'appVersion': appVersion,
           'exportedAt': DateTime.now().toUtc().toIso8601String(),
           'bookCount': ids.length,
           'includesSources': includeSources,
           'payloadBytes': payloadBytes,
+          if (rulesPayload != null) 'ruleCount': rulesPayload.count,
         }),
         flush: true,
       );
@@ -254,6 +276,8 @@ class BookBackup {
         _ZipInput('manifest.json', manifest.path, await manifest.length()),
         _ZipInput('library.json', library.path, libraryBytes.length),
         _ZipInput('records.ndjson', records.path, await records.length()),
+        if (rulesFile != null)
+          _ZipInput('rules.json', rulesFile.path, rulesBytes!.length),
         ...resources,
       ];
       await _runWorker<_ZipPlan, bool>(
@@ -331,6 +355,20 @@ class BookBackup {
     if (assets.length != referencedAssets.length) {
       throw FormatException('Book $id references a missing or foreign asset');
     }
+    final assetById = <String, Asset>{
+      for (final asset in assets) asset.id: asset,
+    };
+    _checkBookAssetKinds(
+      id,
+      structural.coverAssetId,
+      structural.layout.embeddedFontAssetId,
+      assetById,
+    );
+    for (final row in imageRefs) {
+      if (!_isImageAsset(assetById[row.read<String>('asset_id')])) {
+        throw const FormatException('Invalid image block asset kind');
+      }
+    }
     index.add(<String, Object?>{
       'id': id,
       'title': book.title,
@@ -360,6 +398,7 @@ class BookBackup {
     }
     for (final asset in assets) {
       _checkCancelled();
+      _checkAssetBudget(asset);
       final file = await repository.resolveAsset(asset);
       final extension = p.extension(file.path).replaceFirst('.', '');
       if (!RegExp(r'^[a-z0-9]{1,8}$').hasMatch(extension)) {
@@ -543,7 +582,7 @@ class BookBackup {
         throw const FormatException('Not a Bookloom backup');
       }
       final version = manifest['formatVersion'] ?? manifest['schemaVersion'];
-      if (version is! int || version < 1 || version > 2) {
+      if (version is! int || version < 1 || version > 3) {
         throw FormatException('Unsupported backup format version: $version');
       }
       final declaredBooks = _nonnegative(manifest['bookCount'], 'bookCount');
@@ -559,8 +598,27 @@ class BookBackup {
       if (indexRows is! List || indexRows.length != declaredBooks) {
         throw const FormatException('Book index/count mismatch');
       }
+      String? rulesJson;
+      int ruleCount = 0;
+      if (version >= 3) {
+        final rulesFile = File(p.join(entries.path, 'rules.json'));
+        if (!await rulesFile.exists()) {
+          throw const FormatException('Missing rules.json');
+        }
+        rulesJson = await rulesFile.readAsString();
+        final payload = _validateRulesPayload(rulesJson);
+        if (payload == null) {
+          throw const FormatException('Missing rules.json');
+        }
+        ruleCount = payload.count;
+        if (_nonnegative(manifest['ruleCount'], 'ruleCount') != ruleCount) {
+          throw const FormatException('Rule count mismatch');
+        }
+      } else if (extracted.names.contains('rules.json')) {
+        throw const FormatException('Unexpected rules in legacy backup');
+      }
       staged = AppDatabase.openAt(File(p.join(operation.path, 'staged.db')));
-      if (version == 2) {
+      if (version >= 2) {
         final records = File(p.join(entries.path, 'records.ndjson'));
         if (!await records.exists()) {
           throw const FormatException('Missing records.ndjson');
@@ -578,13 +636,14 @@ class BookBackup {
         indexRows,
         includesSources,
         extracted.names,
-        _checkCancelled,
+        hasRules: rulesJson != null,
+        checkCancelled: _checkCancelled,
       );
       _checkCancelled();
-      final declaredBytes = version == 2
+      final declaredBytes = version >= 2
           ? _nonnegative(manifest['payloadBytes'], 'payloadBytes')
           : extracted.actualBytes;
-      if (version == 2 &&
+      if (version >= 2 &&
           declaredBytes !=
               extracted.actualBytes -
                   await File(p.join(entries.path, 'manifest.json')).length()) {
@@ -613,6 +672,8 @@ class BookBackup {
         includesSources: includesSources,
         declaredBytes: declaredBytes,
         actualBytes: extracted.actualBytes,
+        rulesJson: rulesJson,
+        ruleCount: ruleCount,
         estimatedRequiredBytes:
             await input.length() +
             extracted.actualBytes +
@@ -668,11 +729,11 @@ class BookBackup {
             ? _libraryLimit
             : limits.entryLimit(name);
         if (size < 0 || size > maxBytes || (limit != null && size > limit)) {
-          throw FormatException('Entry exceeds backup budget: $name');
+          throw const FormatException(_backupBudgetMarker);
         }
         claimedBytes += size;
         if (claimedBytes > maxBytes) {
-          throw const FormatException('Backup exceeds declared write budget');
+          throw const FormatException(_backupBudgetMarker);
         }
       }
       if (directory.filePosition < 0 ||
@@ -738,6 +799,7 @@ class BookBackup {
       'manifest.json',
       'library.json',
       'records.ndjson',
+      'rules.json',
     }.contains(name)) {
       return;
     }
@@ -1074,20 +1136,64 @@ class BookBackup {
     }
   }
 
+  static const int _rulesLimit = 2 * 1024 * 1024;
+
+  static ({String raw, int count})? _validateRulesPayload(String? raw) {
+    if (raw == null) return null;
+    if (utf8.encode(raw).length > _rulesLimit) {
+      throw const FormatException('Rules payload exceeds 2 MiB');
+    }
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } on FormatException {
+      throw const FormatException('Invalid rules payload');
+    }
+    if (decoded is! Map<String, dynamic> ||
+        decoded.length != 2 ||
+        !decoded.containsKey('schema_version') ||
+        !decoded.containsKey('rules')) {
+      throw const FormatException('Invalid rules payload');
+    }
+    if (decoded['schema_version'] != 1) {
+      throw const FormatException('Unsupported rules payload version');
+    }
+    final rules = decoded['rules'];
+    if (rules is! List || rules.length > 256) {
+      throw const FormatException('Invalid rules list');
+    }
+    final ids = <String>{};
+    for (final entry in rules) {
+      if (entry is! Map<String, dynamic>) {
+        throw const FormatException('Invalid rule entry');
+      }
+      final id = entry['id'];
+      if (id is! String || id.isEmpty || id.length > 128 || !ids.add(id)) {
+        throw const FormatException('Invalid rule id');
+      }
+      if (entry['book_id'] is! String) {
+        throw const FormatException('Invalid rule scope');
+      }
+    }
+    return (raw: raw, count: rules.length);
+  }
+
   static Future<List<RestoreBookPreview>> _validateStaged(
     AppDatabase db,
     Directory entries,
     List<dynamic> indexRows,
     bool includesSources,
-    Set<String> entryNames,
-    void Function() checkCancelled,
-  ) async {
+    Set<String> entryNames, {
+    required bool hasRules,
+    required void Function() checkCancelled,
+  }) async {
     final books = await db.select(db.books).get();
     if (books.length != indexRows.length) {
       throw const FormatException('Book index does not match records');
     }
     final byId = <String, Book>{for (final book in books) book.id: book};
     final used = <String>{'manifest.json', 'library.json'};
+    if (hasRules) used.add('rules.json');
     if (entryNames.contains('records.ndjson')) used.add('records.ndjson');
     final sourceByBook = <String, Source>{};
     for (final source in await db.select(db.sources).get()) {
@@ -1121,6 +1227,7 @@ class BookBackup {
       if (!byId.containsKey(asset.bookId)) {
         throw const FormatException('Asset does not belong to this backup');
       }
+      _checkAssetBudget(asset);
       _checkEntryName(asset.storedPath);
       if (!entryNames.contains(asset.storedPath) ||
           !used.add(asset.storedPath)) {
@@ -1167,6 +1274,7 @@ class BookBackup {
          OR (b.asset_id IS NOT NULL AND NOT EXISTS (
            SELECT 1 FROM assets a
            WHERE a.id = b.asset_id AND a.book_id = c.book_id
+             AND (b.kind != 'image' OR a.kind IN ('image', 'cover'))
          ))
       LIMIT 1
     ''').get();
@@ -1201,17 +1309,15 @@ class BookBackup {
       if (tags is! List || tags.any((tag) => tag is! String)) {
         throw const FormatException('Invalid book tags');
       }
-      if (book.coverAssetId != null &&
-          assetById[book.coverAssetId]?.bookId != book.id) {
-        throw const FormatException('Invalid cover asset');
-      }
       final layout = LayoutOptions.fromJson(
         _map(jsonDecode(book.layoutJson), 'layoutJson'),
       );
-      final fontId = layout.embeddedFontAssetId;
-      if (fontId != null && assetById[fontId]?.bookId != book.id) {
-        throw const FormatException('Invalid embedded font asset');
-      }
+      _checkBookAssetKinds(
+        book.id,
+        book.coverAssetId,
+        layout.embeddedFontAssetId,
+        assetById,
+      );
       _map(jsonDecode(book.parseOptionsJson), 'parseOptionsJson');
       _map(jsonDecode(book.coverOptionsJson), 'coverOptionsJson');
       preview.add(
@@ -1227,6 +1333,42 @@ class BookBackup {
       );
     }
     return preview;
+  }
+
+  static bool _isImageAsset(Asset? asset) =>
+      asset != null && const {'image', 'cover'}.contains(asset.kind);
+
+  static void _checkBookAssetKinds(
+    String bookId,
+    String? coverId,
+    String? fontId,
+    Map<String, Asset> assets,
+  ) {
+    if (coverId != null &&
+        (!_isImageAsset(assets[coverId]) ||
+            assets[coverId]?.bookId != bookId)) {
+      throw const FormatException('Invalid cover asset kind or ownership');
+    }
+    if (fontId != null &&
+        (assets[fontId]?.kind != 'font' || assets[fontId]?.bookId != bookId)) {
+      throw const FormatException(
+        'Invalid embedded font asset kind or ownership',
+      );
+    }
+  }
+
+  static void _checkAssetBudget(Asset asset) {
+    if (!const {'image', 'cover', 'font'}.contains(asset.kind) ||
+        asset.byteSize < 0) {
+      throw const FormatException('Invalid asset kind or byte size');
+    }
+    if (asset.kind == 'font' && asset.byteSize > ImportLimits.maxFontBytes) {
+      throw const FormatException('Font asset exceeds 20 MiB');
+    }
+    if (asset.kind == 'cover' &&
+        asset.byteSize > ImportLimits.maxEncodedCoverBytes) {
+      throw const FormatException('Cover asset exceeds 24 MiB');
+    }
   }
 
   Future<RestoreApplyResult> applyRestore(
@@ -1783,8 +1925,13 @@ _Extracted _unzipWorker(
     );
   } on FileSystemException {
     throw const StorageFailure('无法读取备份文件或写入暂存目录。');
+  } on FormatException catch (error) {
+    if (error.message == _backupBudgetMarker) {
+      throw const ValidationFailure('备份超过恢复空间预算，请调高上方预算或选择更小的备份。');
+    }
+    throw const ValidationFailure('备份文件无效或已损坏，请确认选择了 Bookloom 备份。');
   } on Object {
-    throw const ValidationFailure('备份文件无效，或超过所选的恢复空间预算。');
+    throw const ValidationFailure('备份文件无效或已损坏，请确认选择了 Bookloom 备份。');
   }
 }
 
@@ -1800,6 +1947,9 @@ class _DigestSink implements Sink<Digest> {
   @override
   void close() {}
 }
+
+/// Distinguishes an over-budget extraction from an invalid archive.
+const _backupBudgetMarker = 'BACKUP_BUDGET_EXCEEDED';
 
 class _Extracted {
   const _Extracted(this.names, this.actualBytes);
@@ -1835,7 +1985,7 @@ class _BoundedOutputFileStream extends archive.OutputFileStream {
     if (amount < 0 ||
         length + amount > entryLimit ||
         budget.used + amount > budget.limit) {
-      throw const FormatException('Backup decompression budget exceeded');
+      throw const FormatException(_backupBudgetMarker);
     }
     budget.used += amount;
   }

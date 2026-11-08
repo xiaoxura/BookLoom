@@ -34,7 +34,7 @@
 - 优先官方 / flutter.dev / 维护活跃的包；
 - 锁大版本，升级前跑完整测试；
 - 许可证必须允许分发（MIT / Apache-2.0 / BSD）；
-- 不引入需要云端服务的 SDK。
+- 不引入依赖云端服务的核心 SDK；可选 AI 使用自有、显式触发的 HTTP 协议适配器，不引入供应商 SDK，离线核心不依赖该配置。
 
 ## 3. 脚手架
 
@@ -142,7 +142,7 @@ macOS / iOS 的 Bundle Identifier 统一设为 `com.xiaoxura.bookloom`。
 
 - Flutter：stable channel，团队统一版本，写入 `.fvmrc` 或文档。
 - Dart：随 Flutter stable。
-- Android：Gradle / AGP 跟随 Flutter 模板；`minSdk 23`，`targetSdk` 当年最新。
+- Android：Gradle / AGP 跟随 Flutter 模板；当前工程继承已安装 Flutter 的 `minSdk 24`，不再沿用早期规划的 23；`targetSdk` 跟随实际锁定工具链。
 - Linux：Ubuntu 22.04/24.04 与 Fedora 最新版验证；打包 AppImage + Flatpak + deb。
 - Windows：Windows 10 1809+ / 11；MSIX 或 Inno Setup。
 - CI：GitHub Actions，三端矩阵；Linux runner 装 GTK/CMake/Ninja，Windows runner 装 VS Build Tools，Android 用 SDK。
@@ -164,3 +164,5 @@ macOS / iOS 的 Bundle Identifier 统一设为 `com.xiaoxura.bookloom`。
 本轮锁定 file_picker 13.3.2、archive 4.6.0、xml 7.1.0、uuid 4.6.0、image 4.12.0（MIT）及 crypto 3.0.8（BSD-3-Clause）；实际锁文件为 `pubspec.lock`。Linux / Windows 的流式保存由原生对话框返回目标后复制私有暂存文件；Android 用 ACTION_CREATE_DOCUMENT / ContentResolver 桥接。file_picker 的 bytes 保存接口不用于大备份。测试新增 Flutter SDK 自带 integration_test，不作为生产依赖。平台编译与交互证据统一记在 [本轮实施文档](development/00-native-workbench.md#143-当前实施依据与-spike-记录2026-11-05)。
 
 TXT 编码使用 WHATWG 固定索引生成纯 Dart 常量，包含 GB18030 四字节范围与 Big5 特例；没有运行期下载，许可证与归属保留于 `licenses/whatwg/LICENSE`。OpenCC 采用官方 1.4.2 固定提交的 10 个离线词典，支持 t2s / s2twp，Apache-2.0 LICENSE / NOTICE 随包注册。算法金样通过不代表三端首用验收，实际结果仍以实施文档为准。
+
+可选 AI 配置锁定 `flutter_secure_storage 11.2.0`（BSD-3-Clause），Linux 使用 libsecret / Secret Service，Windows 使用系统凭据存储，Android 使用平台密钥保护的专用命名空间。Linux 编译需要 libsecret 开发头文件；运行时需要可用的系统密钥环，失败不得改存明文。Android 最低版本与当前 Flutter 的 24 一致。Android 明文网络能力仅为用户主动配置的 HTTP 兼容端点开放，远程 HTTP 的确认仍由应用执行；默认关闭与无自动请求不变。凭据命名空间的三份偏好文件不参与 Android 系统备份／迁移。

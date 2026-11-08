@@ -58,4 +58,66 @@ void main() {
       }
     },
   );
+
+  test(
+    'commit progress follows completed batches and finishes after cleanup',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'bookloom-commit-',
+      );
+      final database = AppDatabase.openAt(
+        File('${directory.path}/test.sqlite'),
+      );
+      final repository = BookRepository(database, directory);
+      final jobs = BackgroundJobs();
+      final cache = Directory('${directory.path}/cache');
+      final service = ImportService(
+        repository: repository,
+        jobs: jobs,
+        temporaryDirectory: cache,
+      );
+      try {
+        final content = utf8.encode('第一章 风\n风吹来了。\n第二章 雨\n雨落下了。');
+        final prepared = await service.prepare(
+          PickedInput(
+            name: 'progress.txt',
+            size: content.length,
+            openRead: () => Stream.value(content),
+          ),
+        );
+        final progress = <JobProgress>[];
+        final stored = await service.commit(prepared, onProgress: progress.add);
+        expect(await repository.loadBook(stored.id), isNotNull);
+        expect(await cache.list().toList(), isEmpty);
+        expect(progress.first.stage, 'save_prepare');
+        expect(progress.first.fraction, 0);
+        expect(progress.last.stage, 'save_finalize');
+        expect(progress.last.fraction, 1);
+        expect(
+          progress.where((item) => item.stage == 'save_chapters'),
+          isNotEmpty,
+        );
+        expect(
+          progress.where((item) => item.stage == 'save_blocks'),
+          isNotEmpty,
+        );
+        for (var index = 0; index < progress.length - 1; index++) {
+          expect(progress[index].fraction, inInclusiveRange(0, 1));
+          expect(progress[index].fraction, lessThan(1));
+          expect(
+            progress[index + 1].fraction,
+            greaterThanOrEqualTo(progress[index].fraction),
+          );
+        }
+        expect(
+          progress.every((item) => item.jobId == 0 && item.revision == 0),
+          isTrue,
+        );
+      } finally {
+        jobs.dispose();
+        await database.close();
+        await directory.delete(recursive: true);
+      }
+    },
+  );
 }

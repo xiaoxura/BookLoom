@@ -35,6 +35,13 @@ class SettingsPage extends StatelessWidget {
                 description: l10n.settingsDefaultsDesc,
                 onTap: () => context.push('/settings/defaults'),
               ),
+              const SettingsCardDivider(),
+              SettingsEntry(
+                icon: Icons.auto_awesome_outlined,
+                title: l10n.aiSettingsTitle,
+                description: l10n.aiSettingsDescription,
+                onTap: () => context.push('/settings/ai'),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.xxl),

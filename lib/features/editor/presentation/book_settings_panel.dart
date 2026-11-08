@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:bookloom/core/io/input_limits.dart';
 import 'package:bookloom/core/model/book.dart';
 import 'package:bookloom/core/model/cover_options.dart';
 import 'package:bookloom/core/model/layout_options.dart';
@@ -11,9 +13,12 @@ import 'package:bookloom/design/tokens/app_metrics.dart';
 import 'package:bookloom/features/editor/application/book_assets.dart';
 import 'package:bookloom/features/editor/application/editor_session.dart';
 import 'package:bookloom/features/preview/book_cover.dart';
+import 'package:bookloom/features/preview/bounded_asset_read.dart';
+import 'package:bookloom/features/preview/layout_paragraph.dart';
 import 'package:bookloom/features/preview/reading_preview.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 enum _Section { metadata, layout, cover, preview }
 
@@ -43,6 +48,10 @@ class _BookSettingsPanelState extends State<BookSettingsPanel> {
   String? _fontMime;
   String? _coverId;
   String? _fontId;
+  String? _assetBookId;
+  String? _sampleFontFamily;
+  String? _sampleFontStatus;
+  int _sampleFontRequest = 0;
   bool _busy = false;
 
   @override
@@ -78,13 +87,22 @@ class _BookSettingsPanelState extends State<BookSettingsPanel> {
   void _sessionChanged() {
     final book = widget.session.book;
     if (book != null &&
-        (book.coverAssetId != _coverId ||
+        (_assetBookId != book.id ||
+            book.coverAssetId != _coverId ||
             book.layout.embeddedFontAssetId != _fontId)) {
+      final fontChanged =
+          _assetBookId != book.id || book.layout.embeddedFontAssetId != _fontId;
+      _assetBookId = book.id;
       _coverId = book.coverAssetId;
       _fontId = book.layout.embeddedFontAssetId;
       _coverFile = null;
-      _fontFile = null;
-      _fontMime = null;
+      if (fontChanged) {
+        _fontFile = null;
+        _fontMime = null;
+        _sampleFontFamily = null;
+        _sampleFontStatus = null;
+        _sampleFontRequest++;
+      }
       _loadFiles(book.id, _coverId, _fontId);
     }
     if (mounted) setState(() {});
@@ -114,6 +132,7 @@ class _BookSettingsPanelState extends State<BookSettingsPanel> {
         _fontFile = font;
         _fontMime = fontAsset?.mime;
       });
+      unawaited(_loadSampleFont(bookId, fontId, font, fontAsset?.mime));
     } on Object {
       if (mounted && _coverId == coverId && _fontId == fontId) {
         setState(() {
@@ -121,6 +140,44 @@ class _BookSettingsPanelState extends State<BookSettingsPanel> {
           _fontFile = null;
           _fontMime = null;
         });
+        unawaited(_loadSampleFont(bookId, fontId, null, null));
+      }
+    }
+  }
+
+  Future<void> _loadSampleFont(
+    String bookId,
+    String? fontId,
+    File? file,
+    String? mime,
+  ) async {
+    final request = ++_sampleFontRequest;
+    if (fontId == null) return;
+    if (file == null || mime == null) {
+      setState(() => _sampleFontStatus = 'missing');
+      return;
+    }
+    if (mime == 'font/woff' || mime == 'font/woff2') {
+      setState(() => _sampleFontStatus = 'woff');
+      return;
+    }
+    if (mime != 'font/ttf' && mime != 'font/otf') {
+      setState(() => _sampleFontStatus = 'unsupported');
+      return;
+    }
+    final family = 'bookloom-layout-sample-$bookId-$fontId';
+    if (_sampleFontFamily == family) return;
+    try {
+      final bytes = await readBoundedAssetFile(file, ImportLimits.maxFontBytes);
+      final loader = FontLoader(family)
+        ..addFont(Future<ByteData>.value(ByteData.sublistView(bytes)));
+      await loader.load();
+      if (mounted && request == _sampleFontRequest) {
+        setState(() => _sampleFontFamily = family);
+      }
+    } on Object {
+      if (mounted && request == _sampleFontRequest) {
+        setState(() => _sampleFontStatus = 'failed');
       }
     }
   }
@@ -358,133 +415,219 @@ class _BookSettingsPanelState extends State<BookSettingsPanel> {
 
   Widget _layout(Book book) {
     final layout = book.layout;
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      children: [
-        Text(
-          _l10n.bookWorkbenchLineHeight(layout.lineHeight.toStringAsFixed(2)),
-        ),
-        Slider(
-          value: layout.lineHeight,
-          min: 1.3,
-          max: 2.4,
-          divisions: 22,
-          onChanged: (value) =>
-              widget.session.editLayout(layout.copyWith(lineHeight: value)),
-        ),
-        Text(
-          _l10n.bookWorkbenchParagraphSpacing(
-            layout.paragraphSpacing.toStringAsFixed(2),
-          ),
-        ),
-        Slider(
-          value: layout.paragraphSpacing,
-          min: 0,
-          max: 1,
-          divisions: 20,
-          onChanged: (value) => widget.session.editLayout(
-            layout.copyWith(paragraphSpacing: value),
-          ),
-        ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(_l10n.bookWorkbenchTwoCharacterIndent),
-          value: layout.indent,
-          onChanged: (value) =>
-              widget.session.editLayout(layout.copyWith(indent: value)),
-        ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(_l10n.bookWorkbenchJustify),
-          value: layout.justify,
-          onChanged: (value) =>
-              widget.session.editLayout(layout.copyWith(justify: value)),
-        ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(_l10n.bookWorkbenchSeparateChapterNumber),
-          value: layout.separateChapterNumber,
-          onChanged: (value) => widget.session.editLayout(
-            layout.copyWith(separateChapterNumber: value),
-          ),
-        ),
-        DropdownButtonFormField<LayoutFont>(
-          initialValue: layout.font,
-          decoration: InputDecoration(
-            labelText: _l10n.bookWorkbenchBodyFontStyle,
-          ),
-          items: [
-            DropdownMenuItem(
-              value: LayoutFont.serif,
-              child: Text(_l10n.bookWorkbenchSerif),
+    return LayoutBuilder(
+      builder: (context, constraints) => Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              0,
+              AppSpacing.md,
+              AppSpacing.sm,
             ),
-            DropdownMenuItem(
-              value: LayoutFont.sans,
-              child: Text(_l10n.bookWorkbenchSans),
-            ),
-            DropdownMenuItem(
-              value: LayoutFont.kai,
-              child: Text(_l10n.bookWorkbenchKai),
-            ),
-          ],
-          onChanged: (value) {
-            if (value != null) {
-              widget.session.editLayout(layout.copyWith(font: value));
-            }
-          },
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        Text(
-          _l10n.bookWorkbenchEmbeddedFontInfo,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        if (layout.embeddedFontAssetId != null)
-          Text(
-            _l10n.bookWorkbenchSelectedFont(
-              _fontMime ?? _l10n.bookWorkbenchLoading,
+            child: SizedBox(
+              height: (constraints.maxHeight * 0.4)
+                  .clamp(0.0, AppSpacing.huge * 5)
+                  .toDouble(),
+              child: _layoutSample(layout),
             ),
           ),
-        Wrap(
-          spacing: AppSpacing.sm,
-          children: [
-            OutlinedButton(
-              onPressed: _busy ? null : _pickFont,
-              child: Text(_l10n.bookWorkbenchImportFont),
-            ),
-            if (layout.embeddedFontAssetId != null)
-              TextButton(
-                onPressed: _busy
-                    ? null
-                    : () => widget.session.editLayout(
-                        layout.copyWith(clearEmbeddedFontAssetId: true),
+          Expanded(
+            child: ListView(
+              key: const ValueKey('layout-controls'),
+              padding: const EdgeInsets.all(AppSpacing.md),
+              children: [
+                Text(
+                  _l10n.bookWorkbenchLineHeight(
+                    layout.lineHeight.toStringAsFixed(2),
+                  ),
+                ),
+                Slider(
+                  key: const ValueKey('layout-line-height'),
+                  value: layout.lineHeight,
+                  min: 1.3,
+                  max: 2.4,
+                  divisions: 22,
+                  onChanged: (value) => widget.session.editLayout(
+                    layout.copyWith(lineHeight: value),
+                  ),
+                ),
+                Text(
+                  _l10n.bookWorkbenchParagraphSpacing(
+                    layout.paragraphSpacing.toStringAsFixed(2),
+                  ),
+                ),
+                Slider(
+                  key: const ValueKey('layout-paragraph-spacing'),
+                  value: layout.paragraphSpacing,
+                  min: 0,
+                  max: 1,
+                  divisions: 20,
+                  onChanged: (value) => widget.session.editLayout(
+                    layout.copyWith(paragraphSpacing: value),
+                  ),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(_l10n.bookWorkbenchTwoCharacterIndent),
+                  value: layout.indent,
+                  onChanged: (value) =>
+                      widget.session.editLayout(layout.copyWith(indent: value)),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(_l10n.bookWorkbenchJustify),
+                  value: layout.justify,
+                  onChanged: (value) => widget.session.editLayout(
+                    layout.copyWith(justify: value),
+                  ),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(_l10n.bookWorkbenchSeparateChapterNumber),
+                  value: layout.separateChapterNumber,
+                  onChanged: (value) => widget.session.editLayout(
+                    layout.copyWith(separateChapterNumber: value),
+                  ),
+                ),
+                DropdownButtonFormField<LayoutFont>(
+                  initialValue: layout.font,
+                  decoration: InputDecoration(
+                    labelText: _l10n.bookWorkbenchBodyFontStyle,
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: LayoutFont.serif,
+                      child: Text(_l10n.bookWorkbenchSerif),
+                    ),
+                    DropdownMenuItem(
+                      value: LayoutFont.sans,
+                      child: Text(_l10n.bookWorkbenchSans),
+                    ),
+                    DropdownMenuItem(
+                      value: LayoutFont.kai,
+                      child: Text(_l10n.bookWorkbenchKai),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      widget.session.editLayout(layout.copyWith(font: value));
+                    }
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  _l10n.bookWorkbenchEmbeddedFontInfo,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                if (layout.embeddedFontAssetId != null)
+                  Text(
+                    _l10n.bookWorkbenchSelectedFont(
+                      _fontMime ?? _l10n.bookWorkbenchLoading,
+                    ),
+                  ),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  children: [
+                    OutlinedButton(
+                      onPressed: _busy ? null : _pickFont,
+                      child: Text(_l10n.bookWorkbenchImportFont),
+                    ),
+                    if (layout.embeddedFontAssetId != null)
+                      TextButton(
+                        onPressed: _busy
+                            ? null
+                            : () => widget.session.editLayout(
+                                layout.copyWith(clearEmbeddedFontAssetId: true),
+                              ),
+                        child: Text(_l10n.bookWorkbenchRemoveFont),
                       ),
-                child: Text(_l10n.bookWorkbenchRemoveFont),
-              ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        _SettingField(
-          label: _l10n.bookWorkbenchCustomCssLabel,
-          value: layout.customCss,
-          maxLength: 20000,
-          maxLines: 5,
-          validate: (value) {
-            try {
-              layout.copyWith(customCss: value);
-              return null;
-            } on ArgumentError {
-              return _l10n.bookWorkbenchUnsafeCss;
-            }
-          },
-          onValid: (value) => widget.session.editLayout(
-            widget.session.book!.layout.copyWith(customCss: value),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                _SettingField(
+                  label: _l10n.bookWorkbenchCustomCssLabel,
+                  value: layout.customCss,
+                  maxLength: 20000,
+                  maxLines: 5,
+                  validate: (value) {
+                    try {
+                      layout.copyWith(customCss: value);
+                      return null;
+                    } on ArgumentError {
+                      return _l10n.bookWorkbenchUnsafeCss;
+                    }
+                  },
+                  onValid: (value) => widget.session.editLayout(
+                    widget.session.book!.layout.copyWith(customCss: value),
+                  ),
+                ),
+                Text(
+                  _l10n.bookWorkbenchCssNativeNote,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
           ),
-        ),
-        Text(
-          _l10n.bookWorkbenchCssNativeNote,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  Widget _layoutSample(LayoutOptions layout) {
+    final colors = context.colors;
+    final textStyle = TextStyle(
+      fontSize: 16.5,
+      height: layout.lineHeight,
+      color: colors.ink,
+      fontFamily:
+          _sampleFontFamily ??
+          switch (layout.font) {
+            LayoutFont.serif => 'Noto Serif CJK SC',
+            LayoutFont.sans => 'Noto Sans CJK SC',
+            LayoutFont.kai => 'KaiTi',
+          },
+    );
+    return Material(
+      key: const ValueKey('layout-sample-card'),
+      color: colors.surfaceRaised,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        side: BorderSide(color: colors.hairline),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: ListView(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        children: [
+          Text(
+            _l10n.bookWorkbenchLayoutSampleTitle,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          for (final (index, paragraph) in [
+            _l10n.bookWorkbenchLayoutSampleFirst,
+            _l10n.bookWorkbenchLayoutSampleSecond,
+          ].indexed)
+            LayoutParagraph(
+              key: ValueKey('layout-sample-paragraph-$index'),
+              text: paragraph,
+              layout: layout,
+              style: textStyle,
+            ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            _l10n.bookWorkbenchLayoutSampleScope,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          if (_sampleFontStatus != null)
+            Text(switch (_sampleFontStatus) {
+              'woff' => _l10n.bookWorkbenchPreviewWoff,
+              'missing' => _l10n.bookWorkbenchPreviewFontMissing,
+              'failed' => _l10n.bookWorkbenchPreviewFontFailed,
+              _ => _l10n.bookWorkbenchPreviewFontUnsupported,
+            }, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
     );
   }
 

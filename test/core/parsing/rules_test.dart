@@ -203,10 +203,7 @@ void main() {
         contains('drop'),
       );
       expect(
-        validateRuleSpec(<String, Object?>{
-          'name': 'x',
-          'chapter': 'x' * 257,
-        }),
+        validateRuleSpec(<String, Object?>{'name': 'x', 'chapter': 'x' * 257}),
         contains('chapter'),
       );
       expect(

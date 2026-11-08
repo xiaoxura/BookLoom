@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <exclude domain="sharedpref" path="bookloom_ai.xml" />
+    <exclude domain="sharedpref" path="FlutterSecureKeyStorage:bookloom_ai.xml" />
+    <exclude domain="sharedpref" path="FlutterSecureStorageConfiguration:bookloom_ai.xml" />
+</full-backup-content>

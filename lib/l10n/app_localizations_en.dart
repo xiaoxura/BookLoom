@@ -53,6 +53,1117 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAppearance => 'Appearance';
 
   @override
+  String get aiSettingsTitle => 'AI service';
+
+  @override
+  String get aiSettingsDescription =>
+      'Optional and off by default. You choose the service and start each task explicitly.';
+
+  @override
+  String get aiEnabled => 'Enable AI assistance';
+
+  @override
+  String get aiOfflineNotice =>
+      'No AI requests are sent while disabled. Import, editing, rule scans and export remain available offline.';
+
+  @override
+  String get aiFormat => 'API format';
+
+  @override
+  String get aiAddress => 'API address';
+
+  @override
+  String get aiOpenAiAddressHint => 'https://api.example.com/v1';
+
+  @override
+  String get aiClaudeAddressHint => 'https://api.example.com (no /v1 needed)';
+
+  @override
+  String get aiApiKey => 'API key';
+
+  @override
+  String get aiKeyNewHint =>
+      'Enter a key; it is stored only in system secure storage';
+
+  @override
+  String get aiKeyReuseHint =>
+      'Leave blank to reuse the saved key; it is never filled into this form';
+
+  @override
+  String get aiKeyChangedAddressHint =>
+      'The address or format changed; enter the key again';
+
+  @override
+  String get aiShowKey => 'Show key';
+
+  @override
+  String get aiHideKey => 'Hide key';
+
+  @override
+  String get aiModel => 'Model identifier';
+
+  @override
+  String get aiModelHint => 'Enter a model supported by this service';
+
+  @override
+  String get aiNormalizedAddress => 'Normalized base address';
+
+  @override
+  String get aiRequestAddress => 'Final request address';
+
+  @override
+  String get aiEndpointInvalid =>
+      'Check the scheme, address, port and selected API format.';
+
+  @override
+  String get aiRemoteHttpConsent =>
+      'I understand remote HTTP exposes keys and content in plaintext and still want to use this address';
+
+  @override
+  String get aiTestDisclosure =>
+      'The connection test sends a fixed small sample, never manuscript content, and may incur a small charge. Confirm manuscript analysis separately in the proofreading tools.';
+
+  @override
+  String get aiProofreadingTitle => 'AI proofreading';
+
+  @override
+  String get editorAiCreateChapterRule => 'Create chapter rule with AI';
+
+  @override
+  String get editorAiCreateAdvertisementRule =>
+      'Create advertisement rule with AI';
+
+  @override
+  String get editorAiAnalyzeAdvertisement => 'Analyze advertisement with AI';
+
+  @override
+  String get aiJointRuleRequest => 'Also request rule candidates';
+
+  @override
+  String get aiJointRuleHelp =>
+      'Rules use only the examples you provide. Candidates are not saved or applied automatically; check and trial them separately in the rule workbench.';
+
+  @override
+  String get aiJointRuleLimits =>
+      'One example per line: 1–12 positives, 0–12 negatives; at most 2048 UTF-16 units per example and 8192 in total. All positives must appear completely within one sent chunk.';
+
+  @override
+  String get aiJointRuleAuthorization =>
+      'Explicit rule candidate authorization';
+
+  @override
+  String aiJointRuleChunk(int index) {
+    return 'Only chunk $index may return rules (numbered from 1).';
+  }
+
+  @override
+  String get aiJointRuleNotRequested =>
+      'Rule candidates were not requested. This analysis has no permission to generate rules.';
+
+  @override
+  String aiJointRuleCount(int count) {
+    return 'Independent rule candidates: $count';
+  }
+
+  @override
+  String get aiRuleTitle => 'Create rule from selection';
+
+  @override
+  String get aiRuleSelected => 'Selected text';
+
+  @override
+  String get aiRuleIntent => 'Rule intent';
+
+  @override
+  String get aiRuleNegative => 'Examples that must not match';
+
+  @override
+  String get aiRuleChapterTitle => 'Chapter title';
+
+  @override
+  String get aiRuleBefore => 'Text before selection';
+
+  @override
+  String get aiRuleAfter => 'Text after selection';
+
+  @override
+  String get aiRuleRelated => 'Related rule summaries sent (up to 16)';
+
+  @override
+  String get aiRuleRunning => 'Generating candidates';
+
+  @override
+  String get aiRuleCompleted => 'Candidates generated';
+
+  @override
+  String get aiRuleNoProposals =>
+      'No rule candidate was generated. Adjust the intent or examples and prepare again.';
+
+  @override
+  String get aiRuleCheckAndTrial => 'Check and trial';
+
+  @override
+  String get ruleWorkbenchTitle => 'Custom rules';
+
+  @override
+  String get ruleWorkbenchNumberCaptureGroup =>
+      'Number capture group (optional)';
+
+  @override
+  String get ruleWorkbenchNumberCaptureHelper =>
+      'Requires a title capture group. Extracts only explicit source numbers; never auto-numbers. Empty means no mapping; 0 is the whole match, 1 onwards are groups. Clearing the title group or switching to literal/advertisement clears this number setting.';
+
+  @override
+  String get ruleWorkbenchNumberCaptureInvalid =>
+      'Set a title capture group and enter a non-negative integer within the available groups.';
+
+  @override
+  String get ruleWorkbenchNumberToken => 'Source number token';
+
+  @override
+  String get ruleWorkbenchParsedNumber => 'Parsed number';
+
+  @override
+  String get ruleWorkbenchDefinition => 'Full rule definition';
+
+  @override
+  String get ruleWorkbenchId => 'Rule ID';
+
+  @override
+  String get ruleWorkbenchBookId => 'Book ID';
+
+  @override
+  String get ruleWorkbenchSource => 'Source';
+
+  @override
+  String get ruleWorkbenchInitialRejected =>
+      'The rule candidate expired or conflicts with an existing rule. Select a new example.';
+
+  @override
+  String get ruleWorkbenchOffline =>
+      'Trial rules across this book locally. No AI is called. Choose rules and matches before changing the manuscript.';
+
+  @override
+  String get ruleWorkbenchImportRules => 'Built-in import rules (read-only)';
+
+  @override
+  String ruleWorkbenchImportPreset(String name) {
+    return 'Preset: $name';
+  }
+
+  @override
+  String get ruleWorkbenchImportCustom => 'Custom';
+
+  @override
+  String get ruleWorkbenchImportAutoNote =>
+      'Automatic detection uses the importer\'s built-in heuristics and advertisement rules; the workbench neither copies nor replays them.';
+
+  @override
+  String get ruleWorkbenchImportCustomNote =>
+      'Custom rules were also stored for import; they are read-only here and do not take part in this trial.';
+
+  @override
+  String get ruleWorkbenchImportInvalid =>
+      'The stored import rules cannot be resolved (unknown preset or invalid custom rule). Check the import settings.';
+
+  @override
+  String get ruleWorkbenchImportReadOnly =>
+      'Import rules run only while importing or reparsing, never in this trial; the workbench runs only the saved rules explicitly checked above. Create a new rule to reuse a pattern in the editor.';
+
+  @override
+  String get ruleWorkbenchImportEmpty =>
+      'This preset has no chapter, volume or drop patterns to show.';
+
+  @override
+  String get ruleWorkbenchImportEntryChapter =>
+      'Chapter heading rule (whole line)';
+
+  @override
+  String get ruleWorkbenchImportEntryVolume =>
+      'Volume heading rule (whole line)';
+
+  @override
+  String get ruleWorkbenchImportEntryDrop => 'Whole-line drop rule';
+
+  @override
+  String get ruleWorkbenchImportEntryInlineJunk =>
+      'Inline promotion cleanup rule';
+
+  @override
+  String get ruleWorkbenchRules => 'Rules for this trial';
+
+  @override
+  String get ruleWorkbenchEmpty => 'No rules yet. Create a rule for this book.';
+
+  @override
+  String get ruleWorkbenchBookScope => 'This book';
+
+  @override
+  String get ruleWorkbenchGlobalScope => 'Across books';
+
+  @override
+  String get ruleWorkbenchEnabled => 'Enabled';
+
+  @override
+  String get ruleWorkbenchDisabled => 'Disabled';
+
+  @override
+  String get ruleWorkbenchUnsaved => 'Unsaved';
+
+  @override
+  String get ruleWorkbenchCurrent => 'Current rule';
+
+  @override
+  String get ruleWorkbenchBuiltIn => 'Built-in';
+
+  @override
+  String get ruleWorkbenchUser => 'User';
+
+  @override
+  String get ruleWorkbenchAiSource => 'AI source';
+
+  @override
+  String get ruleWorkbenchActions => 'Rule actions';
+
+  @override
+  String get ruleWorkbenchEdit => 'Edit';
+
+  @override
+  String get ruleWorkbenchEnable => 'Enable rule';
+
+  @override
+  String get ruleWorkbenchDisable => 'Disable rule';
+
+  @override
+  String get ruleWorkbenchDelete => 'Delete rule';
+
+  @override
+  String get ruleWorkbenchDeleteTitle => 'Delete this rule?';
+
+  @override
+  String get ruleWorkbenchNew => 'New rule';
+
+  @override
+  String get ruleWorkbenchScan => 'Trial whole book';
+
+  @override
+  String get ruleWorkbenchIdentify => 'What to identify';
+
+  @override
+  String get ruleWorkbenchExclude => 'What to exclude';
+
+  @override
+  String get ruleWorkbenchExcludePattern =>
+      'Exclude matches containing (optional)';
+
+  @override
+  String get ruleWorkbenchExcludePatternHelper =>
+      'Skip a match when the line containing it also contains this text; case sensitivity follows the switch above.';
+
+  @override
+  String get ruleWorkbenchExcludePatternInvalid =>
+      'The exclude text cannot span lines and must stay within 256 UTF-16 code units.';
+
+  @override
+  String get ruleWorkbenchWholeLine => 'Whole-line matches only';
+
+  @override
+  String get ruleWorkbenchNoGlobalRules => 'There are no rules to export.';
+
+  @override
+  String get ruleWorkbenchRulesNoSharedInFile =>
+      'The file contains no usable rules.';
+
+  @override
+  String get ruleWorkbenchExportSharedRules => 'Export rule file';
+
+  @override
+  String get ruleWorkbenchImportSharedRules => 'Import rule file';
+
+  @override
+  String ruleWorkbenchRulesExported(int count) {
+    return 'Exported $count rules.';
+  }
+
+  @override
+  String get ruleWorkbenchRulesImportTitle => 'Import rule file';
+
+  @override
+  String ruleWorkbenchRulesImportBody(int global, int book, int existing) {
+    return 'The file contains $global shared rules and $book book-scoped rules (copied to the open book); $existing same-ID rules already exist and will be skipped. Only missing definitions are added; nothing is overwritten, enabled, or run.';
+  }
+
+  @override
+  String ruleWorkbenchRulesImported(int added, int skipped) {
+    return 'Imported: $added added, $skipped already present.';
+  }
+
+  @override
+  String get ruleWorkbenchRulesImportInvalid =>
+      'The rule file is invalid or has an unsupported version.';
+
+  @override
+  String get ruleWorkbenchWholeLineHelper =>
+      'After trimming leading and trailing whitespace, a match must cover the whole line. Only available for heading and body lines.';
+
+  @override
+  String get ruleWorkbenchEffect => 'What will change';
+
+  @override
+  String get ruleWorkbenchName => 'Rule name';
+
+  @override
+  String get ruleWorkbenchKind => 'Rule type';
+
+  @override
+  String get ruleWorkbenchChapter => 'Chapter heading';
+
+  @override
+  String get ruleWorkbenchHeadingLevel => 'Heading level';
+
+  @override
+  String get ruleWorkbenchVolumeLevel => 'Volume';
+
+  @override
+  String get ruleWorkbenchChapterLevel => 'Chapter';
+
+  @override
+  String get ruleWorkbenchVolumeCandidate => 'Volume heading';
+
+  @override
+  String get ruleWorkbenchVolumeEffect =>
+      'Remove the full heading line and its line ending to create a top-level volume. Preserve content after the boundary as untitled front matter and move consecutive sibling chapters into the new volume. Do not create an empty chapter when there is no content.';
+
+  @override
+  String get ruleWorkbenchNewVolumeTitle => 'New volume title';
+
+  @override
+  String get ruleWorkbenchVolumeFrontMatter =>
+      'Volume front matter (no invented chapter title)';
+
+  @override
+  String get ruleWorkbenchVolumePreview =>
+      'Single volume boundary preview. The new volume is a top-level entry with no body. Content before the boundary stays in the source chapter. Following text, images, footnotes and dividers become untitled front matter in their original order; no empty chapter is created when there is no content. Consecutive chapters with the source chapter\'s parent move into the new volume, stopping at a volume or a different parent. Batch application assigns content at each volume boundary and can be undone once.';
+
+  @override
+  String get ruleWorkbenchVolumeFollowingBlockCount =>
+      'Following blocks preserved as front matter';
+
+  @override
+  String get ruleWorkbenchVolumeFollowingBlocks =>
+      'Expand all following front matter blocks';
+
+  @override
+  String get ruleWorkbenchVolumeFollowingChapterCount =>
+      'Following chapters moved by this single change';
+
+  @override
+  String get ruleWorkbenchVolumeFollowingChapters =>
+      'Expand the list of chapters moving into the new volume';
+
+  @override
+  String get ruleWorkbenchMoreChapters => 'Load more chapters';
+
+  @override
+  String get ruleWorkbenchAdvertisement => 'Advertisement';
+
+  @override
+  String get ruleWorkbenchTarget => 'Match target';
+
+  @override
+  String get ruleWorkbenchHeadingLine => 'Match target: heading line';
+
+  @override
+  String get ruleWorkbenchBodyLine => 'Body line';
+
+  @override
+  String get ruleWorkbenchParagraph => 'Paragraph';
+
+  @override
+  String get ruleWorkbenchMode => 'Match mode';
+
+  @override
+  String get ruleWorkbenchLiteral => 'Literal text';
+
+  @override
+  String get ruleWorkbenchSafeRegex => 'Restricted regex (advanced)';
+
+  @override
+  String get ruleWorkbenchPattern => 'Text or expression to match';
+
+  @override
+  String get ruleWorkbenchAdvanced => 'Advanced options';
+
+  @override
+  String get ruleWorkbenchTitleCaptureGroup =>
+      'Table of contents title from capture group';
+
+  @override
+  String get ruleWorkbenchTitleCaptureHelper =>
+      'Blank = full heading line; 0 = whole match; 1 onward = capture group.';
+
+  @override
+  String get ruleWorkbenchAvailableGroups => 'Available numbers';
+
+  @override
+  String get ruleWorkbenchTitleCaptureInvalid =>
+      'Enter a non-negative integer in the available range.';
+
+  @override
+  String get ruleWorkbenchFullHeadingLine => 'Full heading line';
+
+  @override
+  String get ruleWorkbenchCaseSensitive => 'Case sensitive';
+
+  @override
+  String get ruleWorkbenchPositive => 'Positive examples (at least one line)';
+
+  @override
+  String get ruleWorkbenchNegative => 'Negative examples (optional lines)';
+
+  @override
+  String get ruleWorkbenchOnePerLine => 'One single-line example per row';
+
+  @override
+  String get ruleWorkbenchAction => 'Action';
+
+  @override
+  String get ruleWorkbenchCandidate => 'Mark ad candidate (no deletion)';
+
+  @override
+  String get ruleWorkbenchExactDeletion => 'Delete exact matched text';
+
+  @override
+  String get ruleWorkbenchChapterEffect =>
+      'Remove the full heading line and its line ending from the body. The new table of contents title defaults to that line or can come from a capture group.';
+
+  @override
+  String get ruleWorkbenchScope => 'Scope';
+
+  @override
+  String get ruleWorkbenchPriority => 'Priority (-1000 to 1000)';
+
+  @override
+  String get ruleWorkbenchPriorityInvalid => 'Priority must be an integer.';
+
+  @override
+  String get ruleWorkbenchOpenBook => 'Open a manuscript first.';
+
+  @override
+  String get ruleWorkbenchUseDefinition => 'Add to rule set';
+
+  @override
+  String get ruleWorkbenchGlobalConfirmTitle => 'Use across books?';
+
+  @override
+  String get ruleWorkbenchGlobalConfirmBody =>
+      'The rule will appear for other books, but will never be selected for a trial or edit their text automatically.';
+
+  @override
+  String get ruleWorkbenchConfirm => 'Confirm';
+
+  @override
+  String get ruleWorkbenchLoading => 'Loading rules';
+
+  @override
+  String get ruleWorkbenchScanning => 'Trialing whole book';
+
+  @override
+  String get ruleWorkbenchReady => 'Trial complete';
+
+  @override
+  String get ruleWorkbenchSaving => 'Saving rule';
+
+  @override
+  String get ruleWorkbenchSaved =>
+      'Rule saved. The trial has expired; run a new trial before applying.';
+
+  @override
+  String get ruleWorkbenchDeleted => 'Rule deleted.';
+
+  @override
+  String get ruleWorkbenchResults => 'Whole-book trial results';
+
+  @override
+  String get ruleWorkbenchCoverage => 'Covered';
+
+  @override
+  String get ruleWorkbenchChapters => 'chapter/volume nodes';
+
+  @override
+  String get ruleWorkbenchBlocks => 'text blocks';
+
+  @override
+  String get ruleWorkbenchLines => 'body lines';
+
+  @override
+  String get ruleWorkbenchTotalMatches => 'Total hits';
+
+  @override
+  String get ruleWorkbenchDistinctMatches => 'Distinct hits';
+
+  @override
+  String get ruleWorkbenchConflicts => 'Total conflicts';
+
+  @override
+  String get ruleWorkbenchConflictSamples => 'Conflict samples';
+
+  @override
+  String get ruleWorkbenchTruncated => 'Not shown';
+
+  @override
+  String get ruleWorkbenchShown => 'Hits shown';
+
+  @override
+  String get ruleWorkbenchExecuted => 'Executed, hits';
+
+  @override
+  String get ruleWorkbenchNotExecuted => 'Not executed (disabled)';
+
+  @override
+  String get ruleWorkbenchConflictDetails => 'View conflict samples';
+
+  @override
+  String get ruleWorkbenchChapterConflict =>
+      'Multiple split boundaries on one line';
+
+  @override
+  String get ruleWorkbenchDeleteChapterConflict =>
+      'Deletion conflicts with chapter split';
+
+  @override
+  String get ruleWorkbenchDeletionConflict => 'Overlapping deletions';
+
+  @override
+  String get ruleWorkbenchMaxApply => 'Apply at most 100 changes per batch.';
+
+  @override
+  String get ruleWorkbenchSaveOnly => 'Save current rule only';
+
+  @override
+  String get ruleWorkbenchApplySelected => 'Apply selected (one undo)';
+
+  @override
+  String get ruleWorkbenchSaveApply =>
+      'Save and apply selected hits of this rule';
+
+  @override
+  String get ruleWorkbenchCandidateNotice =>
+      'Ad candidates are for review and cannot be selected for deletion.';
+
+  @override
+  String get aiAdvertisementAnalyze => 'Analyze advertisement with AI';
+
+  @override
+  String aiAdvertisementSource(String name) {
+    return 'From rule candidate: $name';
+  }
+
+  @override
+  String get aiAdvertisementSelectedText =>
+      'Exact selection (only this range can be edited)';
+
+  @override
+  String get aiAdvertisementReadOnlyContext =>
+      'Read-only adjacent text included in the request';
+
+  @override
+  String get aiAdvertisementSelectionScope =>
+      'Select up to 8192 UTF-16 code units. Only the selection and read-only adjacent context are analyzed. Changing chapter scope cancels this selection request.';
+
+  @override
+  String get aiAdvertisementSelectionLimit =>
+      'The selection exceeds 8192 UTF-16 code units. Select less text to analyze it.';
+
+  @override
+  String get aiAdvertisementSelectionExpired =>
+      'This advertisement selection has expired. Select the text again to analyze it.';
+
+  @override
+  String get ruleWorkbenchMore => 'Load more hits';
+
+  @override
+  String get ruleWorkbenchReload => 'Reload saved rules';
+
+  @override
+  String get ruleWorkbenchReloadTitle => 'Reload rules?';
+
+  @override
+  String get ruleWorkbenchReloadWarning =>
+      'Unsaved rule definitions, form contents and trial results will be discarded.';
+
+  @override
+  String get ruleWorkbenchLine => 'line';
+
+  @override
+  String get ruleWorkbenchRule => 'Matched rules';
+
+  @override
+  String get ruleWorkbenchOffset => 'Range';
+
+  @override
+  String get ruleWorkbenchSplitPrefix =>
+      'Boundary block kept in source chapter';
+
+  @override
+  String get ruleWorkbenchRemoveHeadingLine => 'Full heading line to remove';
+
+  @override
+  String get ruleWorkbenchSplitTitle => 'New table of contents title';
+
+  @override
+  String get ruleWorkbenchUnsupportedCrLine =>
+      'A heading line ending in a lone CR cannot be split yet. Adjust the line ending and run the trial again.';
+
+  @override
+  String get ruleWorkbenchSplitSuffix => 'Boundary block text in new chapter';
+
+  @override
+  String get ruleWorkbenchFollowingCount =>
+      'Following blocks moved to new chapter in order';
+
+  @override
+  String get ruleWorkbenchFollowingBlocks =>
+      'Expand all following chapter content';
+
+  @override
+  String get ruleWorkbenchTextBlock => 'Text block';
+
+  @override
+  String get ruleWorkbenchImageBlock => 'Image block';
+
+  @override
+  String get ruleWorkbenchFootnoteBlock => 'Footnote block';
+
+  @override
+  String get ruleWorkbenchDividerBlock => 'Divider block';
+
+  @override
+  String get ruleWorkbenchAssetId => 'Asset ID';
+
+  @override
+  String get ruleWorkbenchDeleteExact => 'Remove exactly';
+
+  @override
+  String get ruleWorkbenchAfter => 'Complete block after deletion';
+
+  @override
+  String get aiProofreadingIntro =>
+      'Choose a purpose and chapters. Preparing a review sends no manuscript text.';
+
+  @override
+  String get aiAuditGapSource => 'From manuscript check: chapter numbering gap';
+
+  @override
+  String aiAuditGapRange(int first, int last) {
+    return 'Missing numbers: $first–$last';
+  }
+
+  @override
+  String aiAuditGapBefore(String title) {
+    return 'Before: $title';
+  }
+
+  @override
+  String aiAuditGapAfter(String title) {
+    return 'After: $title';
+  }
+
+  @override
+  String get aiAuditGapNoBefore =>
+      'No preceding chapter in this volume; analyze the first numbered chapter.';
+
+  @override
+  String get aiAuditGapNoAutoSend =>
+      'Opening this analysis sends nothing. Review the request and confirm before sending.';
+
+  @override
+  String get aiAuditGapExpired =>
+      'This check result has expired. Run the manuscript check again to analyze this gap.';
+
+  @override
+  String get aiProofreadingAdvertisement => 'Advertisement review';
+
+  @override
+  String get aiProofreadingMissingChapter => 'Missing chapter diagnosis';
+
+  @override
+  String get aiProofreadingChapters => 'Chapters to analyze';
+
+  @override
+  String get aiProofreadingScope =>
+      'Choose the current chapter or several chapters; all selected text is chunked for analysis.';
+
+  @override
+  String get aiProofreadingMissingScope =>
+      'The adjacent pair is selected by default. You can change the pair. Selected chapters are covered in full, without fixed trimming.';
+
+  @override
+  String get aiProofreadingCurrentChapter => 'Current chapter';
+
+  @override
+  String get aiProofreadingSelectedChapters => 'Selected chapters';
+
+  @override
+  String get aiProofreadingPrepare => 'Prepare and review request';
+
+  @override
+  String get aiProofreadingPhase => 'Task status';
+
+  @override
+  String get aiProofreadingIdle => 'Ready';
+
+  @override
+  String get aiProofreadingPreparing => 'Preparing';
+
+  @override
+  String get aiProofreadingAwaitingConsent => 'Awaiting send confirmation';
+
+  @override
+  String get aiProofreadingRunning => 'Analyzing';
+
+  @override
+  String get aiProofreadingCompleted => 'Analysis complete';
+
+  @override
+  String get aiProofreadingApplying => 'Applying';
+
+  @override
+  String get aiProofreadingApplied => 'Applied';
+
+  @override
+  String get aiProofreadingCancelled => 'Cancelled';
+
+  @override
+  String get aiProofreadingStale => 'Manuscript changed; results expired';
+
+  @override
+  String get aiProofreadingFailed => 'Failed';
+
+  @override
+  String get aiProofreadingCompletedChunks => 'Completed chunks';
+
+  @override
+  String get aiProofreadingReview => 'Review before sending';
+
+  @override
+  String get aiProofreadingCharacters => 'Source characters';
+
+  @override
+  String get aiProofreadingBlocks => 'Paragraphs';
+
+  @override
+  String get aiProofreadingChunks => 'Request chunks';
+
+  @override
+  String get aiProofreadingSystemPrompt => 'Full system prompt';
+
+  @override
+  String get aiProofreadingChunk => 'Full request content, chunk';
+
+  @override
+  String get aiProofreadingCompleteScope =>
+      'Each chunk shows its complete userContext JSON. The system prompt above is also sent with each request.';
+
+  @override
+  String get aiProofreadingStart => 'Confirm and start sending';
+
+  @override
+  String get aiProofreadingCancelCost =>
+      'Cancellation stops later processing. Requests already sent and any charges cannot be undone.';
+
+  @override
+  String get aiProofreadingAppliedCount => 'Applied changes';
+
+  @override
+  String get aiProofreadingNoFindings =>
+      'No confirmed issue or edit was found. This does not prove that the source has no missing chapter.';
+
+  @override
+  String get aiProofreadingApplicableChanges => 'Applicable changes';
+
+  @override
+  String get aiProofreadingPending => 'Findings to review';
+
+  @override
+  String aiProofreadingIgnoredCount(int count) {
+    return '$count ignored (this run only)';
+  }
+
+  @override
+  String get aiProofreadingRestoreIgnored =>
+      'Restore all ignored from this run';
+
+  @override
+  String get aiProofreadingIgnoreFinding =>
+      'Ignore finding and related suggestions';
+
+  @override
+  String get aiProofreadingRulesUnavailable =>
+      'Rule proposals are not enabled yet.';
+
+  @override
+  String get aiProofreadingConflict =>
+      'Selected changes conflict. Deselect one of them.';
+
+  @override
+  String get aiProofreadingApplySelected => 'Apply selected changes';
+
+  @override
+  String get aiProofreadingOriginal => 'Full original text';
+
+  @override
+  String get aiProofreadingOriginalEvidence => 'Full source evidence';
+
+  @override
+  String get aiProofreadingOriginalChapterTitle =>
+      'Current table-of-contents title';
+
+  @override
+  String get aiProofreadingNewChapterTitle => 'New table-of-contents title';
+
+  @override
+  String get aiProofreadingReplacement => 'Replacement';
+
+  @override
+  String get aiProofreadingDelete =>
+      'Delete the text shown above (keep the text block)';
+
+  @override
+  String get aiProofreadingRemoveBlock => 'Remove entire text block';
+
+  @override
+  String get aiProofreadingRemoveBlockImpact =>
+      'This text block is removed without leaving an empty paragraph. The chapter and other text blocks, images, footnotes, and dividers remain.';
+
+  @override
+  String get aiProofreadingReplace => 'Replace text';
+
+  @override
+  String get aiProofreadingRenameChapter => 'Correct chapter title';
+
+  @override
+  String get aiProofreadingRenameChapterImpact =>
+      'Only this chapter\'s table-of-contents title changes. Its heading line stays in the body; all other text, images, footnotes, dividers, and the chapter hierarchy remain unchanged.';
+
+  @override
+  String get aiProofreadingSplit => 'Split and restore chapter';
+
+  @override
+  String get aiProofreadingSplitSource =>
+      'Boundary paragraph remaining in the source chapter';
+
+  @override
+  String get aiProofreadingSplitNew => 'New chapter and its body';
+
+  @override
+  String get aiProofreadingSplitRemoveTitle =>
+      'Remove the whole heading line, including its line ending, from the body and use it as the new chapter title.';
+
+  @override
+  String get aiProofreadingSplitKeepTitle =>
+      'Keep the heading line in the body as well; no source text is deleted.';
+
+  @override
+  String get aiProofreadingSplitResources =>
+      'Single-split impact preview. Preceding blocks and body text before the boundary remain in the source chapter; body text and blocks after it move to the new chapter in their original order. Later existing chapters stay unchanged. Batch splits remain subject to conflict and application checks.';
+
+  @override
+  String get aiProofreadingSplitParent =>
+      'Parent volume (same for both chapters)';
+
+  @override
+  String get aiProofreadingSplitTopLevel =>
+      'Top-level chapters (neither belongs to a volume)';
+
+  @override
+  String aiProofreadingSplitBeforeCount(int count) {
+    return 'Preceding blocks retained in source chapter: $count';
+  }
+
+  @override
+  String aiProofreadingSplitAfterCount(int count) {
+    return 'Following blocks moved to new chapter: $count';
+  }
+
+  @override
+  String get aiProofreadingSplitMore => 'Show up to 100 more blocks';
+
+  @override
+  String get aiProofreadingSplitCaption => 'Caption';
+
+  @override
+  String get aiProofreadingSplitAlt => 'Alternative text';
+
+  @override
+  String get aiProofreadingSplitMarker => 'Footnote marker';
+
+  @override
+  String get aiProofreadingReason => 'Reason';
+
+  @override
+  String get aiProofreadingLocate => 'Locate source';
+
+  @override
+  String get aiProofreadingApplyOne => 'Apply this change';
+
+  @override
+  String get aiProofreadingUndetermined => 'Undetermined';
+
+  @override
+  String get aiProofreadingSuspectedMissing =>
+      'Possible missing source content';
+
+  @override
+  String get aiProofreadingMissedHeading => 'Possible missed heading';
+
+  @override
+  String get aiProofreadingMergedContent => 'Possible merged chapters';
+
+  @override
+  String get aiProofreadingNumberingSuspect => 'Possible numbering error';
+
+  @override
+  String get aiProofreadingAuthorNote => 'Author\'s note';
+
+  @override
+  String get aiProofreadingStoryQuote => 'Quotation in story';
+
+  @override
+  String get aiProofreadingNotAdvertisement => 'Not an advertisement';
+
+  @override
+  String get aiProofreadingObserved => 'Finding';
+
+  @override
+  String get aiTestConnection => 'Test connection';
+
+  @override
+  String get aiTesting => 'Testing connection…';
+
+  @override
+  String get aiCancelTest => 'Cancel test';
+
+  @override
+  String get aiTestPassed =>
+      'The test passed. You can save this configuration. Changes to format, address, key or model require a new test.';
+
+  @override
+  String get aiNotTested => 'This configuration has not been tested.';
+
+  @override
+  String get aiSaved => 'The current AI configuration was saved.';
+
+  @override
+  String get aiSave => 'Save configuration';
+
+  @override
+  String get aiClear => 'Clear AI configuration and key';
+
+  @override
+  String get aiClearTitle => 'Clear AI configuration?';
+
+  @override
+  String get aiClearDescription =>
+      'Disable AI and delete the key linked to the current configuration. Manuscripts are unchanged.';
+
+  @override
+  String get aiClearConfirm => 'Clear';
+
+  @override
+  String get aiCleared =>
+      'AI is disabled. The current configuration and linked key were cleared.';
+
+  @override
+  String get aiCleanupWarning =>
+      'The current configuration was safely committed, but the old key still needs cleanup. Retry without affecting manuscripts.';
+
+  @override
+  String get aiRetryCleanup => 'Retry old-key cleanup';
+
+  @override
+  String get aiCleanupDone => 'The old key was removed.';
+
+  @override
+  String get aiLoadFailed =>
+      'Could not load AI settings. Try again; networking will not be enabled as a fallback.';
+
+  @override
+  String get aiReload => 'Reload configuration';
+
+  @override
+  String get aiBusy =>
+      'The previous operation has not finished. Try again shortly.';
+
+  @override
+  String get aiInvalidConfiguration =>
+      'Check the address, model and key. Test the current configuration before enabling it.';
+
+  @override
+  String get aiMissingCredential =>
+      'Enter a key. Changing the address or format cannot automatically reuse the old key.';
+
+  @override
+  String get aiCredentialUnavailable =>
+      'System secure storage is unavailable. Check that the keyring is unlocked and retry; keys will not be stored in plaintext.';
+
+  @override
+  String get aiStaleConfiguration =>
+      'Another operation changed this configuration. Reload before saving.';
+
+  @override
+  String get aiProofRequired =>
+      'This configuration has not passed a connection test, or changed after testing. Test it again.';
+
+  @override
+  String get aiConnectionFailed =>
+      'The service did not return the expected test result. Check the model and API format.';
+
+  @override
+  String get aiCancelled =>
+      'The test was cancelled. Server-side processing or charges already incurred cannot be undone.';
+
+  @override
+  String get aiSaveFailed =>
+      'Could not save. The previous configuration is retained; try again.';
+
+  @override
+  String get aiCommitUnknown =>
+      'The save status could not be confirmed. Reload before continuing.';
+
+  @override
+  String get aiCleanupFailed =>
+      'The old key could not be removed. Retry later; a key still in use will not be deleted.';
+
+  @override
+  String get aiAuthenticationFailed =>
+      'Authentication failed. Check the key and its permissions.';
+
+  @override
+  String get aiRateLimited =>
+      'The service is rate limiting requests. Retry manually later; no automatic retry will be sent.';
+
+  @override
+  String get aiTimedOut =>
+      'The test timed out. Check the service address and retry.';
+
+  @override
+  String get aiRedirectRejected =>
+      'The service redirected the request. Key forwarding was blocked; enter the final address.';
+
+  @override
+  String get aiBudgetExceeded =>
+      'The request or response exceeded its safety budget. Check the service endpoint.';
+
+  @override
+  String get aiProtocolFailed =>
+      'The response does not match the selected protocol, was refused or was truncated. Check the model and format.';
+
+  @override
+  String get aiNetworkFailed =>
+      'Could not connect. Check the network, address and certificate.';
+
+  @override
   String get settingsThemeMode => 'Theme';
 
   @override
@@ -504,7 +1615,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importAddToLibrary => 'Add to library and edit';
 
   @override
+  String get importTaskTitle => 'Import manuscript';
+
+  @override
+  String get importPreparing => 'Preparing';
+
+  @override
+  String get importCancelling => 'Cancelling…';
+
+  @override
+  String importProgressPercent(int percent) {
+    return '$percent%';
+  }
+
+  @override
   String get importSaving => 'Saving manuscript…';
+
+  @override
+  String get importSavingNotice => 'Saving in progress. Do not exit.';
 
   @override
   String get importStagePrepare => 'Preparing…';
@@ -516,7 +1644,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importStageParse => 'Organizing chapters…';
 
   @override
+  String get importStageConvert => 'Converting text…';
+
+  @override
   String get importStageReady => 'Parsing complete';
+
+  @override
+  String get importStageSavePrepare => 'Preparing to save…';
+
+  @override
+  String get importStageSaveChapters => 'Saving chapters…';
+
+  @override
+  String get importStageSaveBlocks => 'Saving text…';
+
+  @override
+  String get importStageSaveFinalize => 'Finishing save…';
 
   @override
   String get importPickFailed =>
@@ -810,6 +1953,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorWorkbenchAuditRun => 'Check this manuscript';
 
   @override
+  String get editorWorkbenchAnalyzeGapWithAi => 'Analyze with AI';
+
+  @override
   String editorWorkbenchAuditTotal(int count) {
     return '$count notices in total';
   }
@@ -959,6 +2105,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editorWorkbenchIssueAdLeftover => 'Ad traces';
+
+  @override
+  String get editorWorkbenchIssueTitleFormat => 'Inconsistent title format';
+
+  @override
+  String get editorWorkbenchIssueDuplicateContent => 'Duplicate content';
 
   @override
   String get editorWorkbenchReparseInvalidRuleUtf8 =>
@@ -1154,6 +2306,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bookWorkbenchLayoutFonts => 'Layout and fonts';
+
+  @override
+  String get bookWorkbenchLayoutSampleTitle => 'Live layout sample';
+
+  @override
+  String get bookWorkbenchLayoutSampleScope =>
+      'This sample, reading preview, and visually formatted exports use these settings. The body editor keeps the original text and does not display first-line indents.';
+
+  @override
+  String get bookWorkbenchLayoutSampleFirst =>
+      'After the rain, lamplight crossed the wet stones.';
+
+  @override
+  String get bookWorkbenchLayoutSampleSecond => 'A new page begins.';
 
   @override
   String get bookWorkbenchCover => 'Cover';
@@ -1598,6 +2764,26 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String dataWorkbenchBackupSavedWithRules(int count) {
+    return 'Backup saved with $count book-scoped rules.';
+  }
+
+  @override
+  String dataWorkbenchBackupRules(int count) {
+    return 'This backup contains $count book-scoped rules. Restore only adds missing definitions; existing rules are never overwritten, enabled, or run.';
+  }
+
+  @override
+  String dataWorkbenchBackupRulesMerged(int added, int skipped) {
+    return 'Rules restored: $added added, $skipped already present.';
+  }
+
+  @override
+  String dataWorkbenchBackupRulesFailed(String message) {
+    return 'Books were restored, but rules were not: $message';
+  }
+
+  @override
   String dataWorkbenchBackupEstimatedSpace(String size) {
     return 'Estimated required space: $size';
   }
@@ -1791,7 +2977,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permissionsInternetDeclared =>
-      'This build declares network access.';
+      'Network access supports optional AI, which is off by default. Explicit connection tests send a fixed small sample, not your manuscript.';
 
   @override
   String get permissionsStorageDeclared =>
@@ -1874,4 +3060,45 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get permissionsRuntimeNotRequired =>
       'Not needed by manuscript features. It is not requested and can remain off.';
+
+  @override
+  String get ruleWorkbenchRulesCopyConflicts =>
+      'If an ID already exists, save it as a new rule (otherwise skip)';
+
+  @override
+  String get ruleWorkbenchDuplicate => 'Duplicate rule';
+
+  @override
+  String get ruleWorkbenchCopySuffix => ' (copy)';
+
+  @override
+  String ruleWorkbenchDuplicated(String name) {
+    return 'Created “$name”.';
+  }
+
+  @override
+  String get ruleWorkbenchSearch => 'Search rules';
+
+  @override
+  String get ruleWorkbenchNoMatches => 'No matching rules.';
+
+  @override
+  String get ruleWorkbenchClearSearch => 'Clear search';
+
+  @override
+  String get ruleWorkbenchExportSelectTitle => 'Select rules to export';
+
+  @override
+  String get ruleWorkbenchSelectAll => 'Select all';
+
+  @override
+  String ruleWorkbenchExportSelected(int count) {
+    return 'Export selected ($count)';
+  }
+
+  @override
+  String get ruleWorkbenchImportPreview => 'Rules to import';
+
+  @override
+  String get ruleWorkbenchImportWillSkip => 'already exists, will be skipped';
 }

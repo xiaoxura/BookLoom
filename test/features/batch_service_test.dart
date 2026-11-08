@@ -58,10 +58,13 @@ class _DelayedCommitImportService extends ImportService {
   final Completer<void> release;
 
   @override
-  Future<Book> commit(PreparedImport prepared) async {
+  Future<Book> commit(
+    PreparedImport prepared, {
+    void Function(JobProgress)? onProgress,
+  }) async {
     entered.complete();
     await release.future;
-    return super.commit(prepared);
+    return super.commit(prepared, onProgress: onProgress);
   }
 }
 

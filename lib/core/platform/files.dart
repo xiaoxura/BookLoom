@@ -163,6 +163,10 @@ final class NativeFileService implements FileService {
     }
     _activePicks++;
     try {
+      if (Platform.isLinux) {
+        final linux = await _pickLinuxFiles(allowed, multiple: multiple);
+        if (linux != null) return linux;
+      }
       final List<PlatformFile> files;
       if (multiple) {
         files = await FilePicker.pickFiles(
@@ -227,6 +231,52 @@ final class NativeFileService implements FileService {
       _activePicks--;
       _startClearIfReady();
     }
+  }
+
+  /// Uses the GTK dialog hosted by the Linux runner. Returns null when the
+  /// runner predates this method so the picker plugin can still be used.
+  Future<List<PickedInput>?> _pickLinuxFiles(
+    List<String> allowed, {
+    required bool multiple,
+  }) async {
+    final List<String>? paths;
+    try {
+      paths = await _channel.invokeListMethod<String>('chooseOpenFiles', {
+        'extensions': allowed,
+        'multiple': multiple,
+      });
+    } on MissingPluginException {
+      return null;
+    } on PlatformException {
+      return null;
+    }
+    if (paths == null) return const [];
+    final picked = <PickedInput>[];
+    for (final path in paths) {
+      final file = File(path);
+      final name = p.basename(path);
+      final extension = p.extension(name).replaceFirst('.', '').toLowerCase();
+      if (!allowed.contains(extension)) {
+        throw ImportFailure(
+          '“$name”的格式不受支持。',
+          hint:
+              '请选择 ${allowed.map((String value) => value.toUpperCase()).join('、')} 文件。',
+        );
+      }
+      final int size;
+      try {
+        size = await file.length();
+      } on Object catch (error, stack) {
+        throw ImportFailure(
+          '无法读取“$name”。',
+          cause: error,
+          stackTrace: stack,
+          hint: '检查文件是否仍可访问，然后重新选择。',
+        );
+      }
+      picked.add(PickedInput(name: name, size: size, openRead: file.openRead));
+    }
+    return picked;
   }
 
   /// Streams [prepared] to the native destination; cancellation is quiet.

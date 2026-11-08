@@ -60,6 +60,9 @@ class BookRepository {
   BookRepository(this.db, Directory appSupportDirectory)
     : files = BookFiles(appSupportDirectory);
 
+  static const int _writeBatchSize = 128;
+  static const int _writeBatchByteLimit = 256 * 1024;
+
   final AppDatabase db;
   final BookFiles files;
   late final Future<void> _ready = recoverPendingOperations();
@@ -250,6 +253,8 @@ class BookRepository {
     model.Book book, {
     SourceImport? source,
     List<AssetImport> assets = const <AssetImport>[],
+    void Function(int chaptersWritten, int blocksWritten, String stage)?
+    onProgress,
   }) async {
     await _ready;
     files.checkId(book.id);
@@ -258,6 +263,14 @@ class BookRepository {
     final stagedAssets = <(AssetImport, StoredFile)>[];
     StoredFile? stagedSource;
     var moved = false;
+    void report(int chaptersWritten, int blocksWritten, String stage) {
+      try {
+        onProgress?.call(chaptersWritten, blocksWritten, stage);
+      } on Object {
+        return;
+      }
+    }
+
     await files.ensureRoot();
     await files.writeMarker(operationId, kind: 'create', bookId: book.id);
     try {
@@ -293,6 +306,7 @@ class BookRepository {
       }
       await files.moveStagedBook(operationId, book.id);
       moved = true;
+      report(0, 0, 'save_prepare');
       await db.transaction(() async {
         final availableAssets = <String>{
           for (final (_, staged) in stagedAssets) staged.id,
@@ -323,20 +337,58 @@ class BookRepository {
                 ),
               );
         }
-        final insertOrder = [...book.chapters]
-          ..sort((a, b) => a.level.compareTo(b.level));
-        for (final chapter in insertOrder) {
-          await db
-              .into(db.chapters)
-              .insert(_chapterInsert(chapter, book.createdAt));
-          await _replaceBlocks(chapter);
+        var chaptersWritten = 0;
+        var chapterBatch = <ChaptersCompanion>[];
+        var chapterBatchBytes = 0;
+        Future<void> flushChapters() async {
+          if (chapterBatch.isEmpty) return;
+          final pending = chapterBatch;
+          chapterBatch = <ChaptersCompanion>[];
+          chapterBatchBytes = 0;
+          await db.batch((batch) => batch.insertAll(db.chapters, pending));
+          chaptersWritten += pending.length;
+          report(chaptersWritten, 0, 'save_chapters');
         }
+
+        for (final level in <int>[1, 2]) {
+          for (final chapter in book.chapters) {
+            if (chapter.level != level) continue;
+            final row = _chapterInsert(chapter, book.createdAt);
+            final rowBytes =
+                utf8.encode(chapter.id).length +
+                utf8.encode(chapter.bookId).length +
+                utf8.encode(chapter.parentId ?? '').length +
+                utf8.encode(chapter.title).length +
+                64;
+            if (chapterBatch.isNotEmpty &&
+                chapterBatchBytes + rowBytes > _writeBatchByteLimit) {
+              await flushChapters();
+            }
+            chapterBatch.add(row);
+            chapterBatchBytes += rowBytes;
+            if (chapterBatch.length == _writeBatchSize) await flushChapters();
+          }
+          await flushChapters();
+        }
+        await _insertBlocks(
+          book.chapters,
+          onBatchInserted: (blocksWritten) =>
+              report(chaptersWritten, blocksWritten, 'save_blocks'),
+        );
       });
       try {
         await files.removeMarker(operationId);
       } on FileSystemException {
         // Committed data is usable; startup recovery will remove the marker.
       }
+      report(
+        book.chapters.length,
+        book.chapters.fold<int>(
+          0,
+          (sum, chapter) => sum + chapter.blocks.length,
+        ),
+        'save_finalize',
+      );
       return book.copyWith(
         chapters: <model.Chapter>[
           for (final chapter in _orderedTree<model.Chapter>(
@@ -1054,42 +1106,81 @@ class BookRepository {
     await (db.delete(
       db.blocks,
     )..where((table) => table.chapterId.equals(chapter.id))).go();
-    for (var i = 0; i < chapter.blocks.length; i++) {
-      final block = chapter.blocks[i];
-      await db
-          .into(db.blocks)
-          .insert(
-            BlocksCompanion.insert(
-              id: block.id,
-              chapterId: chapter.id,
-              sortOrder: i,
-              kind: block.kind.wire,
-              content: drift.Value(switch (block) {
-                final model.TextBlock b => b.text,
-                final model.FootnoteBlock b => b.text,
-                _ => null,
-              }),
-              assetId: drift.Value(switch (block) {
-                final model.ImageBlock b => b.assetId,
-                _ => null,
-              }),
-              metaJson: drift.Value(
-                jsonEncode(switch (block) {
-                  final model.ImageBlock b => <String, Object?>{
-                    'caption': b.caption,
-                    'alt': b.alt,
-                  },
-                  final model.FootnoteBlock b => <String, Object?>{
-                    'marker': b.marker,
-                  },
-                  _ => <String, Object?>{},
-                }),
-              ),
-              createdAt: DateTime.now().toUtc(),
-            ),
-          );
-    }
+    await _insertBlocks(<model.Chapter>[chapter]);
   }
+
+  Future<void> _insertBlocks(
+    Iterable<model.Chapter> chapters, {
+    void Function(int blocksWritten)? onBatchInserted,
+  }) async {
+    var blocksWritten = 0;
+    var blockBatch = <BlocksCompanion>[];
+    var batchBytes = 0;
+    Future<void> flushBlocks() async {
+      if (blockBatch.isEmpty) return;
+      final pending = blockBatch;
+      blockBatch = <BlocksCompanion>[];
+      batchBytes = 0;
+      await db.batch((batch) => batch.insertAll(db.blocks, pending));
+      blocksWritten += pending.length;
+      onBatchInserted?.call(blocksWritten);
+    }
+
+    for (final chapter in chapters) {
+      for (var index = 0; index < chapter.blocks.length; index++) {
+        final row = _blockInsert(chapter.id, chapter.blocks[index], index);
+        final rowBytes =
+            utf8.encode(row.id.value).length +
+            utf8.encode(row.chapterId.value).length +
+            utf8.encode(row.kind.value).length +
+            utf8.encode(row.content.value ?? '').length +
+            utf8.encode(row.assetId.value ?? '').length +
+            utf8.encode(row.metaJson.value).length +
+            64;
+        if (blockBatch.isNotEmpty &&
+            batchBytes + rowBytes > _writeBatchByteLimit) {
+          await flushBlocks();
+        }
+        blockBatch.add(row);
+        batchBytes += rowBytes;
+        if (blockBatch.length == _writeBatchSize) await flushBlocks();
+      }
+    }
+    await flushBlocks();
+  }
+
+  BlocksCompanion _blockInsert(
+    String chapterId,
+    model.Block block,
+    int sortOrder,
+  ) => BlocksCompanion.insert(
+    id: block.id,
+    chapterId: chapterId,
+    sortOrder: sortOrder,
+    kind: block.kind.wire,
+    content: drift.Value(switch (block) {
+      final model.TextBlock text => text.text,
+      final model.FootnoteBlock footnote => footnote.text,
+      _ => null,
+    }),
+    assetId: drift.Value(switch (block) {
+      final model.ImageBlock image => image.assetId,
+      _ => null,
+    }),
+    metaJson: drift.Value(
+      jsonEncode(switch (block) {
+        final model.ImageBlock image => <String, Object?>{
+          'caption': image.caption,
+          'alt': image.alt,
+        },
+        final model.FootnoteBlock footnote => <String, Object?>{
+          'marker': footnote.marker,
+        },
+        _ => <String, Object?>{},
+      }),
+    ),
+    createdAt: DateTime.now().toUtc(),
+  );
 
   AssetsCompanion _assetInsert(
     String bookId,

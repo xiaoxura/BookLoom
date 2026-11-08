@@ -20,10 +20,8 @@ class SettingsSectionTitle extends StatelessWidget {
       ),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          letterSpacing: 0.6,
-          color: context.colors.inkMuted,
-        ),
+        style: Theme.of(context).textTheme.titleSmall
+            ?.copyWith(letterSpacing: 0.6, color: context.colors.inkMuted),
       ),
     );
   }
@@ -78,10 +76,8 @@ class SettingsEntry extends StatelessWidget {
               padding: const EdgeInsets.only(top: AppSpacing.xxs),
               child: Text(
                 description!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: context.colors.inkSecondary,
-                  height: 1.5,
-                ),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: context.colors.inkSecondary, height: 1.5),
               ),
             ),
       trailing: Icon(

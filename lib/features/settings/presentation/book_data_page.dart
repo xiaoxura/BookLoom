@@ -2,15 +2,18 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:bookloom/app/providers.dart';
+import 'package:bookloom/app/rule_providers.dart';
 import 'package:bookloom/app/window/window_controls.dart';
 import 'package:bookloom/app/workbench_providers.dart';
 import 'package:bookloom/core/app_info.dart';
+import 'package:bookloom/core/editing/proofreading_rule.dart';
 import 'package:bookloom/core/errors/app_failure.dart';
 import 'package:bookloom/core/platform/files.dart';
 import 'package:bookloom/core/platform/job_cache.dart';
 import 'package:bookloom/core/storage/book_backup.dart';
 import 'package:bookloom/core/storage/book_repository.dart';
 import 'package:bookloom/design/components/app_page.dart';
+import 'package:bookloom/features/editor/data/proofreading_rule_store.dart';
 import 'package:bookloom/features/export/presentation/library_export_panel.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -219,6 +222,11 @@ class _BookDataPageState extends ConsumerState<BookDataPage> {
                   _size(preview.estimatedRequiredBytes),
                 ),
               ),
+              if (preview.ruleCount > 0)
+                Text(
+                  AppLocalizations.of(context)
+                      .dataWorkbenchBackupRules(preview.ruleCount),
+                ),
               for (final book in preview.books)
                 Text(
                   AppLocalizations.of(context).dataWorkbenchBackupPreviewBook(
@@ -338,13 +346,31 @@ class _BookDataPageState extends ConsumerState<BookDataPage> {
     );
   }
 
+  Future<List<ProofreadingRule>> _bookRules(Iterable<String> bookIds) async {
+    final store = ref.read(proofreadingRuleStoreProvider);
+    final rules = <ProofreadingRule>[];
+    final seen = <String>{};
+    for (final id in bookIds) {
+      for (final rule in await store.loadForBook(id)) {
+        if (rule.scope != ProofreadingRuleScope.book || rule.bookId != id) {
+          continue;
+        }
+        if (seen.add(rule.id)) rules.add(rule);
+      }
+    }
+    return rules;
+  }
+
   Future<void> _export() async {
     await _newBackup();
     try {
+      final rules = await _bookRules(_selected);
+      final rulesJson = rules.isEmpty ? null : encodeProofreadingRules(rules);
       final output = await _backup!.exportBooks(
         _selected.toList(),
         p.join(_lease!.directory.path, 'library.bookloom'),
         includeSources: _includeSources,
+        rulesJson: rulesJson,
       );
       if (_cancelled) throw const TaskCancelled();
       final result = await ref
@@ -357,8 +383,10 @@ class _BookDataPageState extends ConsumerState<BookDataPage> {
           );
       if (mounted && result is SaveSaved) {
         setState(
-          () =>
-              _message = AppLocalizations.of(context).dataWorkbenchBackupSaved,
+          () => _message = rules.isEmpty
+              ? AppLocalizations.of(context).dataWorkbenchBackupSaved
+              : AppLocalizations.of(context)
+                    .dataWorkbenchBackupSavedWithRules(rules.length),
         );
       }
     } finally {
@@ -407,7 +435,22 @@ class _BookDataPageState extends ConsumerState<BookDataPage> {
         file.path,
         maxOutputBytes: maxBytes,
       );
-      if (mounted) setState(() => _preview = preview);
+      if (preview.rulesJson != null) {
+        try {
+          decodeProofreadingRules(preview.rulesJson!);
+        } on Object {
+          await preview.dispose();
+          rethrow;
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _preview = preview;
+          // A newly inspected backup always starts from the non-destructive
+          // policy; overwrite must be chosen again for each archive.
+          _policy = RestoreConflictPolicy.copy;
+        });
+      }
     } on Object {
       await _release();
       rethrow;
@@ -417,6 +460,7 @@ class _BookDataPageState extends ConsumerState<BookDataPage> {
   }
 
   Future<void> _applyRestore() async {
+    final l10n = AppLocalizations.of(context);
     final preview = _preview;
     if (preview == null) return;
     if (_policy == RestoreConflictPolicy.overwrite) {
@@ -446,8 +490,23 @@ class _BookDataPageState extends ConsumerState<BookDataPage> {
       );
       if (confirmed != true) return;
     }
+    final rulesJson = preview.rulesJson;
     try {
       final result = await _backup!.applyRestore(preview, policy: _policy);
+      var rulesLine = '';
+      if (rulesJson != null && result.cancelledIds.isEmpty) {
+        try {
+          final merged = await ref
+              .read(proofreadingRuleStoreProvider)
+              .mergeMissing(decodeProofreadingRules(rulesJson));
+          rulesLine = l10n.dataWorkbenchBackupRulesMerged(
+            merged.addedIds.length,
+            merged.skippedIds.length,
+          );
+        } on AppFailure catch (error) {
+          rulesLine = l10n.dataWorkbenchBackupRulesFailed(error.message);
+        }
+      }
       if (mounted) {
         setState(
           () => _message = [
@@ -460,6 +519,7 @@ class _BookDataPageState extends ConsumerState<BookDataPage> {
             ?result.cleanupWarning,
             for (final entry in result.failures.entries)
               '${entry.key}: ${entry.value}',
+            if (rulesLine.isNotEmpty) rulesLine,
           ].join('\n'),
         );
       }
@@ -481,6 +541,7 @@ class _BookDataPageState extends ConsumerState<BookDataPage> {
   Future<void> _doRelease() async {
     final preview = _preview;
     _preview = null;
+    _policy = RestoreConflictPolicy.copy;
     await preview?.dispose();
     final lease = _lease;
     _lease = null;

@@ -379,7 +379,11 @@ class CompiledTxtRules {
   }
 }
 
-CompiledTxtRules resolveTxtRules(ParseOptions options) {
+/// The single merged rule definition a TXT import compiles for [options].
+///
+/// Preset and custom fields are combined only here so read-only views and the
+/// parser cannot drift into two different interpretations.
+RuleSpec resolveRuleSpec(ParseOptions options) {
   final presetId = options.rulePreset;
   final base = presetId == 'custom' ? null : getRulePreset(presetId);
   if (base == null && presetId != 'custom') {
@@ -391,22 +395,29 @@ CompiledTxtRules resolveTxtRules(ParseOptions options) {
   if (presetId == 'custom' && custom == null) {
     throw const RuleValidationException('ruleSpec', '自定义预设需要规则配置');
   }
+  return RuleSpec(
+    id: presetId,
+    name: custom?.name ?? base?.name ?? presetId,
+    chapter: custom?.chapter ?? base?.chapter,
+    volume: custom?.volume ?? base?.volume,
+    drop: <String>[...?base?.drop, ...?custom?.drop],
+    inlineJunk: <String>[...?base?.inlineJunk, ...?custom?.inlineJunk],
+  );
+}
+
+CompiledTxtRules resolveTxtRules(ParseOptions options) {
+  final spec = resolveRuleSpec(options);
   RegExp? anchored(String? source) =>
       source == null ? null : RegExp('^(?:$source)\$', caseSensitive: false);
-  final RegExp? chapter = anchored(custom?.chapter ?? base?.chapter);
-  final RegExp? volume = anchored(custom?.volume ?? base?.volume);
-  final drop = <RegExp>[
-    for (final source in <String>[...?base?.drop, ...?custom?.drop])
-      RegExp(source, caseSensitive: false),
-  ];
-  final inlineJunk = <RegExp>[
-    for (final source in <String>[...?base?.inlineJunk, ...?custom?.inlineJunk])
-      RegExp(source, caseSensitive: false),
-  ];
   return CompiledTxtRules(
-    chapter: chapter,
-    volume: volume,
-    drop: List<RegExp>.unmodifiable(drop),
-    inlineJunk: List<RegExp>.unmodifiable(inlineJunk),
+    chapter: anchored(spec.chapter),
+    volume: anchored(spec.volume),
+    drop: List<RegExp>.unmodifiable([
+      for (final source in spec.drop) RegExp(source, caseSensitive: false),
+    ]),
+    inlineJunk: List<RegExp>.unmodifiable([
+      for (final source in spec.inlineJunk)
+        RegExp(source, caseSensitive: false),
+    ]),
   );
 }

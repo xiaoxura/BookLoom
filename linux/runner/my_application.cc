@@ -20,9 +20,93 @@ static void first_frame_cb(MyApplication* self, FlView* view) {
   gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
 }
 
+static gchar* last_dialog_directory = nullptr;
+
+static void apply_last_directory(GtkFileChooser* chooser) {
+  if (last_dialog_directory != nullptr &&
+      g_file_test(last_dialog_directory, G_FILE_TEST_IS_DIR)) {
+    gtk_file_chooser_set_current_folder(chooser, last_dialog_directory);
+  }
+}
+
+static void remember_directory(const gchar* path) {
+  if (path == nullptr) return;
+  g_autofree gchar* directory = g_path_get_dirname(path);
+  g_free(last_dialog_directory);
+  last_dialog_directory = g_strdup(directory);
+}
+
+static void respond_open_files(FlMethodCall* call,
+                               GtkWindow* parent,
+                               FlValue* args) {
+  FlValue* extensions = args == nullptr ? nullptr
+                                        : fl_value_lookup_string(args, "extensions");
+  gboolean multiple = TRUE;
+  if (args != nullptr) {
+    FlValue* multiple_value = fl_value_lookup_string(args, "multiple");
+    if (multiple_value != nullptr &&
+        fl_value_get_type(multiple_value) == FL_VALUE_TYPE_BOOL) {
+      multiple = fl_value_get_bool(multiple_value) ? TRUE : FALSE;
+    }
+  }
+
+  GtkWidget* dialog = gtk_file_chooser_dialog_new(
+      "选择文件", parent, GTK_FILE_CHOOSER_ACTION_OPEN, "取消",
+      GTK_RESPONSE_CANCEL, "打开", GTK_RESPONSE_ACCEPT, nullptr);
+  GtkFileChooser* chooser = GTK_FILE_CHOOSER(dialog);
+  apply_last_directory(chooser);
+  gtk_file_chooser_set_select_multiple(chooser, multiple);
+  gtk_file_chooser_set_do_overwrite_confirmation(chooser, FALSE);
+  if (extensions != nullptr &&
+      fl_value_get_type(extensions) == FL_VALUE_TYPE_LIST) {
+    GtkFileFilter* filter = gtk_file_filter_new();
+    gtk_file_filter_set_name(filter, "可导入文件");
+    for (size_t index = 0; index < fl_value_get_length(extensions); index++) {
+      FlValue* value = fl_value_get_list_value(extensions, index);
+      if (value == nullptr ||
+          fl_value_get_type(value) != FL_VALUE_TYPE_STRING) {
+        continue;
+      }
+      const gchar* extension = fl_value_get_string(value);
+      g_autofree gchar* pattern = g_strdup_printf("*.%s", extension);
+      gtk_file_filter_add_pattern(filter, pattern);
+    }
+    gtk_file_chooser_add_filter(chooser, filter);
+  }
+
+  g_autoptr(FlValue) result = nullptr;
+  const gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+  if (response == GTK_RESPONSE_ACCEPT) {
+    GSList* filenames = gtk_file_chooser_get_filenames(chooser);
+    result = fl_value_new_list();
+    for (GSList* item = filenames; item != nullptr; item = item->next) {
+      gchar* path = static_cast<gchar*>(item->data);
+      if (path != nullptr) {
+        if (fl_value_get_length(result) == 0) remember_directory(path);
+        fl_value_append_take(result, fl_value_new_string(path));
+        g_free(path);
+      }
+    }
+    g_slist_free(filenames);
+  } else {
+    result = fl_value_new_null();
+  }
+  gtk_widget_destroy(dialog);
+
+  g_autoptr(GError) error = nullptr;
+  if (!fl_method_call_respond_success(call, result, &error)) {
+    g_warning("Failed to send selected files: %s", error->message);
+  }
+}
+
 static void file_method_call_cb(FlMethodChannel* channel,
                                 FlMethodCall* call,
                                 gpointer user_data) {
+  if (strcmp(fl_method_call_get_name(call), "chooseOpenFiles") == 0) {
+    respond_open_files(call, GTK_WINDOW(user_data),
+                       fl_method_call_get_args(call));
+    return;
+  }
   if (strcmp(fl_method_call_get_name(call), "chooseSavePath") != 0) {
     fl_method_call_respond_not_implemented(call, nullptr);
     return;
@@ -36,16 +120,18 @@ static void file_method_call_cb(FlMethodChannel* channel,
     return;
   }
 
-  GtkFileChooserNative* dialog = gtk_file_chooser_native_new(
-      "保存文件", GTK_WINDOW(user_data), GTK_FILE_CHOOSER_ACTION_SAVE, "保存",
-      "取消");
-  gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
-  gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog),
-                                    fl_value_get_string(name));
-  const gint response = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog));
+  GtkWidget* dialog = gtk_file_chooser_dialog_new(
+      "保存文件", GTK_WINDOW(user_data), GTK_FILE_CHOOSER_ACTION_SAVE, "取消",
+      GTK_RESPONSE_CANCEL, "保存", GTK_RESPONSE_ACCEPT, nullptr);
+  GtkFileChooser* chooser = GTK_FILE_CHOOSER(dialog);
+  apply_last_directory(chooser);
+  gtk_file_chooser_set_do_overwrite_confirmation(chooser, TRUE);
+  gtk_file_chooser_set_current_name(chooser, fl_value_get_string(name));
+  const gint response = gtk_dialog_run(GTK_DIALOG(dialog));
   gchar* path = response == GTK_RESPONSE_ACCEPT
-                    ? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
+                    ? gtk_file_chooser_get_filename(chooser)
                     : nullptr;
+  if (path != nullptr) remember_directory(path);
   g_autoptr(FlValue) result = path == nullptr ? fl_value_new_null()
                                              : fl_value_new_string(path);
   g_autoptr(GError) error = nullptr;
@@ -53,7 +139,7 @@ static void file_method_call_cb(FlMethodChannel* channel,
     g_warning("Failed to send save path: %s", error->message);
   }
   g_free(path);
-  gtk_native_dialog_destroy(GTK_NATIVE_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
 }
 
 // Implements GApplication::activate.
@@ -159,6 +245,7 @@ static void my_application_shutdown(GApplication* application) {
 static void my_application_dispose(GObject* object) {
   MyApplication* self = MY_APPLICATION(object);
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
+  g_clear_pointer(&last_dialog_directory, g_free);
   g_clear_object(&self->file_channel);
   G_OBJECT_CLASS(my_application_parent_class)->dispose(object);
 }

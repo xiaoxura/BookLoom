@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:bookloom/core/errors/app_failure.dart';
@@ -359,4 +360,70 @@ void main() {
       throwsA(isA<ExportFailure>()),
     );
   });
+  test(
+    'Linux runner dialog returns real paths with requested filters',
+    () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      final root = await Directory.systemTemp.createTemp('bookloom-picker-');
+      addTearDown(() => root.delete(recursive: true));
+      final file = File(p.join(root.path, 'sample.txt'));
+      await file.writeAsString('hello');
+      const channel = MethodChannel('bookloom/file_service');
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      MethodCall? seen;
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        seen = call;
+        return <String>[file.path];
+      });
+      addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+
+      final picked = await NativeFileService().pickImports(
+        multiple: false,
+        extensions: const <String>['.txt'],
+      );
+      expect(seen?.method, 'chooseOpenFiles');
+      expect(seen?.arguments, {
+        'extensions': <String>['txt'],
+        'multiple': false,
+      });
+      expect(picked.single.name, 'sample.txt');
+      expect(picked.single.size, 5);
+      final bytes = await picked.single
+          .openRead()
+          .expand((chunk) => chunk)
+          .toList();
+      expect(bytes, utf8.encode('hello'));
+    },
+  );
+
+  test(
+    'Linux runner dialog handles cancel and unsupported extensions',
+    () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      const channel = MethodChannel('bookloom/file_service');
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      List<String>? response;
+      messenger.setMockMethodCallHandler(channel, (call) async => response);
+      addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+
+      expect(
+        await NativeFileService().pickImports(
+          extensions: const <String>['txt'],
+        ),
+        isEmpty,
+      );
+
+      final root = await Directory.systemTemp.createTemp('bookloom-picker-');
+      addTearDown(() => root.delete(recursive: true));
+      final pdf = File(p.join(root.path, 'sample.pdf'));
+      await pdf.writeAsString('pdf');
+      response = <String>[pdf.path];
+      await expectLater(
+        NativeFileService().pickImports(extensions: const <String>['txt']),
+        throwsA(isA<ImportFailure>()),
+      );
+    },
+  );
 }

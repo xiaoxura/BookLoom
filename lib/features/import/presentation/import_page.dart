@@ -31,6 +31,8 @@ class ImportPage extends ConsumerStatefulWidget {
 class _ImportPageState extends ConsumerState<ImportPage> {
   late final ImportService _service;
   Completer<void>? _preparingDone;
+  DialogRoute<void>? _taskRoute;
+  ValueNotifier<_ImportTaskStatus>? _taskStatus;
 
   @override
   void initState() {
@@ -45,13 +47,12 @@ class _ImportPageState extends ConsumerState<ImportPage> {
       _input == null || p.extension(_input!.name).toLowerCase() == '.txt';
   bool _working = false;
   bool _committing = false;
-  double? _progress;
-  String? _stage;
   String? _error;
 
   @override
   void dispose() {
-    _service.cancel();
+    if (!_committing) _service.cancel();
+    _closeTaskDialog(deferRemoval: true);
     final selected = _input;
     final pending = _preparingDone?.future;
     unawaited(() async {
@@ -59,7 +60,7 @@ class _ImportPageState extends ConsumerState<ImportPage> {
       await selected?.release();
     }());
     final prepared = _prepared;
-    if (prepared != null) {
+    if (prepared != null && !_committing) {
       unawaited(_service.discard(prepared).catchError((Object _) {}));
     }
     super.dispose();
@@ -127,18 +128,6 @@ class _ImportPageState extends ConsumerState<ImportPage> {
           ),
           const SizedBox(height: AppSpacing.lg),
           if (_input != null) _options(l10n),
-          if (_working) ...[
-            const SizedBox(height: AppSpacing.lg),
-            LinearProgressIndicator(value: _progress),
-            const SizedBox(height: AppSpacing.sm),
-            Text(_committing ? l10n.importSaving : _stageLabel(l10n)),
-            const SizedBox(height: AppSpacing.sm),
-            if (!_committing)
-              OutlinedButton(
-                onPressed: () => ref.read(importServiceProvider).cancel(),
-                child: Text(l10n.commonCancel),
-              ),
-          ],
           if (_error != null) ...[
             const SizedBox(height: AppSpacing.lg),
             Text(_error!, style: TextStyle(color: colors.danger)),
@@ -191,15 +180,34 @@ class _ImportPageState extends ConsumerState<ImportPage> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.sm),
-            ParseOptionsFields(
-              options: _parseOptions,
-              enabled: !_working,
-              isTxt: _isTxt,
-              files: ref.read(fileServiceProvider),
-              cacheDirectory: Directory(
-                p.join(ref.read(appPathsProvider).cache.path, 'workbench'),
-              ),
-              onChanged: (value) => _changeOptions(() => _parseOptions = value),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final fieldsWidth =
+                    MediaQuery.textScalerOf(context).scale(1) > 1 &&
+                        constraints.maxWidth < AppLayout.editorCompactBreakpoint
+                    ? AppLayout.editorCompactBreakpoint
+                    : constraints.maxWidth;
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: fieldsWidth,
+                    child: ParseOptionsFields(
+                      options: _parseOptions,
+                      enabled: !_working,
+                      isTxt: _isTxt,
+                      files: ref.read(fileServiceProvider),
+                      cacheDirectory: Directory(
+                        p.join(
+                          ref.read(appPathsProvider).cache.path,
+                          'workbench',
+                        ),
+                      ),
+                      onChanged: (value) =>
+                          _changeOptions(() => _parseOptions = value),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -363,7 +371,6 @@ class _ImportPageState extends ConsumerState<ImportPage> {
         }
         _prepared = null;
         _error = null;
-        _progress = null;
       });
     } on Object catch (error) {
       if (mounted) {
@@ -379,26 +386,27 @@ class _ImportPageState extends ConsumerState<ImportPage> {
 
   Future<void> _prepare() async {
     final input = _input;
-    if (input == null) return;
+    if (input == null || _working) return;
     final service = _service;
     final completed = Completer<void>();
     _preparingDone = completed;
     setState(() {
       _working = true;
-      _progress = null;
-      _stage = null;
       _error = null;
     });
+    final task = _openTaskDialog(committing: false);
     try {
       final prepared = await service.prepare(
         input,
         options: _parseOptions,
         onProgress: (JobProgress progress) {
-          if (mounted) {
-            setState(() {
-              _progress = progress.fraction;
-              _stage = progress.stage;
-            });
+          if (mounted &&
+              identical(_taskStatus, task) &&
+              !task.value.cancelling) {
+            task.value = _ImportTaskStatus(
+              committing: false,
+              stage: progress.stage,
+            );
           }
         },
       );
@@ -421,22 +429,39 @@ class _ImportPageState extends ConsumerState<ImportPage> {
     } finally {
       completed.complete();
       if (identical(_preparingDone, completed)) _preparingDone = null;
+      _closeTaskDialog();
       if (mounted) setState(() => _working = false);
     }
   }
 
   Future<void> _commit() async {
     final prepared = _prepared;
-    if (prepared == null) return;
+    if (prepared == null || _working) return;
     setState(() {
       _working = true;
       _committing = true;
       _error = null;
     });
+    final task = _openTaskDialog(committing: true);
     try {
-      final selected = _input;
-      final book = await _service.commit(prepared);
-      await selected?.release();
+      final book = await _service.commit(
+        prepared,
+        onProgress: (JobProgress progress) {
+          if (mounted && identical(_taskStatus, task)) {
+            task.value = _ImportTaskStatus(
+              committing: true,
+              fraction: progress.fraction,
+              stage: progress.stage,
+            );
+          }
+        },
+      );
+      _closeTaskDialog();
+      try {
+        await _input?.release();
+      } on Object {
+        debugPrint('Import source lease cleanup deferred.');
+      }
       if (!mounted) return;
       setState(() {
         _prepared = null;
@@ -457,14 +482,71 @@ class _ImportPageState extends ConsumerState<ImportPage> {
             error,
           ),
         );
+      } else {
+        unawaited(_service.discard(prepared).catchError((Object _) {}));
       }
     } finally {
+      _closeTaskDialog();
       if (mounted) {
         setState(() {
           _working = false;
           _committing = false;
         });
       }
+    }
+  }
+
+  ValueNotifier<_ImportTaskStatus> _openTaskDialog({required bool committing}) {
+    final task = ValueNotifier<_ImportTaskStatus>(
+      _ImportTaskStatus(
+        committing: committing,
+        fraction: committing ? 0 : null,
+      ),
+    );
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final route = DialogRoute<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => PopScope<Object?>(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop && !committing) _cancelPrepare(task);
+        },
+        child: ValueListenableBuilder<_ImportTaskStatus>(
+          valueListenable: task,
+          builder: (context, status, _) => _ImportProgressDialog(
+            status: status,
+            onCancel: committing ? null : () => _cancelPrepare(task),
+          ),
+        ),
+      ),
+    );
+    _taskStatus = task;
+    _taskRoute = route;
+    unawaited(navigator.push(route));
+    return task;
+  }
+
+  void _cancelPrepare(ValueNotifier<_ImportTaskStatus> task) {
+    if (!identical(_taskStatus, task) || task.value.cancelling) return;
+    task.value = _ImportTaskStatus(committing: false, cancelling: true);
+    _service.cancel();
+  }
+
+  void _closeTaskDialog({bool deferRemoval = false}) {
+    final route = _taskRoute;
+    final task = _taskStatus;
+    _taskRoute = null;
+    _taskStatus = null;
+    void remove() {
+      if (route?.isActive ?? false) route!.navigator?.removeRoute(route);
+      task?.dispose();
+    }
+
+    if (deferRemoval) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => remove());
+    } else {
+      remove();
     }
   }
 
@@ -494,13 +576,6 @@ class _ImportPageState extends ConsumerState<ImportPage> {
     }
   }
 
-  String _stageLabel(AppLocalizations l10n) => switch (_stage) {
-    'decode' => l10n.importStageDecode,
-    'parse' => l10n.importStageParse,
-    'ready' => l10n.importStageReady,
-    _ => l10n.importStagePrepare,
-  };
-
   String _warningLabel(ParseWarning warning, AppLocalizations l10n) =>
       switch (warning.code) {
         'low_encoding_confidence' => l10n.importWarningEncoding,
@@ -518,4 +593,88 @@ class _ImportPageState extends ConsumerState<ImportPage> {
   String _failureLabel(String summary, Object error) => error is AppFailure
       ? '$summary ${error.message}${error.hint == null ? '' : ' ${error.hint}'}'
       : summary;
+}
+
+class _ImportTaskStatus {
+  const _ImportTaskStatus({
+    required this.committing,
+    this.fraction,
+    this.stage,
+    this.cancelling = false,
+  });
+
+  final bool committing;
+  final double? fraction;
+  final String? stage;
+  final bool cancelling;
+}
+
+class _ImportProgressDialog extends StatelessWidget {
+  const _ImportProgressDialog({required this.status, required this.onCancel});
+
+  final _ImportTaskStatus status;
+  final VoidCallback? onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final fraction = status.fraction;
+    final stage = switch (status.stage) {
+      'decode' => l10n.importStageDecode,
+      'parse' => l10n.importStageParse,
+      'convert' => l10n.importStageConvert,
+      'ready' => l10n.importStageReady,
+      'save_prepare' => l10n.importStageSavePrepare,
+      'save_chapters' => l10n.importStageSaveChapters,
+      'save_blocks' => l10n.importStageSaveBlocks,
+      'save_finalize' => l10n.importStageSaveFinalize,
+      _ => status.committing ? l10n.importSaving : l10n.importStagePrepare,
+    };
+    return AlertDialog(
+      insetPadding: const EdgeInsets.all(AppSpacing.lg),
+      scrollable: true,
+      title: Text(l10n.importTaskTitle),
+      content: SizedBox(
+        width: AppLayout.bottomBarMaxWidth,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(status.cancelling ? l10n.importCancelling : stage),
+            const SizedBox(height: AppSpacing.lg),
+            LinearProgressIndicator(value: fraction),
+            if (!status.cancelling) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                fraction == null
+                    ? l10n.importPreparing
+                    : l10n.importProgressPercent(
+                        (fraction * 100).floor().clamp(
+                          0,
+                          fraction < 1 ? 99 : 100,
+                        ),
+                      ),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+            if (status.committing) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                l10n.importSavingNotice,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: onCancel == null
+          ? null
+          : [
+              TextButton(
+                onPressed: status.cancelling ? null : onCancel,
+                child: Text(l10n.commonCancel),
+              ),
+            ],
+    );
+  }
 }

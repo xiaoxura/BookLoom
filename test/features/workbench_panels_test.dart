@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:bookloom/core/app_info.dart';
+import 'package:bookloom/core/editing/proofreading_rule.dart';
 import 'package:bookloom/core/formatting/document_export.dart';
 import 'package:bookloom/core/model/block.dart';
 import 'package:bookloom/core/platform/background_jobs.dart';
@@ -11,8 +12,10 @@ import 'package:bookloom/core/settings/workbench_preferences.dart';
 import 'package:bookloom/core/storage/book_backup.dart';
 import 'package:bookloom/core/storage/settings_store.dart';
 import 'package:bookloom/design/tokens/app_typography.dart';
+import 'package:bookloom/features/editor/data/proofreading_rule_store.dart';
 import 'package:bookloom/features/editor/presentation/editor_page.dart';
 import 'package:bookloom/features/editor/presentation/proofreading_panel.dart';
+import 'package:bookloom/features/preview/layout_paragraph.dart';
 import 'package:bookloom/features/preview/reading_preview.dart';
 import 'package:bookloom/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -180,6 +183,191 @@ void main() {
         findsOneWidget,
       );
       expect(await harness.listSummaries(), hasLength(1));
+      expect(tester.takeException(), isNull);
+    },
+    timeout: const Timeout(Duration(seconds: 45)),
+  );
+
+  testBookloomWidgets(
+    'backup restore resets the conflict policy for each new archive',
+    (WidgetTester tester) async {
+      final WorkbenchUiHarness harness = await WorkbenchUiHarness.pump(
+        tester,
+        size: const Size(520, 900),
+      );
+      final book = await harness.seedBook();
+      final Uint8List backupBytes = await _backupBytes(
+        tester,
+        harness,
+        book.id,
+      );
+      await _openSettings(tester, section: _zh.settingsStorageTitle);
+      final Finder manageData = find.text(_zh.workbenchOpenData);
+      await tester.ensureVisible(manageData);
+      await tester.tap(manageData);
+      await _pumpUntil(
+        tester,
+        () => find.text(_zh.dataWorkbenchBackupTitle).evaluate().isNotEmpty,
+      );
+      await tester.enterText(
+        _textFieldWithLabel(_zh.dataWorkbenchBackupMaxData),
+        '16',
+      );
+      final Finder selectBackup = find.text(
+        _zh.dataWorkbenchBackupChooseInspect,
+      );
+      harness.files.nextPickedInputs = <PickedInput>[
+        PickedInput(
+          name: 'policy.bookloom',
+          size: backupBytes.length,
+          openRead: () => Stream<List<int>>.value(backupBytes),
+        ),
+      ];
+      await tester.ensureVisible(selectBackup);
+      await tester.tap(selectBackup);
+      await _pumpUntil(
+        tester,
+        () => find
+            .text(_zh.dataWorkbenchBackupConflictPolicy)
+            .evaluate()
+            .isNotEmpty,
+      );
+      await tester.ensureVisible(find.text(_zh.dataWorkbenchBackupKeepBoth));
+      await _chooseDropdown(
+        tester,
+        _zh.dataWorkbenchBackupKeepBoth,
+        _zh.dataWorkbenchBackupOverwriteConflicts,
+      );
+      expect(
+        find.text(_zh.dataWorkbenchBackupOverwriteConflicts).hitTestable(),
+        findsOneWidget,
+      );
+      final Finder discard = find.text(_zh.dataWorkbenchBackupDiscardPreview);
+      await tester.ensureVisible(discard);
+      await tester.tap(discard);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      harness.files.nextPickedInputs = <PickedInput>[
+        PickedInput(
+          name: 'policy.bookloom',
+          size: backupBytes.length,
+          openRead: () => Stream<List<int>>.value(backupBytes),
+        ),
+      ];
+      await _pumpUntil(
+        tester,
+        () => find.text(_zh.dataWorkbenchBackupCancelTask).evaluate().isEmpty,
+      );
+      await tester.ensureVisible(selectBackup);
+      await tester.tap(selectBackup);
+      await _pumpUntil(
+        tester,
+        () => find.text(_zh.dataWorkbenchBackupKeepBoth).evaluate().isNotEmpty,
+      );
+      await tester.ensureVisible(find.text(_zh.dataWorkbenchBackupKeepBoth));
+      expect(
+        find.text(_zh.dataWorkbenchBackupKeepBoth).hitTestable(),
+        findsOneWidget,
+      );
+      expect(
+        find.text(_zh.dataWorkbenchBackupOverwriteConflicts).hitTestable(),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+    timeout: const Timeout(Duration(seconds: 45)),
+  );
+
+  testBookloomWidgets(
+    'backup restore merges carried rules without selecting or running them',
+    (WidgetTester tester) async {
+      final WorkbenchUiHarness harness = await WorkbenchUiHarness.pump(
+        tester,
+        size: const Size(520, 900),
+      );
+      final book = await harness.seedBook();
+      final rule = ProofreadingRule.create(
+        id: 'carried-rule',
+        name: '随备份规则',
+        kind: ProofreadingRuleKind.advertisement,
+        source: ProofreadingRuleSource.user,
+        bookId: book.id,
+        target: ProofreadingRuleTarget.bodyLine,
+        mode: ProofreadingMatchMode.literal,
+        pattern: '推广',
+        caseSensitive: false,
+        action: ProofreadingRuleAction.advertisementCandidate,
+        positiveExamples: const <String>['推广'],
+        negativeExamples: const <String>[],
+      );
+      final rulesJson = encodeProofreadingRules(<ProofreadingRule>[rule]);
+      final Uint8List backupBytes = await _backupBytes(
+        tester,
+        harness,
+        book.id,
+        rulesJson: rulesJson,
+      );
+      await _openSettings(tester, section: _zh.settingsStorageTitle);
+      final Finder manageData = find.text(_zh.workbenchOpenData);
+      await tester.ensureVisible(manageData);
+      await tester.tap(manageData);
+      await _pumpUntil(
+        tester,
+        () => find.text(_zh.dataWorkbenchBackupTitle).evaluate().isNotEmpty,
+      );
+      final Finder budget = _textFieldWithLabel(_zh.dataWorkbenchBackupMaxData);
+      await tester.enterText(budget, '16');
+      harness.files.nextPickedInputs = <PickedInput>[
+        PickedInput(
+          name: 'rules.bookloom',
+          size: backupBytes.length,
+          openRead: () => Stream<List<int>>.value(backupBytes),
+        ),
+      ];
+      final Finder selectBackup = find.text(
+        _zh.dataWorkbenchBackupChooseInspect,
+      );
+      await tester.ensureVisible(selectBackup);
+      await tester.tap(selectBackup);
+      await _pumpUntil(
+        tester,
+        () => find
+            .text(_zh.dataWorkbenchBackupConflictPolicy)
+            .evaluate()
+            .isNotEmpty,
+      );
+      expect(
+        find.text(_zh.dataWorkbenchBackupRules(1)),
+        findsOneWidget,
+        reason: 'preview should disclose the carried rule count',
+      );
+      await tester.ensureVisible(find.text(_zh.dataWorkbenchBackupKeepBoth));
+      await _chooseDropdown(
+        tester,
+        _zh.dataWorkbenchBackupKeepBoth,
+        _zh.dataWorkbenchBackupSkipConflicts,
+      );
+      final Finder restore = find.text(_zh.dataWorkbenchBackupConfirmRestore);
+      await tester.ensureVisible(restore);
+      await tester.tap(restore);
+      await _pumpUntil(
+        tester,
+        () => find
+            .textContaining(_zh.dataWorkbenchBackupRulesMerged(1, 0))
+            .evaluate()
+            .isNotEmpty,
+      );
+      final stored = await tester.runAsync(
+        () =>
+            SettingsProofreadingRuleStore(harness.database)
+                .loadForBook(book.id),
+      );
+      expect(stored!.map((rule) => rule.id), contains('carried-rule'));
+      expect(
+        stored.singleWhere((rule) => rule.id == 'carried-rule').enabled,
+        isTrue,
+      );
       expect(tester.takeException(), isNull);
     },
     timeout: const Timeout(Duration(seconds: 45)),
@@ -472,14 +660,28 @@ void main() {
         _zh.bookWorkbenchCover,
         _zh.bookWorkbenchReadingPreview,
       );
-      final previewParagraph = find.descendant(
-        of: find.byType(ReadingPreview),
-        matching: find.text('门边放着一封信。'),
-      );
+      final previewParagraph = find
+          .descendant(
+            of: find.byType(ReadingPreview),
+            matching: find.byType(LayoutParagraph),
+          )
+          .first;
       await tester.ensureVisible(previewParagraph);
       await _pumpUiFrames(tester);
       expect(find.byType(ReadingPreview), findsOneWidget);
       expect(previewParagraph.hitTestable(), findsOneWidget);
+      expect(tester.widget<LayoutParagraph>(previewParagraph).text, '门边放着一封信。');
+      expect(
+        tester
+            .widget<Text>(
+              find.descendant(
+                of: previewParagraph,
+                matching: find.byType(Text),
+              ),
+            )
+            .semanticsLabel,
+        '门边放着一封信。',
+      );
       await _capturePanelScreenshot(tester, 'panels-metadata-520-2x.png');
 
       await _pumpUntilStored(tester, () async {
@@ -539,22 +741,83 @@ void main() {
         tester,
         () => find.byType(ProofreadingPanel).evaluate().isNotEmpty,
       );
-      final Finder replaceSection = find.text(_zh.editorWorkbenchFindReplace);
-      final toolsScrollable = find
+      await _capturePanelScreenshot(
+        tester,
+        'panels-tools-navigation-320-2x.png',
+      );
+      expect(find.byType(ChoiceChip), findsNWidgets(5));
+      for (final label in <String>[
+        _zh.editorWorkbenchAuditTitle,
+        _zh.editorWorkbenchMissedTitle,
+        _zh.editorWorkbenchFindReplace,
+        _zh.editorWorkbenchRenumberTitle,
+        _zh.editorWorkbenchConvertTitle,
+      ]) {
+        expect(
+          find.descendant(
+            of: find.byType(ChoiceChip),
+            matching: find.text(label),
+          ),
+          findsOneWidget,
+        );
+      }
+      final Finder toolsScrollable = find
           .descendant(
             of: find.byType(ProofreadingPanel),
-            matching: find.byType(Scrollable),
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is Scrollable &&
+                  widget.axisDirection == AxisDirection.down,
+            ),
           )
           .first;
       await tester.scrollUntilVisible(
-        replaceSection,
-        250,
+        find.text(_zh.editorWorkbenchAuditRun),
+        150,
         scrollable: toolsScrollable,
       );
+      expect(find.text(_zh.editorWorkbenchAuditRun), findsOneWidget);
+      expect(find.text(_zh.editorWorkbenchMissedRun), findsNothing);
+      final Finder missedSection = find.text(_zh.editorWorkbenchMissedTitle);
+      await tester.ensureVisible(missedSection);
+      await _pumpUiFrames(tester);
+      await tester.tap(missedSection);
+      await _pumpUiFrames(tester);
+      await tester.scrollUntilVisible(
+        find.text(_zh.editorWorkbenchMissedRun),
+        150,
+        scrollable: toolsScrollable,
+      );
+      expect(find.text(_zh.editorWorkbenchMissedRun), findsOneWidget);
+      final Finder convertSection = find.text(_zh.editorWorkbenchConvertTitle);
+      await tester.ensureVisible(convertSection);
+      await _pumpUiFrames(tester);
+      await tester.tap(convertSection);
+      await _pumpUiFrames(tester);
+      await tester.scrollUntilVisible(
+        find.text(_zh.editorWorkbenchPreviewConvert),
+        150,
+        scrollable: toolsScrollable,
+      );
+      expect(find.text(_zh.editorWorkbenchPreviewConvert), findsOneWidget);
+      final Finder auditSection = find.text(_zh.editorWorkbenchAuditTitle);
+      await tester.ensureVisible(auditSection);
+      await _pumpUiFrames(tester);
+      await tester.tap(auditSection);
+      await _pumpUiFrames(tester);
+      await tester.scrollUntilVisible(
+        find.text(_zh.editorWorkbenchAuditRun),
+        150,
+        scrollable: toolsScrollable,
+      );
+      expect(find.text(_zh.editorWorkbenchAuditRun), findsOneWidget);
+      final Finder replaceSection = find.text(_zh.editorWorkbenchFindReplace);
+      await tester.ensureVisible(replaceSection);
       await _pumpUiFrames(tester);
       expect(replaceSection.hitTestable(), findsOneWidget);
       await tester.tap(replaceSection);
       await _pumpUiFrames(tester);
+      expect(find.text(_zh.editorWorkbenchAuditRun), findsNothing);
 
       final Finder findField = _textFieldWithLabel(_zh.editorWorkbenchFindText);
       final Finder replaceField = _textFieldWithLabel(
@@ -572,13 +835,19 @@ void main() {
       await _pumpUiFrames(tester);
       expect(preview.hitTestable(), findsOneWidget);
       await tester.tap(preview);
-      await _pumpUntil(
-        tester,
-        () => find
-            .text(_zh.editorWorkbenchPreviewStats(1, 1))
-            .evaluate()
-            .isNotEmpty,
+      final session = tester
+          .widget<ProofreadingPanel>(find.byType(ProofreadingPanel))
+          .session;
+      await _pumpUntil(tester, () => !session.isToolRunning);
+      final Finder previewStats = find.text(
+        _zh.editorWorkbenchPreviewStats(1, 1),
       );
+      await tester.scrollUntilVisible(
+        previewStats,
+        150,
+        scrollable: toolsScrollable,
+      );
+      expect(previewStats, findsOneWidget);
       final chapter = book.chapters.first;
       expect(
         (await harness.loadChapter(
@@ -588,8 +857,43 @@ void main() {
         '门边放着一封信。',
       );
 
+      final Finder renumberSection = find.text(
+        _zh.editorWorkbenchRenumberTitle,
+      );
+      await tester.ensureVisible(renumberSection);
+      await _pumpUiFrames(tester);
+      expect(renumberSection.hitTestable(), findsOneWidget);
+      await tester.tap(renumberSection);
+      await _pumpUiFrames(tester);
+      expect(find.text(_zh.editorWorkbenchPreviewRenumber), findsOneWidget);
+      expect(find.text(_zh.editorWorkbenchApplyOneUndo), findsNothing);
+      expect(find.text(_zh.editorWorkbenchPreviewStats(1, 1)), findsNothing);
+      await tester.ensureVisible(replaceSection);
+      await _pumpUiFrames(tester);
+      await tester.tap(replaceSection);
+      await _pumpUiFrames(tester);
+      expect(find.text(_zh.editorWorkbenchApplyOneUndo), findsNothing);
+      expect(findField, findsOneWidget);
+      expect(replaceField, findsOneWidget);
+      expect(tester.widget<TextField>(findField).controller!.text, '一封');
+      expect(tester.widget<TextField>(replaceField).controller!.text, '两封');
+      await tester.scrollUntilVisible(
+        preview,
+        150,
+        scrollable: toolsScrollable,
+      );
+      await _pumpUiFrames(tester);
+      await tester.tap(preview);
+      await _pumpUntil(tester, () => !session.isToolRunning);
+      await tester.scrollUntilVisible(
+        previewStats,
+        150,
+        scrollable: toolsScrollable,
+      );
+      expect(previewStats, findsOneWidget);
+
       final Finder apply = find.text(_zh.editorWorkbenchApplyOneUndo);
-      await tester.ensureVisible(apply);
+      await tester.scrollUntilVisible(apply, 150, scrollable: toolsScrollable);
       await _pumpUiFrames(tester);
       expect(apply.hitTestable(), findsOneWidget);
       await _capturePanelScreenshot(tester, 'panels-tools-320-2x.png');
@@ -811,8 +1115,9 @@ bool _filledButtonEnabled(Finder finder) => finder.evaluate().any((element) {
 Future<Uint8List> _backupBytes(
   WidgetTester tester,
   WorkbenchUiHarness harness,
-  String bookId,
-) async {
+  String bookId, {
+  String? rulesJson,
+}) async {
   final Completer<void> done = Completer<void>();
   Uint8List? bytes;
   Object? failure;
@@ -823,7 +1128,7 @@ Future<Uint8List> _backupBytes(
   // can make progress while the archive is being prepared.
   await tester.runAsync(() async {
     unawaited(
-      _exportBackupBytes(harness, bookId).then<void>(
+      _exportBackupBytes(harness, bookId, rulesJson: rulesJson).then<void>(
         (result) {
           bytes = result;
           done.complete();
@@ -858,8 +1163,9 @@ Future<Uint8List> _backupBytes(
 
 Future<Uint8List> _exportBackupBytes(
   WorkbenchUiHarness harness,
-  String bookId,
-) async {
+  String bookId, {
+  String? rulesJson,
+}) async {
   final Directory scratch = Directory(
     p.join(harness.paths.cache.path, 'ui-backup-fixture'),
   );
@@ -877,6 +1183,7 @@ Future<Uint8List> _exportBackupBytes(
       <String>[bookId],
       output.path,
       includeSources: false,
+      rulesJson: rulesJson,
     );
     return await archive.readAsBytes();
   } finally {

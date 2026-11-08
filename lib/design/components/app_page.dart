@@ -16,6 +16,7 @@ class AppPage extends StatelessWidget {
     required this.child,
     this.scrollable = true,
     this.leading,
+    this.maxContentWidth = AppLayout.contentMaxWidth,
   });
 
   /// Page heading. When null (and no [actions] or [leading] are given) the page
@@ -26,6 +27,7 @@ class AppPage extends StatelessWidget {
   final List<Widget> actions;
   final Widget child;
   final bool scrollable;
+  final double maxContentWidth;
 
   /// Optional control rendered before the title (e.g. a back button on pages
   /// pushed above the shell).
@@ -124,7 +126,7 @@ class AppPage extends StatelessWidget {
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: AppLayout.contentMaxWidth),
+        constraints: BoxConstraints(maxWidth: maxContentWidth),
         child: SizedBox(
           width: double.infinity,
           height: fillHeight ? double.infinity : null,
